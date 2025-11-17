@@ -1,0 +1,14 @@
+
+.faq-panel .panel-heading {
+    background-color: var(--bulma-primary);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.faq-panel .panel-heading:hover {
+    background-color: var(--bulma-primary-soft);
+}
+.faq-panel .panel-block {
+    padding: 1rem;
+    border-top: 1px solid white;
+}
