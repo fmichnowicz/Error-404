@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" 
+    integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" 
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="styles.css">
     <title>Reserva de canchas</title>
 </head>
@@ -13,7 +16,7 @@
         <div class="navbar-brand">
             <!-- Nombre (texto) del emprendimiento -->
             <div class="navbar-item brand-title pl-2">
-                Reserva tu cancha
+                Reserva tu cancha??
             </div>
 
             <a class="navbar-burger" id="burger">
@@ -36,32 +39,58 @@
     <section class="section">
         <div class="container">
             <h2 class="title is-5 has-text-centered mb-5">Preguntas Frecuentes</h2>
-            <div class="panel faq-panel"> <!-- Contenedor principal -->
-                <!-- Pregunta 1 -->
-                <div class="panel-heading" role="button" aria-expanded="false">
-                    <span>¿Cómo reservo una cancha?</span>
-                    <span class="icon is-small arrow">▼</span> <!-- Icono -->
-                </div>
-                <div class="panel-block is-hidden"> <!-- Respuesta oculta -->
-                    <p>Para reservar, selecciona la fecha, hora y tipo de cancha en nuestro calendario.</p>
-                </div>
+            <div class="columns is-centered">
+                <div class="column is-10">
+                    <div class="card">
 
-                <!-- Pregunta 2 -->
-                <div class="panel-heading" role="button" aria-expanded="false">
-                    <span>¿Cuáles son los métodos de pago aceptados?</span>
-                    <span class="icon is-small arrow">▼</span>
-                </div>
-                <div class="panel-block is-hidden">
-                    <p>Aceptamos tarjetas de crédito/débito (Visa, Mastercard), transferencias bancarias y pago por QR.El costo es el mismo para cualquier método de pago</p>
-                </div>
+                        <div class="card-items">
+                            <header class="card-header header-desplegable">
+                                <p class="card-header-title">¿Cómo reservo una cancha?</p>
+                                <button class="card-header-icon boton-desplegar" aria-label="Desplegar texto">
+                                    <span class="icon has-text-white">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </header>
+                            <div class="card-content contenido-desplegable is-hidden">
+                                <div class="content">
+                                    Para reservar, seleccioná la fecha, hora y tipo de cancha en nuestro calendario.
+                                </div>
+                            </div>
+                        </div>
 
-                <!-- Pregunta 3 -->
-                <div class="panel-heading" role="button" aria-expanded="false">
-                    <span>¿Puedo cancelar mi reserva?</span>
-                    <span class="icon is-small arrow">▼</span>
-                </div>
-                <div class="panel-block is-hidden">
-                    <p>Sí, podes cancelar hasta 24 horas antes sin cargo. Después de eso, se aplica un 50% de reembolso. Contacta a soporte@soporte.com para asistencia.</p>
+                        <div class="card-items">
+                            <header class="card-header header-desplegable">
+                                <p class="card-header-title">¿Cuáles son los métodos de pago aceptados?</p>
+                                <button class="card-header-icon boton-desplegar" aria-label="Desplegar texto">
+                                    <span class="icon has-text-white">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </header>
+                            <div class="card-content contenido-desplegable is-hidden">
+                                <div class="content">
+                                    Aceptamos tarjetas de crédito/débito (Visa, Mastercard), transferencias bancarias y pago por QR.El costo es el mismo para cualquier método de pago
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-items">
+                            <header class="card-header header-desplegable">
+                                <p class="card-header-title">¿Puedo cancelar mi reserva?</p>
+                                <button class="card-header-icon boton-desplegar" aria-label="Desplegar texto">
+                                    <span class="icon has-text-white">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </header>
+                            <div class="card-content contenido-desplegable is-hidden">
+                                <div class="content">
+                                    Sí, podes cancelar hasta 24 horas antes sin cargo. Después de eso, sólo se reembolsa un 50%. Contacta a soporte@soporte.com para asistencia.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
