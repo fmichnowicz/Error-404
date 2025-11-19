@@ -8,21 +8,25 @@ burgerIcon.addEventListener('click', () => {
 });
 
 //Menú desplegable en sección preguntas frecuentes
-document.addEventListener('DOMContentLoaded', () => {
-    const headings = document.querySelectorAll('.faq-panel .panel-heading');
+document.addEventListener('DOMContentLoaded', function () {
+    const toggles = document.querySelectorAll('.boton-desplegar');
 
-    headings.forEach(heading => {
-        heading.addEventListener('click', () => {
-            const block = heading.nextElementSibling;      // el .panel-block
-            const arrow = heading.querySelector('.arrow'); // la flechita
+    toggles.forEach(toggle => {
+        toggle.addEventListener('click', function () {
+            const header = this.closest('.card-header');
+            const content = header.nextElementSibling;
+            const icon = this.querySelector('i');
+            const wasOpen = !content.classList.contains('is-hidden');
 
-            // Alternar visibilidad
-            block.classList.toggle('is-hidden');
+            // Cerrar todas
+            document.querySelectorAll('.contenido-desplegable').forEach(c => c.classList.add('is-hidden'));
+            document.querySelectorAll('.boton-desplegar i').forEach(i => i.classList.replace('fa-minus', 'fa-plus'));
 
-            // Cambiar estado aria y flecha
-            const isExpanded = !block.classList.contains('is-hidden');
-            heading.setAttribute('aria-expanded', isExpanded);
-            arrow.textContent = isExpanded ? '▲' : '▼';
+            // Abrir la que tocamos (si no estaba ya abierta)
+            if (!wasOpen) {
+                content.classList.remove('is-hidden');
+                icon.classList.replace('fa-plus', 'fa-minus');
+            }
         });
     });
 });

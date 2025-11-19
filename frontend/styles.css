@@ -1,14 +1,23 @@
-
-.faq-panel .panel-heading {
+/* Estilos Sección FAQ */
+.card-header {
     background-color: var(--bulma-primary);
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
 }
-.faq-panel .panel-heading:hover {
-    background-color: var(--bulma-primary-soft);
+
+/* Transición suave al abrir/cerrar */
+.card-content {
+    transition: all 0.3s ease;
 }
-.faq-panel .panel-block {
-    padding: 1rem;
-    border-top: 1px solid white;
+/* Ocultamos el contenido cuando está cerrado */
+.card-content.is-hidden {
+    max-height: 0;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.card-items {
+    overflow: hidden;
+    border-radius: 12px !important;     /* esquinas redondeadas */
+    margin-bottom: 1rem;               /* espacio entre secciones */
+    box-shadow: 0 4px 12px rgba(10, 10, 10, 0.1);
 }
