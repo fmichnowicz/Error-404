@@ -1,4 +1,4 @@
-//Menu hamburguesa en dispositivos móbiles
+//Menu hamburguesa en index-navbar para dispositivos móbiles
 const burgerIcon = document.querySelector('#burger');
 const navBarMenu = document.querySelector('#nav-links');
 
@@ -7,7 +7,7 @@ burgerIcon.addEventListener('click', () => {
     navBarMenu.classList.toggle('is-active');
 });
 
-//Menú desplegable en sección preguntas frecuentes
+//Menú desplegable en index-FAQ en sección preguntas frecuentes 
 document.addEventListener('DOMContentLoaded', function () {
     const toggles = document.querySelectorAll('.boton-desplegar');
 
@@ -29,4 +29,27 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+});
+
+//Transición de imágenes de fondo en navbar-hero
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.slide');
+    let currentSlide = 0;
+    const totalSlides = slides.length;
+    const intervalTime = 3500; // Cambia cada 3 segundos y medio
+
+    // Función para ir al siguiente slide
+    function nextSlide() {
+        // Oculta el actual
+        slides[currentSlide].classList.remove('active');
+        
+        // Siguiente (vuelve al primero si es el último)
+        currentSlide = (currentSlide + 1) % totalSlides;
+        
+        // Muestra el nuevo
+        slides[currentSlide].classList.add('active');
+    }
+
+    // Cambia automáticamente
+    setInterval(nextSlide, intervalTime);
 });
