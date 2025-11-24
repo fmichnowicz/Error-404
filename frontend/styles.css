@@ -85,3 +85,17 @@
 @media (max-width: 768px) {
     .hero h1 { font-size: 2rem; }
 }
+
+/* Estilos sección bodypage 1 */
+.titulo {
+    font-size: clamp(1.5rem, 2vw, 4rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+}
+
+.subtitulo {
+    font-size: clamp(0.9rem, 1vw, 1.6rem);
+    font-weight: 500;
+    line-height: 1.5;
+}
