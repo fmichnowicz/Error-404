@@ -1,12 +1,3 @@
-//Menu hamburguesa en index-navbar para dispositivos móbiles
-const burgerIcon = document.querySelector('#burger');
-const navBarMenu = document.querySelector('#nav-links');
-
-burgerIcon.addEventListener('click', () => {
-    burgerIcon.classList.toggle('is-active');
-    navBarMenu.classList.toggle('is-active');
-});
-
 //Menú desplegable en index-FAQ en sección preguntas frecuentes 
 document.addEventListener('DOMContentLoaded', function () {
     const toggles = document.querySelectorAll('.boton-desplegar');
