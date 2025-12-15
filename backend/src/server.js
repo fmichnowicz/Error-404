@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from "cors";
-import apiRoutes from "./routes/index-routes.js";
+import serverRoutes from "./routes/index-routes.js";
 
 const app = express();
 
@@ -12,7 +12,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Backend de CanchaYa!' });
 });
 
-app.use('/', apiRoutes);
+app.use('/', serverRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

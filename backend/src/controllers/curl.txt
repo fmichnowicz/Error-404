@@ -1,0 +1,29 @@
+Ejempos de curl
+
+Canchas
+1) Post
+curl -X POST http://localhost:3000/canchas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Cancha 1",
+    "deporte": "pádel",
+    "establecimiento_id": 1,
+    "precio_hora": 25000,
+    "descripcion": "Cancha super rápida",
+    "superficie": "Sintética",
+    "iluminacion": true,
+    "cubierta": false
+  }'
+
+2) Post con error
+curl -X POST http://localhost:3000/canchas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Cancha 1",
+    "deporte": "pádel",
+    "establecimiento_id": 1,
+    "descripcion": "Cancha super rápida",
+    "superficie": "Sintética",
+    "iluminacion": true,
+    "cubierta": false
+  }'

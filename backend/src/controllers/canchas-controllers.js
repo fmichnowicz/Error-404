@@ -33,30 +33,105 @@ const getCanchaById = async (req, res) => {
 
 const createCancha = async (req, res) => {
   try {
-    // Extraemos datos del body
     const {
       nombre,
       deporte,
       establecimiento_id,
       precio_hora,
-      descripcion,
+      descripcion,      // opcional
       superficie,
-      iluminacion,
-      cubierta
+      iluminacion = false,  // valor por defecto si no se envía
+      cubierta = false
     } = req.body;
 
-    // Validamos campos obligatorios
-    if (!nombre || !deporte || !establecimiento_id || !precio_hora || !superficie) {
-      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    const errores = [];
+
+    // Validaciones de campos obligatorios y tipos
+
+    // nombre
+    if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
+      errores.push('El nombre es obligatorio y no puede estar vacío');
+    } else if (nombre.trim().length > 100) {
+      errores.push('El nombre no puede exceder los 100 caracteres');
     }
 
-    // Validamos precio_hora > 0
+    // deporte
+    if (!deporte || typeof deporte !== 'string' || deporte.trim() === '') {
+      errores.push('El deporte es obligatorio y no puede estar vacío');
+    } else if (deporte.trim().length > 100) {
+      errores.push('El deporte no puede exceder los 100 caracteres');
+    }
+
+    // superficie
+    if (!superficie || typeof superficie !== 'string' || superficie.trim() === '') {
+      errores.push('La superficie es obligatoria y no puede estar vacía');
+    } else if (superficie.trim().length > 100) {
+      errores.push('La superficie no puede exceder los 100 caracteres');
+    }
+
+    // precio_hora
     const precio = parseFloat(precio_hora);
-    if (isNaN(precio) || precio <= 0) {
-      return res.status(400).json({ error: 'El precio_hora debe ser un número mayor que 0' });
+    if (precio_hora === undefined || precio_hora === null || isNaN(precio) || precio <= 0) {
+      errores.push('El precio_hora es obligatorio y debe ser un número mayor que 0');
+    }
+    // Opcional: máximo 2 decimales
+    if (precio_hora !== undefined && !/^\d+(\.\d{1,2})?$/.test(precio_hora.toString())) {
+      errores.push('El precio_hora debe tener máximo 2 decimales');
     }
 
-    // Query segura con parámetros preparados
+    // establecimiento_id
+    const estId = parseInt(establecimiento_id, 10);
+    if (isNaN(estId) || estId <= 0) {
+      errores.push('El establecimiento_id es obligatorio y debe ser un número entero positivo');
+    }
+
+    // iluminacion y cubierta (si se envían deben ser boolean)
+    if (iluminacion !== undefined && typeof iluminacion !== 'boolean') {
+      errores.push('iluminacion debe ser true o false');
+    }
+    if (cubierta !== undefined && typeof cubierta !== 'boolean') {
+      errores.push('cubierta debe ser true o false');
+    }
+
+    // descripcion (opcional)
+    if (descripcion !== undefined && descripcion !== null && typeof descripcion !== 'string') {
+      errores.push('La descripcion debe ser un texto o null');
+    }
+
+    // Si hay errores de validación básica, se devuelven todos juntos
+    if (errores.length > 0) {
+      return res.status(400).json({
+        error: 'Errores de validación',
+        detalles: errores
+      });
+    }
+
+    // Verificamos que el establecimiento exista
+    try {
+      const { rowCount } = await pool.query(
+        'SELECT 1 FROM establecimientos WHERE id = $1',
+        [estId]
+      );
+      if (rowCount === 0) {
+        return res.status(400).json({ error: 'El establecimiento_id proporcionado no existe' });
+      }
+    } catch (err) {
+      console.error('Error verificando establecimiento:', err);
+      return res.status(500).json({ error: 'Error al verificar el establecimiento' });
+    }
+
+    // Preparamos valores finales ántes del insert
+    const values = [
+      nombre.trim(),
+      deporte.trim(),
+      estId,
+      precio,
+      descripcion ? descripcion.trim() || null : null,  // string vacío → null
+      superficie.trim(),
+      iluminacion,
+      cubierta
+    ];
+
     const query = `
       INSERT INTO canchas 
       (nombre, deporte, establecimiento_id, precio_hora, descripcion, superficie, iluminacion, cubierta)
@@ -64,36 +139,200 @@ const createCancha = async (req, res) => {
       RETURNING *;
     `;
 
-    const values = [
-      nombre,
-      deporte,
-      establecimiento_id,
-      precio,                    // Usamos el valor ya convertido a número
-      descripcion || null,
-      superficie,
-      iluminacion ?? false,
-      cubierta ?? false
-    ];
+    const { rows } = await pool.query(query, values);
 
-    const result = await pool.query(query, values);
-
-    // Respuesta exitosa
     res.status(201).json({
       message: 'Cancha creada exitosamente',
-      cancha: result.rows[0]
+      cancha: rows[0]
     });
 
   } catch (error) {
     console.error('Error al crear cancha:', error);
 
-    // Manejo de error específico: clave foránea inválida (ej: establecimiento_id no existe)
     if (error.code === '23503') {
-      return res.status(400).json({ error: 'El establecimiento_id proporcionado no existe' });
+      return res.status(400).json({ error: 'Inválida foreing key' });
     }
-
-    // Error genérico del servidor
+    
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
 
-export { getAllCanchas, getCanchaById, createCancha };
+const updateCancha = async (req, res) => {
+  const { id } = req.params;
+
+  // Validamos ID de la cancha
+  const canchaId = parseInt(id, 10);
+  if (isNaN(canchaId) || canchaId <= 0) {
+    return res.status(400).json({ error: 'ID de cancha inválido' });
+  }
+
+  const {
+    nombre,
+    deporte,
+    establecimiento_id,
+    precio_hora,
+    descripcion,
+    superficie,
+    iluminacion,
+    cubierta
+  } = req.body;
+
+  // Acumulamos errores de validación
+  const errores = [];
+
+  // Arrays para construir la query dinámica
+  const setParts = [];
+  const values = [];
+  let paramIndex = 1;
+
+  // Helper para validar y agregar un campo
+  const validarYAgregar = (campo, valor, reglas) => {
+    // Si no se envía el campo, no hacemos nada (es opcional para update)
+    if (valor === undefined) return;
+
+    // Validaciones
+    if (reglas.required && (valor === null || valor === '' || valor === undefined)) {
+      errores.push(`El campo ${campo} es obligatorio y no puede ser vacío o null`);
+      return;
+    }
+
+    if (reglas.string && typeof valor !== 'string') {
+      errores.push(`El campo ${campo} debe ser una cadena de texto`);
+      return;
+    }
+
+    if (reglas.maxLength && valor.length > reglas.maxLength) {
+      errores.push(`El campo ${campo} no puede exceder ${reglas.maxLength} caracteres`);
+      return;
+    }
+
+    if (reglas.trim && typeof valor === 'string') {
+      valor = valor.trim();
+      if (reglas.required && valor === '') {
+        errores.push(`El campo ${campo} no puede quedar vacío después de recortar espacios`);
+        return;
+      }
+    }
+
+    if (reglas.number && (isNaN(valor) || typeof valor !== 'number')) {
+      errores.push(`El campo ${campo} debe ser un número válido`);
+      return;
+    }
+
+    if (reglas.positive && valor <= 0) {
+      errores.push(`El campo ${campo} debe ser mayor a 0`);
+      return;
+    }
+
+    if (reglas.boolean && typeof valor !== 'boolean') {
+      errores.push(`El campo ${campo} debe ser true o false`);
+      return;
+    }
+
+    if (reglas.integer && !Number.isInteger(valor)) {
+      errores.push(`El campo ${campo} debe ser un número entero`);
+      return;
+    }
+
+    // Si pasa todas las validaciones, lo agregamos
+    setParts.push(`${campo} = $${paramIndex++}`);
+    values.push(reglas.trim && typeof valor === 'string' ? valor.trim() : valor);
+  };
+
+  // Aplicamos validaciones campo por campo
+  validarYAgregar('nombre', nombre, {
+    required: true,
+    string: true,
+    trim: true,
+    maxLength: 100
+  });
+
+  validarYAgregar('deporte', deporte, {
+    required: true,
+    string: true,
+    trim: true,
+    maxLength: 100
+  });
+
+  validarYAgregar('superficie', superficie, {
+    required: true,
+    string: true,
+    trim: true,
+    maxLength: 100
+  });
+
+  validarYAgregar('precio_hora', precio_hora, {
+    required: true,
+    number: true,
+    positive: true
+  });
+
+  validarYAgregar('descripcion', descripcion, {
+    string: true,
+    trim: true
+    // TEXT permite null y no tiene límite práctico
+  });
+
+  validarYAgregar('iluminacion', iluminacion, { boolean: true });
+
+  validarYAgregar('cubierta', cubierta, { boolean: true });
+
+  // Validación especial para establecimiento_id (entero + existencia)
+  if (establecimiento_id !== undefined) {
+    const estId = parseInt(establecimiento_id, 10);
+    if (isNaN(estId) || estId <= 0) {
+      errores.push('establecimiento_id debe ser un número entero positivo');
+    } else {
+      // Verificamos que el establecimiento exista
+      try {
+        const { rowCount } = await pool.query(
+          'SELECT 1 FROM establecimientos WHERE id = $1',
+          [estId]
+        );
+        if (rowCount === 0) {
+          errores.push('El establecimiento_id proporcionado no existe');
+        } else {
+          setParts.push(`establecimiento_id = $${paramIndex++}`);
+          values.push(estId);
+        }
+      } catch (err) {
+        errores.push('Error al verificar el establecimiento');
+      }
+    }
+  }
+
+  // Si hay errores de validación, se devuelven todos juntos
+  if (errores.length > 0) {
+    return res.status(400).json({ errores });
+  }
+
+  // Si no hay campos para actualizar
+  if (setParts.length === 0) {
+    return res.status(400).json({ error: 'No se proporcionaron campos para actualizar' });
+  }
+
+  // Agregamos el ID de la cancha al final
+  values.push(canchaId);
+
+  const query = `
+    UPDATE canchas
+    SET ${setParts.join(', ')}
+    WHERE id = $${paramIndex}
+    RETURNING *;
+  `;
+
+  try {
+    const { rows } = await pool.query(query, values);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Cancha no encontrada' });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error('Error al actualizar cancha:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+export { getAllCanchas, getCanchaById, createCancha, updateCancha };
