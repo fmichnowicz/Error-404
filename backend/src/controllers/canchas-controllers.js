@@ -38,16 +38,15 @@ const createCancha = async (req, res) => {
       deporte,
       establecimiento_id,
       precio_hora,
-      descripcion,      // opcional
+      descripcion, // opcional
       superficie,
-      iluminacion = false,  // valor por defecto si no se envía
+      iluminacion = false,
       cubierta = false
     } = req.body;
 
     const errores = [];
 
-    // Validaciones de campos obligatorios y tipos
-
+    // === VALIDACIONES BÁSICAS ===
     // nombre
     if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
       errores.push('El nombre es obligatorio y no puede estar vacío');
@@ -74,7 +73,6 @@ const createCancha = async (req, res) => {
     if (precio_hora === undefined || precio_hora === null || isNaN(precio) || precio <= 0) {
       errores.push('El precio_hora es obligatorio y debe ser un número mayor que 0');
     }
-    // Opcional: máximo 2 decimales
     if (precio_hora !== undefined && !/^\d+(\.\d{1,2})?$/.test(precio_hora.toString())) {
       errores.push('El precio_hora debe tener máximo 2 decimales');
     }
@@ -85,7 +83,7 @@ const createCancha = async (req, res) => {
       errores.push('El establecimiento_id es obligatorio y debe ser un número entero positivo');
     }
 
-    // iluminacion y cubierta (si se envían deben ser boolean)
+    // iluminacion y cubierta
     if (iluminacion !== undefined && typeof iluminacion !== 'boolean') {
       errores.push('iluminacion debe ser true o false');
     }
@@ -98,7 +96,6 @@ const createCancha = async (req, res) => {
       errores.push('La descripcion debe ser un texto o null');
     }
 
-    // Si hay errores de validación básica, se devuelven todos juntos
     if (errores.length > 0) {
       return res.status(400).json({
         error: 'Errores de validación',
@@ -106,40 +103,74 @@ const createCancha = async (req, res) => {
       });
     }
 
-    // Verificamos que el establecimiento exista
-    try {
-      const { rowCount } = await pool.query(
-        'SELECT 1 FROM establecimientos WHERE id = $1',
-        [estId]
-      );
-      if (rowCount === 0) {
-        return res.status(400).json({ error: 'El establecimiento_id proporcionado no existe' });
-      }
-    } catch (err) {
-      console.error('Error verificando establecimiento:', err);
-      return res.status(500).json({ error: 'Error al verificar el establecimiento' });
-    }
+    const nombreTrim = nombre.trim();
+    const deporteTrim = deporte.trim();
 
-    // Preparamos valores finales ántes del insert
-    const values = [
-      nombre.trim(),
-      deporte.trim(),
-      estId,
-      precio,
-      descripcion ? descripcion.trim() || null : null,  // string vacío → null
-      superficie.trim(),
-      iluminacion,
-      cubierta
+    // === VALIDACIÓN: DEPORTE PERMITIDO ===
+    const deportesPermitidos = [
+      'Pádel', 'Fútbol 4', 'Fútbol 5', 'Fútbol 6', 'Fútbol 7',
+      'Fútbol 8', 'Fútbol 9', 'Fútbol 10', 'Fútbol 11',
+      'Tenis', 'Básquet 3v3', 'Básquet 5v5', 'Vóley', 'Handball'
     ];
 
-    const query = `
+    if (!deportesPermitidos.includes(deporteTrim)) {
+      return res.status(400).json({
+        error: 'Deporte no permitido',
+        detalles: `El deporte debe ser uno de: ${deportesPermitidos.join(', ')}`
+      });
+    }
+
+    // === VALIDACIÓN: NOMBRE ÚNICO (insensible a mayúsculas, acentos y espacios) ===
+    const checkNombreQuery = `
+      SELECT 1 FROM canchas 
+      WHERE establecimiento_id = $1 
+        AND deporte = $2
+        AND unaccent(UPPER(nombre)) = unaccent(UPPER($3))
+    `;
+
+    const { rowCount: nombreExiste } = await pool.query(checkNombreQuery, [
+      estId,
+      deporteTrim,
+      nombreTrim
+    ]);
+
+    if (nombreExiste > 0) {
+      return res.status(400).json({
+        error: 'Nombre de cancha duplicado',
+        detalles: `Ya existe una cancha con nombre similar a "${nombreTrim}" para el deporte "${deporteTrim}" en este establecimiento`
+      });
+    }
+
+    // === Verificar que el establecimiento exista ===
+    const { rowCount: estExiste } = await pool.query(
+      'SELECT 1 FROM establecimientos WHERE id = $1',
+      [estId]
+    );
+
+    if (estExiste === 0) {
+      return res.status(400).json({ error: 'El establecimiento_id proporcionado no existe' });
+    }
+
+    // === Insert final (conservamos el casing y acentos originales) ===
+    const insertQuery = `
       INSERT INTO canchas 
       (nombre, deporte, establecimiento_id, precio_hora, descripcion, superficie, iluminacion, cubierta)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *;
     `;
 
-    const { rows } = await pool.query(query, values);
+    const values = [
+      nombreTrim,
+      deporteTrim,
+      estId,
+      precio,
+      descripcion ? descripcion.trim() || null : null,
+      superficie.trim(),
+      iluminacion,
+      cubierta
+    ];
+
+    const { rows } = await pool.query(insertQuery, values);
 
     res.status(201).json({
       message: 'Cancha creada exitosamente',
@@ -150,9 +181,9 @@ const createCancha = async (req, res) => {
     console.error('Error al crear cancha:', error);
 
     if (error.code === '23503') {
-      return res.status(400).json({ error: 'Inválida foreing key' });
+      return res.status(400).json({ error: 'Referencia inválida (foreign key)' });
     }
-    
+
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -177,20 +208,23 @@ const updateCancha = async (req, res) => {
     cubierta
   } = req.body;
 
-  // Acumulamos errores de validación
   const errores = [];
 
-  // Arrays para construir la query dinámica
   const setParts = [];
   const values = [];
   let paramIndex = 1;
 
+  // Lista de deportes permitidos
+  const deportesPermitidos = [
+    'Pádel', 'Fútbol 4', 'Fútbol 5', 'Fútbol 6', 'Fútbol 7',
+    'Fútbol 8', 'Fútbol 9', 'Fútbol 10', 'Fútbol 11',
+    'Tenis', 'Básquet 3v3', 'Básquet 5v5', 'Vóley', 'Handball'
+  ];
+
   // Helper para validar y agregar un campo
   const validarYAgregar = (campo, valor, reglas) => {
-    // Si no se envía el campo, no hacemos nada (es opcional para update)
     if (valor === undefined) return;
 
-    // Validaciones
     if (reglas.required && (valor === null || valor === '' || valor === undefined)) {
       errores.push(`El campo ${campo} es obligatorio y no puede ser vacío o null`);
       return;
@@ -234,7 +268,6 @@ const updateCancha = async (req, res) => {
       return;
     }
 
-    // Si pasa todas las validaciones, lo agregamos
     setParts.push(`${campo} = $${paramIndex++}`);
     values.push(reglas.trim && typeof valor === 'string' ? valor.trim() : valor);
   };
@@ -270,20 +303,25 @@ const updateCancha = async (req, res) => {
   validarYAgregar('descripcion', descripcion, {
     string: true,
     trim: true
-    // TEXT permite null y no tiene límite práctico
   });
 
   validarYAgregar('iluminacion', iluminacion, { boolean: true });
-
   validarYAgregar('cubierta', cubierta, { boolean: true });
 
-  // Validación especial para establecimiento_id (entero + existencia)
+  // === NUEVA VALIDACIÓN: DEPORTE PERMITIDO ===
+  if (deporte !== undefined) {
+    const deporteTrim = typeof deporte === 'string' ? deporte.trim() : deporte;
+    if (!deportesPermitidos.includes(deporteTrim)) {
+      errores.push(`Deporte no permitido. Debe ser uno de: ${deportesPermitidos.join(', ')}`);
+    }
+  }
+
+  // === Validación especial para establecimiento_id ===
   if (establecimiento_id !== undefined) {
     const estId = parseInt(establecimiento_id, 10);
     if (isNaN(estId) || estId <= 0) {
       errores.push('establecimiento_id debe ser un número entero positivo');
     } else {
-      // Verificamos que el establecimiento exista
       try {
         const { rowCount } = await pool.query(
           'SELECT 1 FROM establecimientos WHERE id = $1',
@@ -301,9 +339,56 @@ const updateCancha = async (req, res) => {
     }
   }
 
-  // Si hay errores de validación, se devuelven todos juntos
+  // === NUEVA VALIDACIÓN: NOMBRE ÚNICO POR ESTABLECIMIENTO + DEPORTE ===
+  if (nombre !== undefined || deporte !== undefined || establecimiento_id !== undefined) {
+    // Necesitamos los valores finales para validar duplicado
+    let nombreFinal = nombre ? nombre.trim() : null;
+    let deporteFinal = deporte ? (typeof deporte === 'string' ? deporte.trim() : deporte) : null;
+    let estIdFinal = establecimiento_id ? parseInt(establecimiento_id, 10) : null;
+
+    // Obtenemos los valores actuales de la cancha para completar los que no se envían
+    const currentQuery = 'SELECT nombre, deporte, establecimiento_id FROM canchas WHERE id = $1';
+    const { rows: currentRows } = await pool.query(currentQuery, [canchaId]);
+
+    if (currentRows.length === 0) {
+      return res.status(404).json({ error: 'Cancha no encontrada para validar nombre único' });
+    }
+
+    const current = currentRows[0];
+
+    nombreFinal = nombreFinal ?? current.nombre;
+    deporteFinal = deporteFinal ?? current.deporte;
+    estIdFinal = estIdFinal ?? current.establecimiento_id;
+
+    // Validamos deporte permitido con el valor final
+    if (!deportesPermitidos.includes(deporteFinal)) {
+      errores.push(`Deporte no permitido (valor final): ${deporteFinal}`);
+    }
+
+    // Verificamos duplicado de nombre (excluyendo la cancha actual)
+    const checkNombreQuery = `
+      SELECT 1 FROM canchas 
+      WHERE establecimiento_id = $1 
+        AND deporte = $2 
+        AND nombre = $3
+        AND id != $4  -- Excluimos la cancha que estamos actualizando
+    `;
+
+    const { rowCount: nombreExiste } = await pool.query(checkNombreQuery, [
+      estIdFinal,
+      deporteFinal,
+      nombreFinal,
+      canchaId
+    ]);
+
+    if (nombreExiste > 0) {
+      errores.push(`Ya existe una cancha "${nombreFinal}" para el deporte "${deporteFinal}" en este establecimiento`);
+    }
+  }
+
+  // Si hay errores de validación
   if (errores.length > 0) {
-    return res.status(400).json({ errores });
+    return res.status(400).json({ error: 'Errores de validación', detalles: errores });
   }
 
   // Si no hay campos para actualizar
@@ -311,7 +396,7 @@ const updateCancha = async (req, res) => {
     return res.status(400).json({ error: 'No se proporcionaron campos para actualizar' });
   }
 
-  // Agregamos el ID de la cancha al final
+  // Agregamos el ID al final para el WHERE
   values.push(canchaId);
 
   const query = `
@@ -328,11 +413,56 @@ const updateCancha = async (req, res) => {
       return res.status(404).json({ error: 'Cancha no encontrada' });
     }
 
-    res.json(rows[0]);
+    res.json({
+      message: 'Cancha actualizada exitosamente',
+      cancha: rows[0]
+    });
   } catch (error) {
     console.error('Error al actualizar cancha:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
 
-export { getAllCanchas, getCanchaById, createCancha, updateCancha };
+const deleteCancha = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Validar que el ID sea un número entero positivo
+    const canchaId = parseInt(id, 10);
+    if (isNaN(canchaId) || canchaId <= 0) {
+      return res.status(400).json({ error: 'ID de cancha inválido' });
+    }
+
+    // Eliminar la cancha y devolverla (RETURNING *)
+    const result = await pool.query(
+      'DELETE FROM canchas WHERE id = $1 RETURNING *',
+      [canchaId]
+    );
+
+    // Si no se eliminó ninguna fila → no existe
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Cancha no encontrada' });
+    }
+
+    // Respuesta exitosa
+    res.status(200).json({
+      message: 'Cancha eliminada exitosamente',
+      canchaEliminada: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Error al eliminar cancha:', error);
+
+    // Manejo específico si hay reservas asociadas (foreign key violation)
+    if (error.code === '23503') {
+      return res.status(409).json({
+        error: 'No se puede eliminar la cancha porque tiene reservas asociadas'
+      });
+    }
+
+    // Error genérico
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+export { getAllCanchas, getCanchaById, createCancha, updateCancha, deleteCancha };
