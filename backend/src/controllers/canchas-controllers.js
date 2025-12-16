@@ -65,7 +65,7 @@ const createCancha = async (req, res) => {
     if (!superficie || typeof superficie !== 'string' || superficie.trim() === '') {
       errores.push('La superficie es obligatoria y no puede estar vacía');
     } else if (superficie.trim().length > 100) {
-      errores.push('La superficie no puede exceder los 100 caracteres');
+      errores.push('El comentario para superficie no puede exceder los 100 caracteres');
     }
 
     // precio_hora
@@ -141,7 +141,7 @@ const createCancha = async (req, res) => {
       });
     }
 
-    // === Verificar que el establecimiento exista ===
+    // === Verificamos que el establecimiento exista ===
     const { rowCount: estExiste } = await pool.query(
       'SELECT 1 FROM establecimientos WHERE id = $1',
       [estId]
@@ -425,13 +425,13 @@ const deleteCancha = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Validar que el ID sea un número entero positivo
+    // Validamos que el ID sea un número entero positivo
     const canchaId = parseInt(id, 10);
     if (isNaN(canchaId) || canchaId <= 0) {
       return res.status(400).json({ error: 'ID de cancha inválido' });
     }
 
-    // Eliminar la cancha y devolverla (RETURNING *)
+    // Eliminamos la cancha y devolverla (RETURNING *)
     const result = await pool.query(
       'DELETE FROM canchas WHERE id = $1 RETURNING *',
       [canchaId]
