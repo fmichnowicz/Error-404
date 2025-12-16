@@ -1,14 +1,14 @@
 -- Tablas independientes (sólo reciben foreign keys)
 CREATE TABLE establecimientos (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(250) NOT NULL,
+    nombre VARCHAR(250) NOT NULL UNIQUE,
     barrio VARCHAR(250) NOT NULL,
     torneo TEXT
 );
 
 CREATE TABLE usuarios (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(250) NOT NULL,
+    nombre VARCHAR(250) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     telefono VARCHAR(30) NOT NULL UNIQUE,      -- VARCHAR permite formatos con "-" o espacios
     dni VARCHAR(20) NOT NULL UNIQUE,           -- Igual que teléfono, para DNI con letras/guiones si aplica
@@ -18,7 +18,7 @@ CREATE TABLE usuarios (
 -- Tablas dependientes (hacen referencia a otras tablas)
 CREATE TABLE canchas (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
     deporte VARCHAR(100) NOT NULL,
     establecimiento_id INTEGER NOT NULL,
     precio_hora DECIMAL(10, 2) NOT NULL,

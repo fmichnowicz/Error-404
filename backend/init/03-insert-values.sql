@@ -1,3 +1,4 @@
+-- Tablas independientes (sólo reciben foreign keys)
 INSERT INTO establecimientos (nombre, barrio, torneo) VALUES
 ('Grün FC Núñez', 'Núñez', 'Sólo de fútbol 5'),
 ('Central Paddle Gym', 'Abasto', 'No'),
@@ -12,6 +13,30 @@ INSERT INTO establecimientos (nombre, barrio, torneo) VALUES
 ('Costa Salguero Fútbol', 'Costanera Norte', 'Sí, eventos corporativos'),
 ('Distrito Fútbol Constitución', 'Constitución', 'Torneos de fútbol 5');
 
+INSERT INTO usuarios (nombre, email, telefono, dni, domicilio) VALUES
+('Juan Pérez', 'juan.perez@gmail.com', '11-3456-7890', '30123456', 'Av. Corrientes 1234, CABA'),
+('María González', 'maria.gonzalez@hotmail.com', '11-4567-8901', '32123457', 'Callao 567, CABA'),
+('Carlos López', 'carlos.lopez@yahoo.com', '11-5678-9012', '28123458', 'Santa Fe 890, CABA'),
+('Ana Martínez', 'ana.martinez@gmail.com', '11-6789-0123', '34123459', 'Rivadavia 2345, CABA'),
+('Luis Fernando Rodríguez', 'luis.rodriguez@hotmail.com', '11-7890-1234', '29123460', 'Belgrano 678, CABA'),
+('Laura Fernández', 'laura.fernandez@yahoo.com', '11-8901-2345', '35123461', 'Libertador 3456, CABA'),
+('Fernando Sánchez', 'fernando.sanchez@gmail.com', '11-9012-3456', '31123462', 'Cabildo 901, CABA'),
+('Sofía Romero', 'sofia.romero@hotmail.com', '11-0123-4567', '36123463', 'Scalabrini Ortiz 456, CABA'),
+('Martín Herrera', 'martin.herrera@yahoo.com', '11-1234-5678', '27123464', 'Medrano 789, CABA'),
+('Valentina Castro', 'valentina.castro@gmail.com', '11-2345-6789', '37123465', 'Córdoba 1122, CABA'),
+('Facundo Díaz', 'facundo.diaz@hotmail.com', '11-3456-8901', '33123466', 'Juramento 3344, CABA'),
+('Camila Ortiz', 'camila.ortiz@yahoo.com', '11-4567-9012', '38123467', 'Las Heras 556, CABA'),
+('Joaquín Fernando Morales', 'joaquin.morales@gmail.com', '11-5678-0123', '26123468', 'Pueyrredón 7788, CABA'),
+('Lucía Silva', 'lucia.silva@hotmail.com', '11-6789-1234', '39123469', 'Independencia 990, CABA'),
+('Mateo Vargas', 'mateo.vargas@yahoo.com', '11-7890-2345', '25123470', '9 de Julio 1010, CABA'),
+('Florencia Ramos', 'florencia.ramos@gmail.com', '11-8901-3456', '40123471', 'Montevideo 1212, CABA'),
+('Tomás Ruiz', 'tomas.ruiz@hotmail.com', '11-9012-4567', '24123472', 'Florida 1313, CABA'),
+('Emilia Navarro', 'emilia.navarro@yahoo.com', '11-0123-5678', '41123473', 'Maipú 1414, CABA'),
+('Santiago Mendoza', 'santiago.mendoza@gmail.com', '11-1234-6789', '23123474', 'San Martín 1515, CABA'),
+('Agustina Dominguez', 'agustina.dominguez@hotmail.com', '11-2345-7890', '42123475', 'Lavalle 1616, CABA'),
+('Fernando M', 'fernando_m@hotmail.com', '11-2341-7890', '42123473', 'Charcas 3274, CABA');
+
+-- Tablas dependendientes (tienen foreign keys a otras tablas)
 -- 1: Grün FC Núñez (solo Fútbol 5, 12 canchas)
 INSERT INTO canchas (nombre, deporte, establecimiento_id, precio_hora, descripcion, superficie, iluminacion, cubierta) VALUES
 ('Cancha 1', 'Fútbol 5', 1, 25000.00, 'Cancha premium de última generación', 'Césped sintético', true, false),
