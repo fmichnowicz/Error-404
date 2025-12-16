@@ -277,7 +277,7 @@ const deleteEstablecimiento = async (req, res) => {
   }
 
   try {
-    // 1. Verificar que el establecimiento exista
+    // 1. Verificamos que el establecimiento exista
     const checkQuery = `
       SELECT nombre 
       FROM establecimientos 
