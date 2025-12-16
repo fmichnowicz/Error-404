@@ -428,37 +428,67 @@ const deleteCancha = async (req, res) => {
     // Validamos que el ID sea un número entero positivo
     const canchaId = parseInt(id, 10);
     if (isNaN(canchaId) || canchaId <= 0) {
-      return res.status(400).json({ error: 'ID de cancha inválido' });
+      return res.status(400).json({
+        error: 'ID de cancha inválido',
+        detalles: 'El ID debe ser un número entero positivo'
+      });
     }
 
-    // Eliminamos la cancha y devolverla (RETURNING *)
-    const result = await pool.query(
-      'DELETE FROM canchas WHERE id = $1 RETURNING *',
-      [canchaId]
-    );
+    // Contador de reservas y usuarios y delete de cancha
+    // 1. Contamos reservas y usuarios afectados antes de borrar
+    // 2. Eliminamos la cancha y sus reservas asociadas
+    // 3. Devolvemos la cancha eliminada
+    const deleteQuery = `
+      WITH info_previa AS (
+        SELECT 
+          COUNT(*) AS total_reservas,
+          COUNT(DISTINCT usuario_id) AS usuarios_afectados
+        FROM reservas
+        WHERE cancha_id = $1
+      ),
+      cancha_eliminada AS (
+        DELETE FROM canchas
+        WHERE id = $1
+        RETURNING *
+      )
+      SELECT 
+        cancha_eliminada.*,
+        COALESCE(info_previa.total_reservas, 0)::INTEGER AS reservas_eliminadas,
+        COALESCE(info_previa.usuarios_afectados, 0)::INTEGER AS usuarios_afectados
+      FROM cancha_eliminada
+      LEFT JOIN info_previa ON true;
+    `;
 
-    // Si no se eliminó ninguna fila → no existe
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Cancha no encontrada' });
+    const { rows } = await pool.query(deleteQuery, [canchaId]);
+
+    // Si no se eliminó ninguna cancha → no existe
+    if (rows.length === 0) {
+      return res.status(404).json({
+        error: 'Cancha no encontrada',
+        detalles: `No existe una cancha con id ${canchaId}`
+      });
     }
 
-    // Respuesta exitosa
+    const canchaEliminada = rows[0];
+    const reservasEliminadas = canchaEliminada.reservas_eliminadas;
+    const usuariosAfectados = canchaEliminada.usuarios_afectados;
+
     res.status(200).json({
       message: 'Cancha eliminada exitosamente',
-      canchaEliminada: result.rows[0]
+      cancha: {
+        id: canchaEliminada.id,
+        nombre: canchaEliminada.nombre,
+      },
+      resumen_eliminacion: {
+        reservas_eliminadas: reservasEliminadas,
+        usuarios_afectados: usuariosAfectados,
+        detalles: `Se eliminaron ${reservasEliminadas} reserva${reservasEliminadas === 1 ? '' : 's'} `
+                + `afectando a ${usuariosAfectados} usuario${usuariosAfectados === 1 ? '' : 's'} distinto${usuariosAfectados === 1 ? '' : 's'}`
+      }
     });
 
   } catch (error) {
     console.error('Error al eliminar cancha:', error);
-
-    // Manejo específico si hay reservas asociadas (foreign key violation)
-    if (error.code === '23503') {
-      return res.status(409).json({
-        error: 'No se puede eliminar la cancha porque tiene reservas asociadas'
-      });
-    }
-
-    // Error genérico
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

@@ -125,3 +125,7 @@ curl -X PUT http://localhost:3000/establecimientos/13 \
 
 7) DELETE
 curl -X DELETE http://localhost:3000/establecimientos/13 -i
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+USUARIOS
+
