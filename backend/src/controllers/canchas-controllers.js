@@ -221,7 +221,7 @@ const updateCancha = async (req, res) => {
     'Tenis', 'Básquet 3v3', 'Básquet 5v5', 'Vóley', 'Handball'
   ];
 
-  // Helper para validar y agregar un campo
+  // Helper para validar y agregar un campo al UPDATE
   const validarYAgregar = (campo, valor, reglas) => {
     if (valor === undefined) return;
 
@@ -240,9 +240,10 @@ const updateCancha = async (req, res) => {
       return;
     }
 
+    let valorProcesado = valor;
     if (reglas.trim && typeof valor === 'string') {
-      valor = valor.trim();
-      if (reglas.required && valor === '') {
+      valorProcesado = valor.trim();
+      if (reglas.required && valorProcesado === '') {
         errores.push(`El campo ${campo} no puede quedar vacío después de recortar espacios`);
         return;
       }
@@ -269,7 +270,7 @@ const updateCancha = async (req, res) => {
     }
 
     setParts.push(`${campo} = $${paramIndex++}`);
-    values.push(reglas.trim && typeof valor === 'string' ? valor.trim() : valor);
+    values.push(valorProcesado);
   };
 
   // Aplicamos validaciones campo por campo
@@ -300,21 +301,12 @@ const updateCancha = async (req, res) => {
     positive: true
   });
 
-  validarYAgregar('descripcion', descripcion, {
-    string: true,
-    trim: true
-  });
-
+  validarYAgregar('descripcion', descripcion, { string: true, trim: true });
   validarYAgregar('iluminacion', iluminacion, { boolean: true });
   validarYAgregar('cubierta', cubierta, { boolean: true });
 
-  // === NUEVA VALIDACIÓN: DEPORTE PERMITIDO ===
-  if (deporte !== undefined) {
-    const deporteTrim = typeof deporte === 'string' ? deporte.trim() : deporte;
-    if (!deportesPermitidos.includes(deporteTrim)) {
-      errores.push(`Deporte no permitido. Debe ser uno de: ${deportesPermitidos.join(', ')}`);
-    }
-  }
+  // === Validación de deporte permitido (con valor final) ===
+  let deporteFinalParaValidar = deporte !== undefined ? (typeof deporte === 'string' ? deporte.trim() : deporte) : undefined;
 
   // === Validación especial para establecimiento_id ===
   if (establecimiento_id !== undefined) {
@@ -339,50 +331,56 @@ const updateCancha = async (req, res) => {
     }
   }
 
-  // === NUEVA VALIDACIÓN: NOMBRE ÚNICO POR ESTABLECIMIENTO + DEPORTE ===
+  // === VALIDACIÓN DE NOMBRE ÚNICO (igual que en createCancha) ===
   if (nombre !== undefined || deporte !== undefined || establecimiento_id !== undefined) {
-    // Necesitamos los valores finales para validar duplicado
-    let nombreFinal = nombre ? nombre.trim() : null;
-    let deporteFinal = deporte ? (typeof deporte === 'string' ? deporte.trim() : deporte) : null;
-    let estIdFinal = establecimiento_id ? parseInt(establecimiento_id, 10) : null;
+    let nombreFinal = nombre !== undefined ? nombre.trim() : null;
+    let deporteFinal = deporte !== undefined ? (typeof deporte === 'string' ? deporte.trim() : deporte) : null;
+    let estIdFinal = establecimiento_id !== undefined ? parseInt(establecimiento_id, 10) : null;
 
-    // Obtenemos los valores actuales de la cancha para completar los que no se envían
+    // Obtener valores actuales de la cancha
     const currentQuery = 'SELECT nombre, deporte, establecimiento_id FROM canchas WHERE id = $1';
-    const { rows: currentRows } = await pool.query(currentQuery, [canchaId]);
+    try {
+      const { rows: currentRows } = await pool.query(currentQuery, [canchaId]);
 
-    if (currentRows.length === 0) {
-      return res.status(404).json({ error: 'Cancha no encontrada para validar nombre único' });
-    }
+      if (currentRows.length === 0) {
+        return res.status(404).json({ error: 'Cancha no encontrada' });
+      }
 
-    const current = currentRows[0];
+      const current = currentRows[0];
 
-    nombreFinal = nombreFinal ?? current.nombre;
-    deporteFinal = deporteFinal ?? current.deporte;
-    estIdFinal = estIdFinal ?? current.establecimiento_id;
+      nombreFinal = nombreFinal ?? current.nombre.trim();
+      deporteFinal = deporteFinal ?? current.deporte;
+      estIdFinal = estIdFinal ?? current.establecimiento_id;
 
-    // Validamos deporte permitido con el valor final
-    if (!deportesPermitidos.includes(deporteFinal)) {
-      errores.push(`Deporte no permitido (valor final): ${deporteFinal}`);
-    }
+      // Validar deporte permitido con el valor final
+      if (!deportesPermitidos.includes(deporteFinal)) {
+        errores.push(`Deporte no permitido. Debe ser uno de: ${deportesPermitidos.join(', ')}`);
+      }
 
-    // Verificamos duplicado de nombre (excluyendo la cancha actual)
-    const checkNombreQuery = `
-      SELECT 1 FROM canchas 
-      WHERE establecimiento_id = $1 
-        AND deporte = $2 
-        AND nombre = $3
-        AND id != $4  -- Excluimos la cancha que estamos actualizando
-    `;
+      // Verificar duplicado usando unaccent + UPPER (igual que en create)
+      const checkNombreQuery = `
+        SELECT 1 FROM canchas 
+        WHERE establecimiento_id = $1 
+          AND deporte = $2
+          AND unaccent(UPPER(nombre)) = unaccent(UPPER($3))
+          AND id != $4
+      `;
 
-    const { rowCount: nombreExiste } = await pool.query(checkNombreQuery, [
-      estIdFinal,
-      deporteFinal,
-      nombreFinal,
-      canchaId
-    ]);
+      const { rowCount: nombreExiste } = await pool.query(checkNombreQuery, [
+        estIdFinal,
+        deporteFinal,
+        nombreFinal,
+        canchaId
+      ]);
 
-    if (nombreExiste > 0) {
-      errores.push(`Ya existe una cancha "${nombreFinal}" para el deporte "${deporteFinal}" en este establecimiento`);
+      if (nombreExiste > 0) {
+        errores.push(
+          `Ya existe una cancha con nombre similar a "${nombreFinal}" para el deporte "${deporteFinal}" en este establecimiento`
+        );
+      }
+    } catch (err) {
+      console.error('Error al verificar unicidad del nombre en update:', err);
+      errores.push('Error interno al verificar unicidad del nombre');
     }
   }
 
