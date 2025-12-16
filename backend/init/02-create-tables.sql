@@ -36,8 +36,8 @@ CREATE TABLE reservas (
     fecha_reserva DATE NOT NULL,
     reserva_hora_inicio TIME NOT NULL,
     reserva_hora_fin TIME NOT NULL,
-    fecha_creacion_reserva TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_modificacion_reserva TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_creacion_reserva TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    fecha_modificacion_reserva TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     monto_pagado DECIMAL(10, 2) NOT NULL,
     FOREIGN KEY (cancha_id) REFERENCES canchas(id) ON DELETE CASCADE,                   --Elimina las reservas de 1 cancha si se la borra            
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,                 --Elimina las reservas de 1 usuario si se lo borra
