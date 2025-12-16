@@ -139,3 +139,18 @@ INSERT INTO canchas (nombre, deporte, establecimiento_id, precio_hora, descripci
 ('Cancha 1', 'Fútbol 5', 12, 21000.00, 'Cancha accesible', 'Césped sintético', true, true),
 ('Cancha 2', 'Fútbol 5', 12, 21000.00, 'Cancha accesible', 'Césped sintético', true, true),
 ('Cancha 3', 'Fútbol 5', 12, 21000.00, 'Cancha accesible', 'Césped sintético', true, true);
+
+-- 10 reservas de ejemplo
+
+INSERT INTO reservas (cancha_id, usuario_id, fecha_reserva, reserva_hora_inicio, reserva_hora_fin, monto_pagado)
+VALUES
+(1, 3, '2025-12-18', '10:00:00', '11:30:00', 4500.00),  -- Cancha 1, usuario 3, 1.5 hs
+(2, 1, '2025-12-18', '14:00:00', '15:00:00', 3200.00),  -- Cancha 2, usuario 1, 1 hs
+(1, 5, '2025-12-19', '18:00:00', '20:00:00', 9000.00),  -- Cancha 1, usuario 5, 2 hs
+(3, 2, '2025-12-20', '09:00:00', '10:30:00', 4800.00),  -- Cancha 3, usuario 2, 1.5 hs
+(2, 7, '2025-12-20', '16:30:00', '18:00:00', 6000.00),  -- Cancha 2, usuario 7, 1.5 hs
+(4, 4, '2025-12-21', '11:00:00', '12:00:00', 3500.00),  -- Cancha 4, usuario 4, 1 hs
+(1, 8, '2025-12-22', '20:00:00', '22:00:00', 9500.00),  -- Cancha 1, usuario 8, 2 hs
+(3, 6, '2025-12-23', '15:00:00', '16:30:00', 5000.00),  -- Cancha 3, usuario 6, 1.5 hs
+(2, 9, '2025-12-24', '19:00:00', '20:30:00', 6500.00),  -- Cancha 2, usuario 9, 1.5 hs
+(4, 10, '2025-12-25', '17:00:00', '19:00:00', 8000.00); -- Cancha 4, usuario 10, 2 hs
