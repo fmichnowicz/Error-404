@@ -1,5 +1,49 @@
 Ejempos de curl
 
+ESTABLECIMIENTOS
+
+1) GET correcto (todos las establecimientos o alguno)
+curl http://localhost:3000/establecimientos
+curl http://localhost:3000/establecimientos/6
+
+2) POST correcto
+curl -X POST http://localhost:3000/establecimientos \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Metegol supremo",
+    "barrio": "Saavedra",
+    "torneo": "Se realizan torneos de fútbol 5"
+  }'
+
+3) POST para testeo (copiar el POST de arriba y modificarle cualquier cosa para testear)
+curl -X POST http://localhost:3000/establecimientos \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "",
+    "barrio": "",
+    "torneo": "Se realizan torneos de fútbol 5"
+  }'
+
+4) UPDATE correcto (todos los campos)
+curl -X PUT http://localhost:3000/establecimientos/34 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Metegol supremo papas fritas",
+    "torneo": "Se realizan torneos de fútbol 11"
+  }' -i
+
+5) UPDATE para testeo (copiar el UPDATE de arriba y eliminarle/actualizarle campos)
+curl -X PUT http://localhost:3000/establecimientos/13 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Metegol supremo papas fritas",
+    "torneo": "Se realizan torneos de fútbol 11"
+  }' -i
+
+6) DELETE
+curl -X DELETE http://localhost:3000/establecimientos/34 -i
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
 CANCHAS
 
 1) GET correcto (todas las canchas o alguna)
@@ -10,9 +54,9 @@ curl http://localhost:3000/canchas/5
 curl -X POST http://localhost:3000/canchas \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Cancha 36",
+    "nombre": "Cancha 37",
     "deporte": "Pádel",
-    "establecimiento_id": 34,
+    "establecimiento_id": 35,
     "precio_hora": 25000,
     "descripcion": "Cancha super rápida",
     "superficie": "Sintética",
@@ -63,51 +107,7 @@ curl -X PUT http://localhost:3000/canchas/68 \
   }' -i
 
 6) DELETE
-curl -X DELETE http://localhost:3000/canchas/5 -i
-
----------------------------------------------------------------------------------------------------------------------------------------------------------
-ESTABLECIMIENTOS
-
-1) GET correcto (todos las establecimientos o alguno)
-curl http://localhost:3000/establecimientos
-curl http://localhost:3000/establecimientos/6
-
-2) POST correcto
-curl -X POST http://localhost:3000/establecimientos \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Metegol supremo",
-    "barrio": "Saavedra",
-    "torneo": "Se realizan torneos de fútbol 5"
-  }'
-
-3) POST para testeo (copiar el POST de arriba y modificarle cualquier cosa para testear)
-curl -X POST http://localhost:3000/establecimientos \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "",
-    "barrio": "",
-    "torneo": "Se realizan torneos de fútbol 5"
-  }'
-
-4) UPDATE correcto (todos los campos)
-curl -X PUT http://localhost:3000/establecimientos/34 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Metegol supremo papas fritas",
-    "torneo": "Se realizan torneos de fútbol 11"
-  }' -i
-
-5) UPDATE para testeo (copiar el UPDATE de arriba y eliminarle/actualizarle campos)
-curl -X PUT http://localhost:3000/establecimientos/13 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Metegol supremo papas fritas",
-    "torneo": "Se realizan torneos de fútbol 11"
-  }' -i
-
-6) DELETE
-curl -X DELETE http://localhost:3000/establecimientos/13 -i
+curl -X DELETE http://localhost:3000/canchas/37 -i
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 USUARIOS
@@ -173,7 +173,7 @@ curl http://localhost:3000/reservas/6
 curl -X POST http://localhost:3000/reservas \
   -H "Content-Type: application/json" \
   -d '{
-    "cancha_id": 34,
+    "cancha_id": 37,
     "usuario_id": 34,
     "fecha_reserva": "2025-12-25",
     "reserva_hora_inicio": "16:30:00",
@@ -185,37 +185,32 @@ curl -X POST http://localhost:3000/reservas \
 curl -X POST http://localhost:3000/reservas \
   -H "Content-Type: application/json" \
   -d '{
-    "cancha_id": 34,
+    "cancha_id": 4,
     "usuario_id": 34,
-    "fecha_reserva": "2025-12-25",
-    "reserva_hora_inicio": "16:30:00",
-    "reserva_hora_fin": "19:30:00",
-    "monto_pagado": 26000
+    "fecha_reserva": "2025-12-18",
+    "reserva_hora_inicio": "11:30:00",
+    "reserva_hora_fin": "12:30:00",
+    "monto_pagado": 25000
   }' -i
 
 4) UPDATE correcto (todos los campos)
-curl -X PUT http://localhost:3000/reservas/8 \
+curl -X PUT http://localhost:3000/reservas/19 \
   -H "Content-Type: application/json" \
   -d '{
-    "cancha_id": 1,
-    "usuario_id": 10,
+    "cancha_id": 4,
+    "usuario_id": 34,
     "fecha_reserva": "2025-12-18",
-    "reserva_hora_inicio": "16:30:00",
-    "reserva_hora_fin": "17:30:00",
-    "monto_pagado": 18000
+    "reserva_hora_inicio": "09:30:00",
+    "reserva_hora_fin": "11:30:00",
+    "monto_pagado": 50000
   }' -i
 
 5) UPDATE para testeo (copiar el UPDATE de arriba y eliminarle/actualizarle campos)
-curl -X PUT http://localhost:3000/reservas/8 \
+curl -X PUT http://localhost:3000/reservas/19 \
   -H "Content-Type: application/json" \
   -d '{
-    "cancha_id": 1,
-    "usuario_id": 10,
-    "fecha_reserva": "2025-12-18",
-    "reserva_hora_inicio": "16:30:00",
-    "reserva_hora_fin": "17:30:00",
-    "monto_pagado": 18000
+    "reserva_hora_fin": "11:00:00"
   }' -i
 
 6) DELETE
-curl -X DELETE http://localhost:3000/reservas/12 -i
+curl -X DELETE http://localhost:3000/reservas/19 -i
