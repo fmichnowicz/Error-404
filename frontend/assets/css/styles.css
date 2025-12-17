@@ -116,3 +116,25 @@
     font-weight: 500;
     line-height: 1.5;
 }
+
+/* Responsiveness para modal en modo mobile */
+@media (max-width: 768px) {
+    .modal-card {
+        margin: 1rem;               /* Espacio alrededor */
+        max-height: calc(100vh - 2rem);
+        border-radius: 12px;        /* Bordes más redondeados opcional */
+    }
+    
+    .modal-card-head {
+        padding: 0.9rem;
+    }
+    
+    .modal-card-body {
+        padding: 1rem;
+    }
+    
+    .buttons.are-large {
+        flex-direction: column;     /* Botones uno debajo del otro en móvil */
+        gap: 0.5rem;                /* Espacio entre botones */
+    }
+}

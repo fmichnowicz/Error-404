@@ -58,14 +58,6 @@ function manejarModalReservas() {
     closeBtn.addEventListener('click', () => {
         modal.classList.remove('is-active');
     });
-
-  // NO cerrar al hacer click en el fondo (como pediste)
-  // background.addEventListener('click', () => modal.classList.remove('is-active'));
-
-  // NO cerrar con Escape (opcional, comentado)
-  // document.addEventListener('keydown', (e) => {
-  //   if (e.key === 'Escape') modal.classList.remove('is-active');
-  // });
 }
 
 // Llamar después de cargar el navbar
