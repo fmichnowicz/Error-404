@@ -122,7 +122,7 @@
     .modal-card {
         margin: 1rem;               /* Espacio alrededor */
         max-height: calc(100vh - 2rem);
-        border-radius: 12px;        /* Bordes más redondeados opcional */
+        border-radius: 12px;        /* Bordes más redondeados */
     }
     
     .modal-card-head {

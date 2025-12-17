@@ -14,49 +14,26 @@
     <!-- Navigation bar -->
     <div id="navbar-container"></div>
 
+    <div id="navbar-container"></div>
+
     <section class="section">
-    <div class="container">
-        <h2 class="title has-text-centered mb-6">Establecimientos disponibles</h2>
+        <div class="container">
+            <h2 class="title has-text-centered mb-6">Establecimientos disponibles</h2>
 
-        <!-- Grilla de cards -->
-        <div class="columns is-multiline is-centered">
-
-        <!-- Card 1 -->
-        <div class="column is-one-fifth-desktop is-one-third-tablet is-half-mobile">
-            <div class="card has-equal-height">
-            <!-- Imagen del establecimiento -->
-            <div class="card-image">
-                <figure class="image is-4by3">
-                <img src="https://via.placeholder.com/400x300?text=Grün+FC+Núñez" 
-                    alt="Grün FC Núñez" 
-                    style="object-fit: cover;">
-                </figure>
-            </div>
-
-            <!-- Nombre y barrio -->
-            <div class="card-content">
-                <p class="title is-5 has-text-centered">Grün FC Núñez</p>
-                <p class="subtitle is-6 has-text-centered has-text-grey">Núñez</p>
-            </div>
-
-            <!-- Botón -->
-            <footer class="card-footer mt-auto">
-                <a href="crear_reservas.html" 
-                class="card-footer-item has-text-weight-bold has-background-primary has-text-white">
-                Crear reservas
-                </a>
-            </footer>
+            <!-- Grilla donde se insertarán las cards -->
+            <div class="columns is-multiline is-centered" id="establecimientos-grid">
+                <!-- Las cards se generarán con JS -->
+                <div class="has-text-centered" id="loading-message">
+                    <p class="subtitle">Cargando establecimientos...</p>
+                </div>
             </div>
         </div>
-
-        </div>
-    </div>
     </section>
 
 
 
 
-
     <script src="assets/js/shared.js"></script>
+    <script src="assets/js/establecimientos.js"></script>
 </body>
 </html>
