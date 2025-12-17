@@ -583,4 +583,43 @@ const deleteReserva = async (req, res) => {
     }
 };
 
-export { getAllReservas, getReservaById, createReserva, updateReserva, deleteReserva };
+// Endpoint para la grilla de la página crear_reservas
+const getReservasParaGrilla = async (req, res) => {
+    try {
+        const { fecha } = req.query;
+
+        if (!fecha || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+        return res.status(400).json({ 
+            error: 'Parámetro fecha obligatorio en formato YYYY-MM-DD' 
+        });
+        }
+
+        const result = await pool.query(`
+        SELECT 
+            r.id,
+            r.cancha_id,
+            r.reserva_hora_inicio,
+            r.reserva_hora_fin
+        FROM reservas r
+        WHERE r.fecha_reserva = $1
+        ORDER BY r.reserva_hora_inicio
+        `, [fecha]);
+
+        // Normalizar las horas para el frontend (quitar segundos)
+        const reservasNormalizadas = result.rows.map(res => ({
+        ...res,
+        reserva_hora_inicio: res.reserva_hora_inicio ? res.reserva_hora_inicio.toString().slice(0, 5) : null,
+        reserva_hora_fin: res.reserva_hora_fin ? res.reserva_hora_fin.toString().slice(0, 5) : null
+        }));
+
+        res.json(reservasNormalizadas);
+    } catch (error) {
+        console.error('Error al obtener reservas para grilla:', error);
+        res.status(500).json({ 
+        error: 'Error interno del servidor',
+        detalles: error.message // ← Esto te va a mostrar el error real
+        });
+    }
+};
+
+export { getAllReservas, getReservaById, createReserva, updateReserva, deleteReserva, getReservasParaGrilla };

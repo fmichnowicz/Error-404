@@ -197,3 +197,159 @@
         font-size: 1rem;
     }
 }
+
+
+/* ===================================
+   ESTILOS PÁGINA RESERVAS (crear_reserva.html)
+   =================================== */
+
+/* Tabla general */
+#tabla-reservas th,
+#tabla-reservas td {
+  text-align: center;
+  vertical-align: middle;
+  padding: 0.75rem 0.5rem;
+}
+
+/* Primera columna (Cancha) - más ancha y con buen contraste */
+#tabla-reservas th:first-child,
+#tabla-reservas td:first-child {
+  width: 260px;
+  min-width: 260px;
+  text-align: left;
+  padding-left: 1.5rem;
+  background-color: #00d1b2 !important; /* verde Bulma primary */
+  color: white;
+  font-weight: bold;
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+
+/* Header "Cancha" más grande */
+#tabla-reservas th:first-child {
+  font-size: 1.4rem !important;
+  font-weight: 900;
+}
+
+/* Columna "Precio por hora" */
+#tabla-reservas th:nth-child(2) {
+  background-color: #3273dc !important; /* azul Bulma */
+  color: white !important;
+  font-weight: bold;
+  font-size: 1.1rem;
+  width: 120px;
+}
+
+#tabla-reservas td:nth-child(2) {
+  background-color: #eef3fc;
+  color: #3273dc;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* Horarios en header - contraste alto */
+#tabla-reservas th:not(:first-child):not(:nth-child(2)) {
+  background-color: #363636 !important; /* gris oscuro */
+  color: white !important;
+  font-weight: bold;
+  font-size: 1rem;
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+/* Columnas de horarios (celdas) */
+#tabla-reservas td:not(:first-child):not(:nth-child(2)) {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+/* Botones de horario - estilo claro por defecto */
+.boton-horario {
+  width: 100%;
+  height: 100%;
+  min-height: 60px;
+  border-radius: 8px;
+  border: 2px solid #dbdbdb;
+  background-color: #f9f9f9;
+  color: #7a7a7a;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boton-horario:hover:not(.seleccionado):not(.ocupado) {
+  background-color: #e8f4fd;
+  border-color: #00d1b2;
+}
+
+.boton-horario.seleccionado {
+  background-color: #00d1b2;
+  color: white;
+  border-color: #00b89c;
+}
+
+.boton-horario.ocupado {
+  background-color: #f14668;
+  color: white;
+  cursor: not-allowed;
+  border-color: #f14668;
+}
+
+/* Texto adicional en primera columna (superficie, iluminación, cubierta) */
+#tabla-reservas td:first-child .is-size-5 {
+  font-weight: 900;
+  font-size: 1.3rem;
+  color: white;
+}
+
+#tabla-reservas td:first-child .is-size-6 {
+  color: #e0f7fa;
+  font-weight: 600;
+}
+
+#tabla-reservas td:first-child .info-adicional {
+  color: #b2ebf2;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+#tabla-reservas td:first-child .separador {
+  color: #80deea;
+  margin: 0 0.5rem;
+}
+
+/* Mensaje de error flotante */
+.mensaje-error {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f14668;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 1000;
+  font-weight: bold;
+  animation: fadeInOut 4s forwards;
+}
+
+@keyframes fadeInOut {
+  0%   { opacity: 0; transform: translate(-50%, -20px); }
+  10%  { opacity: 1; transform: translateX(-50%); }
+  90%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Scroll horizontal suave en móvil */
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

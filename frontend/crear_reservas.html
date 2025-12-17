@@ -13,7 +13,83 @@
 <body>
     <!-- Navigation bar -->
     <div id="navbar-container"></div>
+    <!-- Fin Navegation bar-->
+    
+    <!-- Sección de filtros -->
+    <section class="section">
+    <div class="container">
+        <h2 class="title has-text-centered mb-6">Reservas disponibles</h2>
+
+        <!-- FILTROS -->
+        <div class="columns is-multiline is-centered mb-6">
+        <!-- Filtro Establecimiento -->
+        <div class="column is-one-third-desktop is-half-tablet is-full-mobile">
+            <div class="field">
+            <label class="label">Establecimiento</label>
+            <div class="control">
+                <div class="select is-multiple is-fullwidth">
+                <select id="filtro-establecimiento" multiple size="6">
+                    <option value="" selected>Todos los establecimientos</option>
+                    <!-- Cargado por JS -->
+                </select>
+                </div>
+            </div>
+            <p class="help">Mantén presionado Ctrl para seleccionar varios</p>
+            </div>
+        </div>
+
+        <!-- Filtro Deporte (dependiente) -->
+        <div class="column is-one-third-desktop is-half-tablet is-full-mobile">
+            <div class="field">
+            <label class="label">Deporte</label>
+            <div class="control">
+                <div class="select is-multiple is-fullwidth">
+                <select id="filtro-deporte" multiple size="6">
+                    <option value="" selected>Todos los deportes</option>
+                    <!-- Cargado dinámicamente -->
+                </select>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- Filtro Fecha -->
+        <div class="column is-one-third-desktop is-half-tablet is-full-mobile">
+            <div class="field">
+            <label class="label">Fecha</label>
+            <div class="control">
+                <input class="input" type="date" id="filtro-fecha">
+            </div>
+            <p class="help">Solo fechas a partir de mañana</p>
+            </div>
+        </div>
+        </div>
+
+        <!-- Botón aplicar filtros -->
+        <div class="has-text-centered mb-5">
+        <button class="button is-primary is-large" id="btn-aplicar-filtros">
+            <span class="icon"><i class="fas fa-filter"></i></span>
+            <span>Aplicar filtros</span>
+        </button>
+        </div>
+
+        <!-- Grilla de reservas -->
+        <div class="table-container">
+        <table class="table is-bordered is-striped is-hoverable is-fullwidth" id="tabla-reservas">
+            <thead id="tabla-header"></thead>
+            <tbody id="tabla-body">
+            <tr>
+                <td colspan="31" class="has-text-centered">
+                <progress class="progress is-small is-primary" max="100">Cargando...</progress>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+</section>
 
     <script src="assets/js/shared.js"></script>
+    <script src="assets/js/reservas.js"></script>
 </body>
 </html>
