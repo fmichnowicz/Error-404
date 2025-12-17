@@ -10,7 +10,7 @@ curl http://localhost:3000/establecimientos/6
 curl -X POST http://localhost:3000/establecimientos \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Metegol supremo",
+    "nombre": "Metegol supremo papa fritas",
     "barrio": "Saavedra",
     "torneo": "Se realizan torneos de fútbol 5"
   }'

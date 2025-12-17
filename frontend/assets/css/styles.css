@@ -138,3 +138,62 @@
         gap: 0.5rem;                /* Espacio entre botones */
     }
 }
+
+/* Estilos para las cards de la página establecimientos */
+/* Todas las cards misma altura */
+.has-same-height {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* espacio entre contenido y footer */
+}
+
+/* El contenido crece para empujar el footer abajo */
+.card-content.flex-grow {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* centra verticalmente el texto */
+}
+
+/* Imagen cubre todo el espacio */
+.card-image .image {
+    height: 200px; /* altura fija para uniformidad */
+    overflow: hidden;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Hover bonito */
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+/* Paginación en móvil: apilar elementos verticalmente */
+@media screen and (max-width: 768px) {
+    .pagination {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem; /* espacio entre botones y texto */
+    }
+
+    .pagination .pagination-previous,
+    .pagination .pagination-next {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .pagination-list {
+        margin-top: 0.5rem;
+    }
+
+    .pagination-ellipsis {
+        font-size: 1rem;
+    }
+}
