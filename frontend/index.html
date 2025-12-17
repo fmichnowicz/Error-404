@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" 
+    integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" 
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="styles.css">
+    <title>Reserva de canchas</title>
+</head>
+<body>
+    <!-- Navigation bar -->
+    <nav class="navbar has-shadow is-primary">
+        <!--Logo/Brand-->
+        <div class="navbar-brand">
+            <!-- Nombre del emprendimiento -->
+            <div class="navbar-item brand-title pl-2">
+                Cancha<span class="highlight">Ya!</span>
+            </div>
+
+            <a class="navbar-burger" id="burger">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </a>
+        </div>
+
+        <div class="navbar-menu" id="nav-links">
+            <div class="navbar-end">
+                <a class="navbar-item">Establecimientos</a>
+                <a class="navbar-item">Sign in</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Banner -->
+    <section class="hero is-medium">
+        <div class="hero-slideshow">
+            <!-- Imágenes de fondo (fuente: freepik.com)-->
+            <div class="slide active" style="background-image: url('assets/futbol.jpg');"></div>
+            <div class="slide" style="background-image: url('assets/basket.jpg');"></div>
+            <div class="slide" style="background-image: url('assets/tenis.jpg');"></div>
+        </div>
+
+        <!-- Contenido del hero -->
+        <div class="hero-content">
+            <h1>¡Bienvenidos!</h1>
+            <p>Reserva tu cancha de la manera más fácil y rápida posible.</p>
+        </div>
+
+    </section>
+
+    <!-- Body page 1 -->
+    <section class="section">
+        <div class="container">
+            <div class="columns is-mobile">
+                <div class="column is-8-desktop is-10-tablet is-12-mobile">
+                    <div class="block">
+                        <p class="titulo">¡Juego con tus amigos en las mejores canchas de la Ciudad de Buenos Aires!</p>
+                    </div>
+                    <div class="block">
+                        <p class="subtitulo">Puedes reservar las mejores canchas de fútbol, basket, tenis y paddle</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección FAQ -->
+    <section class="section">
+        <div class="container">
+            <h2 class="title is-5 has-text-centered mb-5">Preguntas Frecuentes</h2>
+            <div class="columns is-centered">
+                <div class="column is-10">
+                    <div class="card">
+
+                        <div class="card-items">
+                            <header class="card-header header-desplegable">
+                                <p class="card-header-title">¿Cómo reservo una cancha?</p>
+                                <button class="card-header-icon boton-desplegar" aria-label="Desplegar texto">
+                                    <span class="icon has-text-white">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </header>
+                            <div class="card-content contenido-desplegable is-hidden">
+                                <div class="content">
+                                    Para reservar, seleccioná la fecha, hora y tipo de cancha en nuestro calendario.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-items">
+                            <header class="card-header header-desplegable">
+                                <p class="card-header-title">¿Cuáles son los métodos de pago aceptados?</p>
+                                <button class="card-header-icon boton-desplegar" aria-label="Desplegar texto">
+                                    <span class="icon has-text-white">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </header>
+                            <div class="card-content contenido-desplegable is-hidden">
+                                <div class="content">
+                                    Aceptamos tarjetas de crédito/débito (Visa, Mastercard), transferencias bancarias y pago por QR.El costo es el mismo para cualquier método de pago
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-items">
+                            <header class="card-header header-desplegable">
+                                <p class="card-header-title">¿Puedo cancelar mi reserva?</p>
+                                <button class="card-header-icon boton-desplegar" aria-label="Desplegar texto">
+                                    <span class="icon has-text-white">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </header>
+                            <div class="card-content contenido-desplegable is-hidden">
+                                <div class="content">
+                                    Sí, podes cancelar hasta 24 horas antes sin cargo. Después de eso, sólo se reembolsa un 50%. Contacta a soporte@soporte.com para asistencia.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>Copyright Grupo Error-404</p>
+        </div>
+    </footer>
+
+    <script src="index.js"></script>
+</body>
+</html>
