@@ -141,7 +141,6 @@ INSERT INTO canchas (nombre, deporte, establecimiento_id, precio_hora, descripci
 ('Cancha 3', 'Fútbol 5', 12, 21000.00, 'Cancha accesible', 'Césped sintético', true, true);
 
 -- 10 reservas de ejemplo
-
 INSERT INTO reservas (cancha_id, usuario_id, fecha_reserva, reserva_hora_inicio, reserva_hora_fin, monto_pagado)
 VALUES
 (1, 3, '2025-12-18', '10:00:00', '11:30:00', 4500.00),  -- Cancha 1, usuario 3, 1.5 hs

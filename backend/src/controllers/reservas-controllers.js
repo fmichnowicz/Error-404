@@ -1,13 +1,13 @@
 import pool from '../config/db.config.js';
 
 const getAllReservas = async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM reservas');
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error al obtener todos las reservas', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
+    try {
+        const result = await pool.query('SELECT * FROM reservas');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener todos las reservas', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
 };
 
 const getReservaById = async (req, res) => {
@@ -126,7 +126,7 @@ const createReserva = async (req, res) => {
 
     // === OBTENER PRECIO DE LA CANCHA ===
     const { rows: canchaRows } = await pool.query(
-      'SELECT precio_por_hora FROM canchas WHERE id = $1',
+      'SELECT precio_hora FROM canchas WHERE id = $1',
       [canchaId]
     );
 
@@ -137,7 +137,7 @@ const createReserva = async (req, res) => {
       });
     }
 
-    const precioPorHora = parseFloat(canchaRows[0].precio_por_hora);
+    const precioPorHora = parseFloat(canchaRows[0].precio_hora);
     const duracionHoras = duracionMin / 60;
     const montoCalculado = duracionHoras * precioPorHora;
 
@@ -211,7 +211,10 @@ const createReserva = async (req, res) => {
 
   } catch (error) {
     console.error('Error al crear reserva:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ 
+        error: 'Error interno del servidor',
+        detalles: error.message
+    });
   }
 };
 
@@ -369,13 +372,13 @@ const updateReserva = async (req, res) => {
 
     // === PRECIO Y MONTO ===
     const { rows: canchaRows } = await pool.query(
-      'SELECT precio_por_hora FROM canchas WHERE id = $1',
+      'SELECT precio_hora FROM canchas WHERE id = $1',
       [finalCanchaId]
     );
     if (canchaRows.length === 0) {
       return res.status(404).json({ error: 'Cancha no encontrada' });
     }
-    const precioPorHora = parseFloat(canchaRows[0].precio_por_hora);
+    const precioPorHora = parseFloat(canchaRows[0].precio_hora);
     const duracionHoras = duracionMin / 60;
     const montoCalculado = duracionHoras * precioPorHora;
 

@@ -18,7 +18,7 @@ CREATE TABLE usuarios (
 -- Tablas dependientes (hacen referencia a otras tablas)
 CREATE TABLE canchas (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL UNIQUE,
+    nombre VARCHAR(100) NOT NULL,
     deporte VARCHAR(100) NOT NULL,
     establecimiento_id INTEGER NOT NULL,
     precio_hora DECIMAL(10, 2) NOT NULL,
