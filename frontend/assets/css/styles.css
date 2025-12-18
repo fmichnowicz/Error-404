@@ -374,3 +374,20 @@
 .table-container::-webkit-scrollbar-thumb:hover {
   background: #00b89c; /* un poco más oscuro al hover */
 }
+
+/* ESTILOS PARA VER_CANCELAR_RESERVAS*/
+/* Alineación perfecta de íconos en input con has-icons-left y has-icons-right */
+.control.has-icons-left.has-icons-right .icon {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control.has-icons-left.has-icons-right .icon.is-right {
+  pointer-events: none; /* Evita que el ícono izquierdo bloquee clics */
+}
+
+.control.has-icons-left.has-icons-right .icon.is-right.is-clickable {
+  pointer-events: auto; /* Pero sí permitimos clics en la X */
+}

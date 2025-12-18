@@ -282,6 +282,7 @@ const updateReserva = async (req, res) => {
             camposActualizar.cancha_id = parseInt(cancha_id);
         }
         }
+
         if (usuario_id !== undefined) {
         if (!Number.isInteger(Number(usuario_id)) || Number(usuario_id) <= 0) {
             errores.push('usuario_id debe ser un número entero positivo');
@@ -289,6 +290,7 @@ const updateReserva = async (req, res) => {
             camposActualizar.usuario_id = parseInt(usuario_id);
         }
         }
+
         if (fecha_reserva !== undefined) {
         if (isNaN(Date.parse(fecha_reserva))) {
             errores.push('fecha_reserva debe ser una fecha válida (YYYY-MM-DD)');
@@ -296,6 +298,7 @@ const updateReserva = async (req, res) => {
             camposActualizar.fecha_reserva = fecha_reserva;
         }
         }
+
         if (reserva_hora_inicio !== undefined) {
         if (!/^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(reserva_hora_inicio)) {
             errores.push('reserva_hora_inicio debe ser una hora válida (HH:MM:SS)');
@@ -303,6 +306,7 @@ const updateReserva = async (req, res) => {
             camposActualizar.reserva_hora_inicio = reserva_hora_inicio;
         }
         }
+
         if (reserva_hora_fin !== undefined) {
         if (!/^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(reserva_hora_fin)) {
             errores.push('reserva_hora_fin debe ser una hora válida (HH:MM:SS)');
@@ -310,6 +314,7 @@ const updateReserva = async (req, res) => {
             camposActualizar.reserva_hora_fin = reserva_hora_fin;
         }
         }
+
         if (monto_pagado !== undefined) {
         if (isNaN(monto_pagado) || Number(monto_pagado) <= 0) {
             errores.push('monto_pagado debe ser un número positivo');
@@ -322,7 +327,7 @@ const updateReserva = async (req, res) => {
         return res.status(400).json({ error: 'Errores de validación', detalles: errores });
         }
 
-        // Obtener la reserva actual
+        // === OBTENER LA RESERVA ACTUAL ===
         const { rows: reservaActual } = await pool.query(
         'SELECT * FROM reservas WHERE id = $1',
         [reservaId]
@@ -336,6 +341,17 @@ const updateReserva = async (req, res) => {
         }
 
         const actual = reservaActual[0];
+
+        // === NUEVA VALIDACIÓN: PROPIEDAD DE LA RESERVA ===
+        // Si el cliente envía usuario_id, debe coincidir exactamente con el original
+        if (camposActualizar.usuario_id !== undefined) {
+        if (camposActualizar.usuario_id !== actual.usuario_id) {
+            return res.status(403).json({
+            error: 'Acceso denegado',
+            detalles: 'No se puede modificar la reserva de otro usuario'
+            });
+        }
+        }
 
         // Valores finales después de la actualización
         const finalCanchaId = camposActualizar.cancha_id ?? actual.cancha_id;
@@ -356,10 +372,8 @@ const updateReserva = async (req, res) => {
         });
         }
 
-        // === VALIDACIÓN DE FECHA MÍNIMA: MAÑANA O POSTERIOR (con zona horaria Argentina) ===
+        // === REGLAS DE FECHA, HORARIO Y DURACIÓN ===
         const opcionesTZ = { timeZone: 'America/Argentina/Buenos_Aires' };
-
-        const hoyStr = new Date().toLocaleDateString('en-CA', opcionesTZ);
         const mañanaDate = new Date();
         mañanaDate.setDate(mañanaDate.getDate() + 1);
         const mañanaStr = mañanaDate.toLocaleDateString('en-CA', opcionesTZ);
@@ -368,7 +382,6 @@ const updateReserva = async (req, res) => {
         errores.push('La fecha_reserva debe ser para mañana o fechas posteriores');
         }
 
-        // === REGLAS DE HORARIOS Y DURACIÓN ===
         const parseTime = (timeStr) => {
         const [h, m, s] = timeStr.split(':').map(Number);
         return h * 3600 + m * 60 + s;
@@ -416,7 +429,7 @@ const updateReserva = async (req, res) => {
         });
         }
 
-        // === VERIFICAR USUARIO SI SE CAMBIA ===
+        // === VERIFICAR SI EL NUEVO USUARIO EXISTE (solo si se intenta cambiar, aunque ya validamos arriba) ===
         if (camposActualizar.usuario_id) {
         const { rowCount } = await pool.query('SELECT 1 FROM usuarios WHERE id = $1', [finalUsuarioId]);
         if (rowCount === 0) {
@@ -424,14 +437,14 @@ const updateReserva = async (req, res) => {
         }
         }
 
-        // === VALIDAR SUPERPOSICIÓN USANDO OVERLAPS (excluyendo la propia reserva) ===
+        // === VALIDAR SUPERPOSICIÓN ===
         const overlapQuery = `
         SELECT 1 
         FROM reservas 
         WHERE cancha_id = $1 
-            AND fecha_reserva = $2
-            AND id != $5
-            AND (reserva_hora_inicio, reserva_hora_fin) OVERLAPS ($3::time, $4::time)
+        AND fecha_reserva = $2
+        AND id != $5
+        AND (reserva_hora_inicio, reserva_hora_fin) OVERLAPS ($3::time, $4::time)
         `;
 
         const { rowCount: overlap } = await pool.query(overlapQuery, [
@@ -445,7 +458,7 @@ const updateReserva = async (req, res) => {
         if (overlap > 0) {
         return res.status(409).json({
             error: 'Horario no disponible',
-            detalles: 'El nuevo horario se superpone (total o parcialmente) con otra reserva existente en la misma cancha'
+            detalles: 'El nuevo horario se superpone con otra reserva existente en la misma cancha'
         });
         }
 
