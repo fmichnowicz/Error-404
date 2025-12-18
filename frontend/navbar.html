@@ -21,6 +21,9 @@
             <a class="navbar-item is-clickable modal-trigger" data-target="modal-reservas">
                 Reservas
             </a>
+            <a class="navbar-item is-clickable modal-trigger" data-target="modal-registrar-usuario">
+                Usuarios
+            </a>
         </div>
     </div>
 </nav>
@@ -50,5 +53,72 @@
                 </a>
             </div>
         </section>
+    </div>
+</div>
+
+<!-- MODAL REGISTRAR USUARIO -->
+        <div id="modal-registrar-usuario" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+            <p class="modal-card-title is-size-6-mobile">Registrar Usuario</p>
+            <button class="delete is-large" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+            <form id="form-registro-usuario">
+                <div class="field">
+                <label class="label">Nombre completo <span class="has-text-danger">*</span></label>
+                <div class="control has-icons-left">
+                    <input class="input" type="text" id="registro-nombre" maxlength="250" required>
+                    <span class="icon is-left"><i class="fas fa-user"></i></span>
+                </div>
+                <p class="help">Ej: Fernando Martínez</p>
+                </div>
+
+                <div class="field">
+                <label class="label">Email <span class="has-text-danger">*</span></label>
+                <div class="control has-icons-left">
+                    <input class="input" type="email" id="registro-email" maxlength="255" required>
+                    <span class="icon is-left"><i class="fas fa-envelope"></i></span>
+                </div>
+                <p class="help">Ej: usuario@dominio.com</p>
+                </div>
+
+                <div class="field">
+                <label class="label">Teléfono <span class="has-text-danger">*</span></label>
+                <div class="control has-icons-left">
+                    <input class="input" type="text" id="registro-telefono" maxlength="30" placeholder="11-1234-5678" required>
+                    <span class="icon is-left"><i class="fas fa-phone"></i></span>
+                </div>
+                </div>
+
+                <div class="field">
+                <label class="label">DNI <span class="has-text-danger">*</span></label>
+                <div class="control">
+                    <input class="input" type="text" id="registro-dni" maxlength="20" required>
+                </div>
+                </div>
+
+                <div class="field">
+                <label class="label">Domicilio <span class="has-text-danger">*</span></label>
+                <div class="control">
+                    <input class="input" type="text" id="registro-domicilio" maxlength="100" required>
+                </div>
+                </div>
+
+                <!-- Mensaje de error -->
+                <div id="error-registro" class="notification is-danger is-light mt-4" style="display: none;"></div>
+
+                <div class="field is-grouped is-grouped-centered mt-5">
+                <div class="control">
+                    <button type="submit" class="button is-primary is-medium" id="btn-registrar-usuario" disabled>
+                    Registrar usuario
+                    </button>
+                </div>
+                </div>
+            </form>
+            </section>
+        </div>
+        </div>
     </div>
 </div>

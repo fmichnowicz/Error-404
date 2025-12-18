@@ -621,5 +621,6 @@ const getReservasParaGrilla = async (req, res) => {
         });
     }
 };
+//Ejemplo de uso http://localhost:3000/reservas/grilla?fecha=2025-12-18
 
 export { getAllReservas, getReservaById, createReserva, updateReserva, deleteReserva, getReservasParaGrilla };

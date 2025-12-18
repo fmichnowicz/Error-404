@@ -48,8 +48,6 @@ Thumbs.db
 *.mov
 *.wmv
 
-.env
-
 # Ignorar todo el volumen de datos de PostgreSQL (en cualquier ubicación)
 .volumes/
 backend/.volumes/

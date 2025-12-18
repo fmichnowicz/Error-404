@@ -353,3 +353,24 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* Barra de desplazamiento más gruesa y visible */
+.table-container::-webkit-scrollbar {
+  height: 25px; /* grosor de la barra horizontal */
+  width: 16px;  /* grosor de la barra vertical (por si aparece) */
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #00d1b2; /* color verde de tu app */
+  border-radius: 10px;
+  border: 3px solid #f1f1f1;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #00b89c; /* un poco más oscuro al hover */
+}

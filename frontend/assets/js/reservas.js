@@ -5,7 +5,6 @@ for (let h = 7; h <= 22; h++) {
   HORARIOS.push(`${h.toString().padStart(2, '0')}:00`);
   if (h < 22) HORARIOS.push(`${h.toString().padStart(2, '0')}:30`);
 }
-// → 30 horarios: "07:00" a "22:00"
 
 let allCanchas = [];
 let allReservas = [];
@@ -16,12 +15,14 @@ let seleccionActual = {
   horarios: []
 };
 
+let usuarioSeleccionado = null; // { id, nombre, email, telefono }
+
 document.addEventListener('DOMContentLoaded', () => {
   inicializarFiltros();
+  inicializarBusquedaUsuario();
 });
 
 async function inicializarFiltros() {
-  // Fecha mínima: mañana
   const hoy = new Date();
   const mañana = new Date(hoy);
   mañana.setDate(hoy.getDate() + 1);
@@ -30,7 +31,6 @@ async function inicializarFiltros() {
   document.getElementById('filtro-fecha').value = minDate;
   fechaSeleccionada = minDate;
 
-  // Cargar establecimientos
   try {
     const response = await fetch('http://localhost:3000/establecimientos');
     if (!response.ok) throw new Error('Error establecimientos');
@@ -49,13 +49,9 @@ async function inicializarFiltros() {
     console.error('Error cargando establecimientos:', error);
   }
 
-  // Evento cambio en establecimientos → actualizar deportes
   document.getElementById('filtro-establecimiento').addEventListener('change', actualizarFiltroDeportes);
-
-  // Botón aplicar filtros
   document.getElementById('btn-aplicar-filtros').addEventListener('click', aplicarFiltros);
 
-  // Cargar inicial
   await aplicarFiltros();
 }
 
@@ -100,10 +96,7 @@ async function aplicarFiltros() {
   }
 
   fechaSeleccionada = fecha;
-
-  // Deseleccionar todo al cambiar filtros
   deseleccionarTodo();
-
   await cargarDatosYRenderizar();
 }
 
@@ -141,30 +134,23 @@ function renderizarTablaFiltrada() {
     canchasFiltradas = canchasFiltradas.filter(c => deportesSeleccionados.includes(c.deporte));
   }
 
-  // === BLOQUEO DE HORARIOS OCUPADOS ===
-const reservasOcupadas = {};
+  const reservasOcupadas = {};
 
-allReservas.forEach(res => {
+  allReservas.forEach(res => {
     if (!reservasOcupadas[res.cancha_id]) reservasOcupadas[res.cancha_id] = [];
 
-    // El backend ya normalizó las horas a "HH:MM"
-    // Bloqueamos inicio y todos los slots hasta fin (excluyendo fin)
-    const inicio = res.reserva_hora_inicio;
-    const fin = res.reserva_hora_fin;
+    const inicioMin = horaToMinutos(res.reserva_hora_inicio);
+    const finMin = horaToMinutos(res.reserva_hora_fin);
 
-    let current = inicio;
-    while (current < fin) {
-        if (!reservasOcupadas[res.cancha_id].includes(current)) {
-        reservasOcupadas[res.cancha_id].push(current);
-        }
-        // Sumar 30 minutos
-        const [h, m] = current.split(':').map(Number);
-        let newMin = h * 60 + m + 30;
-        const newH = Math.floor(newMin / 60);
-        const newM = newMin % 60;
-        current = `${newH.toString().padStart(2, '0')}:${newM.toString().padStart(2, '0')}`;
+    let currentMin = inicioMin;
+    while (currentMin < finMin) {
+      const horaStr = minutosToHora(currentMin);
+      if (!reservasOcupadas[res.cancha_id].includes(horaStr)) {
+        reservasOcupadas[res.cancha_id].push(horaStr);
+      }
+      currentMin += 30;
     }
-    });
+  });
 
   renderizarTabla(canchasFiltradas, reservasOcupadas);
 }
@@ -173,46 +159,37 @@ function renderizarTabla(canchas, reservasOcupadas) {
   const header = document.getElementById('tabla-header');
   const body = document.getElementById('tabla-body');
 
-  // Header con columna de precio
   let headerHTML = `
     <tr>
-      <th class="has-background-primary has-text-white" style="width: 250px;">Cancha</th>
-      <th class="has-background-light has-text-centered has-text-weight-bold" style="width: 100px;">Precio por hora</th>`;
+      <th class="has-background-primary has-text-white" style="width: 260px;">Cancha</th>
+      <th class="has-background-light has-text-centered has-text-weight-bold" style="width: 120px;">Precio por hora</th>`;
   HORARIOS.forEach(hora => {
     headerHTML += `<th class="has-text-centered has-background-grey-lighter">${hora}</th>`;
   });
   headerHTML += '</tr>';
   header.innerHTML = headerHTML;
 
-  // Body
   let bodyHTML = '';
   if (canchas.length === 0) {
     bodyHTML = '<tr><td colspan="32" class="has-text-centered">No hay canchas disponibles con estos filtros</td></tr>';
   } else {
     canchas.forEach(cancha => {
       bodyHTML += `<tr>
-        <td class="has-background-primary has-text-white has-text-weight-bold" style="width: 250px; line-height: 1.5;">
-        <div class="is-size-5 mb-2">${cancha.nombre_establecimiento}</div>
-        <div class="is-size-6 mb-2">${cancha.deporte}</div>
-        <div class="is-size-5 mb-3">${cancha.nombre_cancha}</div>
-        
-        <!-- Superficie -->
-        <div class="is-size-7 mb-2 has-text-grey-lighter">
-            ${cancha.superficie}
-        </div>
-
-        <!-- Iluminación y Cubierta (solo si son true) -->
-        <div class="is-size-7 has-text-grey-lighter">
+        <td class="has-background-primary has-text-white has-text-weight-bold" style="width: 260px; line-height: 1.5;">
+          <div class="is-size-5 mb-2">${cancha.nombre_establecimiento}</div>
+          <div class="is-size-6 mb-2">${cancha.deporte}</div>
+          <div class="is-size-5 mb-3">${cancha.nombre_cancha}</div>
+          <div class="info-adicional">${cancha.superficie}</div>
+          <div class="info-adicional mt-2">
             ${cancha.iluminacion ? 'Iluminación' : ''}
-            ${cancha.iluminacion && cancha.cubierta ? ' | ' : ''}
+            ${cancha.iluminacion && cancha.cubierta ? '<span class="separador">|</span>' : ''}
             ${cancha.cubierta ? 'Cubierta' : ''}
-        </div>
+          </div>
         </td>
 
-        <td class="has-background-light has-text-centered has-text-weight-bold" style="width: 100px;">
+        <td class="has-background-light has-text-centered has-text-weight-bold" style="width: 120px;">
           $${Number(cancha.precio_hora).toLocaleString('es-AR')}
-          <br>
-          <small class="has-text-grey">por hora</small>
+          <br><small class="has-text-grey">por hora</small>
         </td>`;
 
       HORARIOS.forEach(hora => {
@@ -220,19 +197,10 @@ function renderizarTabla(canchas, reservasOcupadas) {
         const seleccionado = seleccionActual.canchaId === cancha.id && seleccionActual.horarios.includes(hora);
 
         if (ocupado) {
-          bodyHTML += `
-            <td>
-              <button class="boton-horario ocupado" disabled></button>
-            </td>`;
+          bodyHTML += `<td><button class="boton-horario ocupado" disabled></button></td>`;
         } else {
-          bodyHTML += `
-            <td>
-              <button class="boton-horario ${seleccionado ? 'seleccionado' : ''}"
-                      data-cancha="${cancha.id}"
-                      data-hora="${hora}"
-                      onclick="toggleHorario(this)">
-              </button>
-            </td>`;
+          bodyHTML += `<td><button class="boton-horario ${seleccionado ? 'seleccionado' : ''}"
+            data-cancha="${cancha.id}" data-hora="${hora}" onclick="toggleHorario(this)"></button></td>`;
         }
       });
 
@@ -243,7 +211,186 @@ function renderizarTabla(canchas, reservasOcupadas) {
   body.innerHTML = bodyHTML;
 }
 
-// Toggle selección
+// Búsqueda de usuario existente
+function inicializarBusquedaUsuario() {
+  const input = document.getElementById('busqueda-usuario');
+  const sugerencias = document.getElementById('sugerencias-usuario');
+  const usuarioSel = document.getElementById('usuario-seleccionado');
+  const noEncontrado = document.getElementById('usuario-no-encontrado');
+
+  input.addEventListener('input', async (e) => {
+    const query = e.target.value.trim();
+
+    sugerencias.innerHTML = '';
+    sugerencias.style.display = 'none';
+    usuarioSel.style.display = 'none';
+    noEncontrado.style.display = 'none';
+    usuarioSeleccionado = null;
+    actualizarBotonConfirmar();
+
+    if (query.length < 2) return;
+
+    try {
+      const response = await fetch(`http://localhost:3000/usuarios/buscar?q=${encodeURIComponent(query)}`);
+      if (!response.ok) throw new Error('Error búsqueda');
+      const usuarios = await response.json();
+
+      if (usuarios.length === 0) {
+        noEncontrado.style.display = 'block';
+        return;
+      }
+
+      usuarios.forEach(user => {
+        const item = document.createElement('a');
+        item.className = 'panel-block is-clickable';
+        item.innerHTML = `
+          <span class="panel-icon"><i class="fas fa-user"></i></span>
+          <strong>${user.nombre}</strong> - ${user.email}
+        `;
+        item.onclick = () => {
+          input.value = user.nombre;
+          usuarioSeleccionado = user;
+          document.getElementById('nombre-seleccionado').textContent = user.nombre;
+          document.getElementById('email-seleccionado').textContent = user.email;
+          document.getElementById('telefono-seleccionado').textContent = user.telefono;
+          sugerencias.style.display = 'none';
+          usuarioSel.style.display = 'block';
+          actualizarBotonConfirmar();
+        };
+        sugerencias.appendChild(item);
+      });
+
+      sugerencias.style.display = 'block';
+    } catch (error) {
+      console.error('Error búsqueda usuario:', error);
+      mostrarMensaje('Error al buscar usuario');
+    }
+  });
+}
+
+// Mostrar resumen de reserva
+function mostrarResumenReserva() {
+  const resumenDiv = document.getElementById('resumen-reserva');
+  if (!usuarioSeleccionado || seleccionActual.horarios.length === 0 || ![2, 3, 4].includes(seleccionActual.horarios.length)) {
+    resumenDiv.style.display = 'none';
+    return;
+  }
+
+  // Horarios
+  const horariosOrdenados = [...seleccionActual.horarios].sort();
+  const horaInicio = horariosOrdenados[0];
+  const ultimaHora = horariosOrdenados[horariosOrdenados.length - 1];
+  const [h, m] = ultimaHora.split(':').map(Number);
+  const horaFinMin = h * 60 + m + 30;
+  const horaFinH = Math.floor(horaFinMin / 60).toString().padStart(2, '0');
+  const horaFinM = (horaFinMin % 60).toString().padStart(2, '0');
+  const horaFin = `${horaFinH}:${horaFinM}`;
+
+  // Cancha
+  const cancha = allCanchas.find(c => c.id == seleccionActual.canchaId);
+  if (!cancha) return;
+
+  // Monto
+  const slots = horariosOrdenados.length;
+  const monto = cancha.precio_hora * (slots / 2);
+
+  // Formatear fecha
+  const [year, month, day] = fechaSeleccionada.split('-');
+  const fechaFormateada = `${day}/${month}/${year}`;
+
+  // Llenar resumen
+  document.getElementById('resumen-cancha').textContent = cancha.nombre_cancha;
+  document.getElementById('resumen-establecimiento').textContent = cancha.nombre_establecimiento;
+  document.getElementById('resumen-deporte').textContent = cancha.deporte;
+  document.getElementById('resumen-fecha').textContent = fechaFormateada;
+  document.getElementById('resumen-hora-inicio').textContent = horaInicio;
+  document.getElementById('resumen-hora-fin').textContent = horaFin;
+  document.getElementById('resumen-monto').textContent = monto.toLocaleString('es-AR');
+
+  resumenDiv.style.display = 'block';
+}
+
+// Habilitar/deshabilitar botón y mostrar resumen
+function actualizarBotonConfirmar() {
+  const btn = document.getElementById('btn-confirmar-reserva');
+  const tieneHorarioValido = [2, 3, 4].includes(seleccionActual.horarios.length);
+  const tieneUsuario = usuarioSeleccionado !== null;
+
+  btn.disabled = !(tieneHorarioValido && tieneUsuario);
+
+  // Mostrar u ocultar resumen
+  mostrarResumenReserva();
+}
+
+// Confirmar reserva
+document.getElementById('btn-confirmar-reserva').addEventListener('click', confirmarReserva);
+
+async function confirmarReserva() {
+  if (!usuarioSeleccionado) {
+    mostrarMensaje('Debes seleccionar un usuario registrado');
+    return;
+  }
+
+  if (seleccionActual.horarios.length === 0) {
+    mostrarMensaje('Selecciona un horario válido');
+    return;
+  }
+
+  const horariosOrdenados = [...seleccionActual.horarios].sort();
+  const horaInicio = horariosOrdenados[0] + ':00';
+  const ultimaHora = horariosOrdenados[horariosOrdenados.length - 1];
+  const [h, m] = ultimaHora.split(':').map(Number);
+  const horaFinMin = h * 60 + m + 30;
+  const horaFinH = Math.floor(horaFinMin / 60).toString().padStart(2, '0');
+  const horaFinM = (horaFinMin % 60).toString().padStart(2, '0');
+  const horaFin = `${horaFinH}:${horaFinM}:00`;
+
+  const cancha = allCanchas.find(c => c.id == seleccionActual.canchaId);
+  if (!cancha) {
+    mostrarMensaje('Error al obtener la cancha');
+    return;
+  }
+
+  const slots = horariosOrdenados.length;
+  const montoPagado = cancha.precio_hora * (slots / 2);
+
+  const datosReserva = {
+    cancha_id: seleccionActual.canchaId,
+    usuario_id: usuarioSeleccionado.id,
+    fecha_reserva: fechaSeleccionada,
+    reserva_hora_inicio: horaInicio,
+    reserva_hora_fin: horaFin,
+    monto_pagado: montoPagado
+  };
+
+  try {
+    const response = await fetch('http://localhost:3000/reservas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datosReserva)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      mostrarMensaje(error.error || 'Error al crear reserva');
+      return;
+    }
+
+    mostrarMensaje('¡Reserva creada exitosamente!');
+    deseleccionarTodo();
+    document.getElementById('busqueda-usuario').value = '';
+    usuarioSeleccionado = null;
+    document.getElementById('usuario-seleccionado').style.display = 'none';
+    document.getElementById('resumen-reserva').style.display = 'none';
+    await cargarDatosYRenderizar();
+
+  } catch (error) {
+    console.error('Error al crear reserva:', error);
+    mostrarMensaje('Error de conexión');
+  }
+}
+
+// Toggle horario
 function toggleHorario(btn) {
   const canchaId = btn.dataset.cancha;
   const hora = btn.dataset.hora;
@@ -264,6 +411,7 @@ function toggleHorario(btn) {
   }
 
   validarSeleccion();
+  actualizarBotonConfirmar();
 }
 
 function validarSeleccion() {
@@ -287,11 +435,9 @@ function validarSeleccion() {
       deseleccionarTodo();
       return;
     }
-    return;
   }
 }
 
-// Funciones auxiliares
 function horaToMinutos(hora) {
   const [h, m] = hora.split(':').map(Number);
   return h * 60 + m;
@@ -308,6 +454,7 @@ function deseleccionarTodo() {
     btn.classList.remove('seleccionado');
   });
   seleccionActual = { canchaId: null, horarios: [] };
+  actualizarBotonConfirmar();
 }
 
 function mostrarMensaje(texto) {
