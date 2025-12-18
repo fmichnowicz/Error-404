@@ -1,5 +1,3 @@
-// frontend/assets/js/establecimientos.js
-
 const ITEMS_PER_PAGE = 10;
 let currentPage = 1;
 let allEstablecimientos = [];

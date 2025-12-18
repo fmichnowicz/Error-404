@@ -1,5 +1,3 @@
-// frontend/assets/js/reservas.js
-
 const HORARIOS = [];
 for (let h = 7; h <= 22; h++) {
   HORARIOS.push(`${h.toString().padStart(2, '0')}:00`);
@@ -15,7 +13,7 @@ let seleccionActual = {
   horarios: []
 };
 
-let usuarioSeleccionado = null; // { id, nombre, email, telefono }
+let usuarioSeleccionado = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   inicializarFiltros();
@@ -91,7 +89,7 @@ async function actualizarFiltroDeportes() {
 async function aplicarFiltros() {
   const fecha = document.getElementById('filtro-fecha').value;
   if (!fecha) {
-    mostrarMensaje('Por favor selecciona una fecha.');
+    mostrarMensaje('Por favor selecciona una fecha.', 'warning');
     return;
   }
 
@@ -263,7 +261,7 @@ function inicializarBusquedaUsuario() {
       sugerencias.style.display = 'block';
     } catch (error) {
       console.error('Error búsqueda usuario:', error);
-      mostrarMensaje('Error al buscar usuario');
+      mostrarMensaje('Error al buscar usuario', 'danger');
     }
   });
 }
@@ -327,12 +325,12 @@ document.getElementById('btn-confirmar-reserva').addEventListener('click', confi
 
 async function confirmarReserva() {
   if (!usuarioSeleccionado) {
-    mostrarMensaje('Debes seleccionar un usuario registrado');
+    mostrarMensaje('Debes seleccionar un usuario registrado', 'warning');
     return;
   }
 
   if (seleccionActual.horarios.length === 0) {
-    mostrarMensaje('Selecciona un horario válido');
+    mostrarMensaje('Selecciona un horario válido', 'warning');
     return;
   }
 
@@ -347,7 +345,7 @@ async function confirmarReserva() {
 
   const cancha = allCanchas.find(c => c.id == seleccionActual.canchaId);
   if (!cancha) {
-    mostrarMensaje('Error al obtener la cancha');
+    mostrarMensaje('Error al obtener la cancha', 'danger');
     return;
   }
 
@@ -372,11 +370,11 @@ async function confirmarReserva() {
 
     if (!response.ok) {
       const error = await response.json();
-      mostrarMensaje(error.error || 'Error al crear reserva');
+      mostrarMensaje(error.error || 'Error al crear reserva', 'danger');
       return;
     }
 
-    mostrarMensaje('¡Reserva creada exitosamente!');
+    mostrarMensaje('¡Reserva creada exitosamente!', 'success');
     deseleccionarTodo();
     document.getElementById('busqueda-usuario').value = '';
     usuarioSeleccionado = null;
@@ -386,7 +384,7 @@ async function confirmarReserva() {
 
   } catch (error) {
     console.error('Error al crear reserva:', error);
-    mostrarMensaje('Error de conexión');
+    mostrarMensaje('Error de conexión', 'danger');
   }
 }
 
@@ -396,7 +394,7 @@ function toggleHorario(btn) {
   const hora = btn.dataset.hora;
 
   if (seleccionActual.canchaId && seleccionActual.canchaId !== canchaId && seleccionActual.horarios.length > 0) {
-    mostrarMensaje("Para seleccionar otra cancha, primero deselecciona los horarios anteriores.");
+    mostrarMensaje("Para seleccionar otra cancha, primero deselecciona los horarios anteriores.", 'warning');
     return;
   }
 
@@ -422,7 +420,7 @@ function validarSeleccion() {
   for (let i = 1; i < horarios.length; i++) {
     const diff = horaToMinutos(horarios[i]) - horaToMinutos(horarios[i - 1]);
     if (diff !== 30) {
-      mostrarMensaje("Los horarios deben ser consecutivos sin huecos.");
+      mostrarMensaje("Los horarios deben ser consecutivos sin huecos.", 'warning');
       deseleccionarTodo();
       return;
     }
@@ -431,7 +429,7 @@ function validarSeleccion() {
   const slots = horarios.length;
   if (![2, 3, 4].includes(slots)) {
     if (slots > 4) {
-      mostrarMensaje("Solo puedes reservar hasta 2 horas (4 slots).");
+      mostrarMensaje("Solo puedes reservar hasta 2 horas (4 slots).", 'warning');
       deseleccionarTodo();
       return;
     }
@@ -457,15 +455,3 @@ function deseleccionarTodo() {
   actualizarBotonConfirmar();
 }
 
-function mostrarMensaje(texto) {
-  const existente = document.getElementById('mensaje-error');
-  if (existente) existente.remove();
-
-  const div = document.createElement('div');
-  div.id = 'mensaje-error';
-  div.className = 'mensaje-error';
-  div.textContent = texto;
-  document.body.appendChild(div);
-
-  setTimeout(() => div.remove(), 4000);
-}

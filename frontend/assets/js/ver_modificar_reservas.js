@@ -1,5 +1,3 @@
-// frontend/assets/js/ver_modificar_reservas.js
-
 let allReservas = [];
 let allUsuarios = [];
 let allEstablecimientos = [];
