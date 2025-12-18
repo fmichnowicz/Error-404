@@ -1,79 +1,191 @@
-// Función para cargar el navbar desde navbar.html
+// Función para mostrar mensajes flotantes, con tipo
+function mostrarMensaje(texto, tipo = 'success') {
+    const existente = document.querySelector('.mensaje-flotante');
+    if (existente) existente.remove();
+
+    const div = document.createElement('div');
+    div.className = `notification is-${tipo} mensaje-flotante`;
+    div.style.position = 'fixed';
+    div.style.top = '100px';
+    div.style.left = '50%';
+    div.style.transform = 'translateX(-50%)';
+    div.style.zIndex = '1000';
+    div.style.padding = '1.5rem 2rem';
+    div.style.borderRadius = '12px';
+    div.style.boxShadow = '0 8px 24px rgba(0,0,0,0.5)';
+    div.style.fontWeight = '600';
+    div.style.minWidth = '300px';
+    div.style.textAlign = 'center';
+    div.style.backdropFilter = 'blur(10px)';
+    div.textContent = texto;
+
+    document.body.appendChild(div);
+
+    div.style.opacity = '0';
+    div.style.transform = 'translate(-50%, -20px)';
+    setTimeout(() => {
+        div.style.transition = 'all 0.3s ease';
+        div.style.opacity = '1';
+        div.style.transform = 'translateX(-50%)';
+    }, 10);
+
+    setTimeout(() => {
+        div.style.opacity = '0';
+        div.style.transform = 'translate(-50%, -20px)';
+        setTimeout(() => div.remove(), 300);
+    }, 4000);
+}
+
+// Cargar navbar
 function cargarNavbar() {
     fetch('navbar.html')
         .then(response => {
-        if (!response.ok) {
-            throw new Error('Error al cargar el navbar');
-        }
-        return response.text();
+            if (!response.ok) throw new Error('Error al cargar navbar');
+            return response.text();
         })
         .then(data => {
-        // Insertamos el navbar en el contenedor
-        document.getElementById('navbar-container').innerHTML = data;
+            document.getElementById('navbar-container').innerHTML = data;
 
-        // Activamos el burger menu después de cargar el navbar
-        activarBurgerMenu();
+            activarBurgerMenu();
+            manejarModalReservas();
+            manejarModalRegistroUsuario();
         })
         .catch(err => {
-        console.error('Error cargando navbar:', err);
-        document.getElementById('navbar-container').innerHTML = 
-            '<p class="has-text-danger">Error al cargar el menú</p>';
+            console.error('Error cargando navbar:', err);
+            document.getElementById('navbar-container').innerHTML =
+                '<p class="has-text-danger">Error al cargar el menú</p>';
         });
 }
 
-// Función para activar el menú burger (responsive)
+// Burger menu
 function activarBurgerMenu() {
     const burger = document.querySelector('.navbar-burger');
     const menu = document.querySelector('.navbar-menu');
 
     if (burger && menu) {
         burger.addEventListener('click', () => {
-        burger.classList.toggle('is-active');
-        menu.classList.toggle('is-active');
+            burger.classList.toggle('is-active');
+            menu.classList.toggle('is-active');
         });
     }
 }
 
-// Cuando el DOM esté listo, cargamos el navbar
-document.addEventListener('DOMContentLoaded', () => {
-    cargarNavbar();
-});
-
-// Función para manejar el modal de Reservas
+// Modal de Reservas - SOLO cierra con la X
 function manejarModalReservas() {
     const trigger = document.querySelector('.modal-trigger[data-target="modal-reservas"]');
     const modal = document.getElementById('modal-reservas');
-    const closeBtn = modal.querySelector('.delete');
-    const background = modal.querySelector('.modal-background');
 
     if (!trigger || !modal) return;
 
-    // Abrir modal
+    // Abrir
     trigger.addEventListener('click', (e) => {
         e.preventDefault();
         modal.classList.add('is-active');
     });
 
-    // Cerrar con la X
-    closeBtn.addEventListener('click', () => {
-        modal.classList.remove('is-active');
+    // SOLO cerrar con la X (class="delete")
+    modal.querySelectorAll('.delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            modal.classList.remove('is-active');
+        });
+    });
+
+    // Deshabilitar cierre con background
+    modal.querySelector('.modal-background').style.pointerEvents = 'none';
+}
+
+function manejarModalRegistroUsuario() {
+    const trigger = document.querySelector('.modal-trigger[data-target="modal-registrar-usuario"]');
+    const modal = document.getElementById('modal-registrar-usuario');
+
+    if (!trigger || !modal) return;
+
+    trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        modal.classList.add('is-active');
+    });
+
+    modal.querySelectorAll('.delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            modal.classList.remove('is-active');
+            document.getElementById('form-registro-usuario').reset();
+            document.getElementById('error-registro').style.display = 'none';
+            document.getElementById('btn-registrar-usuario').disabled = true;
+        });
+    });
+
+    modal.querySelector('.modal-background').style.pointerEvents = 'none';
+
+    // Formulario
+    const form = document.getElementById('form-registro-usuario');
+    const btnRegistrar = document.getElementById('btn-registrar-usuario');
+    const errorDiv = document.getElementById('error-registro');
+
+    form.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', validarFormularioRegistro);
+    });
+
+    function validarFormularioRegistro() {
+        const nombre = document.getElementById('registro-nombre').value.trim();
+        const email = document.getElementById('registro-email').value.trim();
+        const telefono = document.getElementById('registro-telefono').value.trim();
+        const dni = document.getElementById('registro-dni').value.trim();
+        const domicilio = document.getElementById('registro-domicilio').value.trim();
+
+        const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+        const todosLlenos = nombre && email && telefono && dni && domicilio;
+        btnRegistrar.disabled = !(todosLlenos && emailValido);
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorDiv.style.display = 'none';
+
+        const datos = {
+            nombre: document.getElementById('registro-nombre').value.trim(),
+            email: document.getElementById('registro-email').value.trim(),
+            telefono: document.getElementById('registro-telefono').value.trim(),
+            dni: document.getElementById('registro-dni').value.trim(),
+            domicilio: document.getElementById('registro-domicilio').value.trim()
+        };
+
+        try {
+            const response = await fetch('http://localhost:3000/usuarios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                errorDiv.textContent = result.error ||
+                    (result.detalles ? result.detalles.join('. ') : 'Error al registrar');
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            mostrarMensaje('¡Usuario registrado exitosamente!', 'success');
+
+            setTimeout(() => {
+                mostrarMensaje('Ahora ya puedes crear reservas', 'info');
+            }, 1000);
+
+            setTimeout(() => {
+                window.location.href = 'crear_reservas.html';
+            }, 2000);
+
+            form.reset();
+            btnRegistrar.disabled = true;
+
+        } catch (error) {
+            errorDiv.textContent = 'Error de conexión al servidor';
+            errorDiv.style.display = 'block';
+        }
     });
 }
 
-// Llamar después de cargar el navbar
-function cargarNavbar() {
-    fetch('navbar.html')
-        .then(response => {
-        if (!response.ok) throw new Error('Error al cargar navbar');
-        return response.text();
-        })
-        .then(data => {
-        document.getElementById('navbar-container').innerHTML = data;
-        activarBurgerMenu();
-        manejarModalReservas(); // ← Activar el modal
-        })
-        .catch(err => {
-        console.error(err);
-        document.getElementById('navbar-container').innerHTML = '<p class="has-text-danger">Error al cargar menú</p>';
-        });
-}
+document.addEventListener('DOMContentLoaded', () => {
+    cargarNavbar();
+});
