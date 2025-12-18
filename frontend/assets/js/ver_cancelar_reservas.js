@@ -1,17 +1,90 @@
 // frontend/assets/js/ver_cancelar_reservas.js
 
-    let allReservas = [];
-    let allUsuarios = [];
-    let allEstablecimientos = [];
-    let allCanchas = [];
+let allReservas = [];
+let allUsuarios = [];
+let allEstablecimientos = [];
+let allCanchas = [];
 
-    let filtroUsuarioId = null;
-    let filtroEstablecimientoId = null;
-    let filtroFecha = null; // Formato YYYY-MM-DD o null
+let filtroUsuarioId = null;
+let filtroEstablecimientoId = null;
+let filtroFecha = null;
+
+let reservaACancelarId = null;
+
+// === Funciones para guardar y cargar filtros en localStorage ===
+function guardarFiltros() {
+    const filtros = {
+        usuarioId: filtroUsuarioId,
+        establecimientoId: filtroEstablecimientoId,
+        fecha: filtroFecha,
+        textoUsuario: document.getElementById('busqueda-usuario-filtro').value,
+        textoEstablecimiento: document.getElementById('busqueda-establecimiento-filtro').value,
+        inputFecha: document.getElementById('filtro-fecha').value
+    };
+    localStorage.setItem('filtrosReservasAdmin', JSON.stringify(filtros));
+    }
+
+    function cargarFiltrosGuardados() {
+    const guardado = localStorage.getItem('filtrosReservasAdmin');
+    if (!guardado) return;
+
+    const filtros = JSON.parse(guardado);
+
+    // Restaurar valores en inputs
+    document.getElementById('busqueda-usuario-filtro').value = filtros.textoUsuario || '';
+    document.getElementById('busqueda-establecimiento-filtro').value = filtros.textoEstablecimiento || '';
+    document.getElementById('filtro-fecha').value = filtros.inputFecha || '';
+
+    // Restaurar variables de filtro
+    filtroUsuarioId = filtros.usuarioId;
+    filtroEstablecimientoId = filtros.establecimientoId;
+    filtroFecha = filtros.fecha;
+
+    // Mostrar/ocultar botón limpiar fecha
+    const btnLimpiar = document.getElementById('limpiar-fecha');
+    btnLimpiar.style.display = filtros.inputFecha ? 'block' : 'none';
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
     cargarDatosIniciales();
     inicializarFiltroFecha();
+
+    // === Eventos del modal de cancelación ===
+    const modal = document.getElementById('modal-cancelar');
+    const btnConfirmar = document.getElementById('confirmar-cancelar');
+    const btnCerrar = document.getElementById('cerrar-modal');
+    const btnCerrarClose = document.getElementById('cerrar-modal-close');
+    const background = modal.querySelector('.modal-background');
+
+    const cerrarModal = () => {
+        modal.classList.remove('is-active');
+        reservaACancelarId = null;
+    };
+
+    btnCerrar.addEventListener('click', cerrarModal);
+    btnCerrarClose.addEventListener('click', cerrarModal);
+    background.addEventListener('click', cerrarModal);
+
+    btnConfirmar.addEventListener('click', () => {
+        if (!reservaACancelarId) return;
+
+        fetch(`http://localhost:3000/reservas/${reservaACancelarId}`, { method: 'DELETE' })
+        .then(response => {
+            if (!response.ok) throw new Error('Error al cancelar');
+            return response.json();
+        })
+        .then(() => {
+            mostrarMensaje('Reserva cancelada exitosamente');
+            // Actualizamos datos y mantenemos filtros
+            recargarReservasYMantenerFiltros();
+            cerrarModal();
+        })
+        .catch(err => {
+            console.error(err);
+            mostrarMensaje('Error al cancelar la reserva');
+            cerrarModal();
+        });
+    });
     });
 
     async function cargarDatosIniciales() {
@@ -33,8 +106,9 @@
         inicializarAutocompleteUsuario();
         inicializarAutocompleteEstablecimiento();
 
-        // Aplicamos fecha de hoy después de tener los datos
-        establecerFechaHoyPorDefecto();
+        // Cargamos filtros guardados (si existen) y mostramos reservas
+        cargarFiltrosGuardados();
+        filtrarYMostrarReservas();
 
         loading.style.display = 'none';
 
@@ -45,50 +119,42 @@
     }
     }
 
-    // Inicializar filtro de fecha + botón limpiar (X)
+    // Función para recargar solo las reservas después de una acción (cancelar, etc.)
+    async function recargarReservasYMantenerFiltros() {
+    try {
+        const reservasRes = await fetch('http://localhost:3000/reservas').then(r => r.json());
+        allReservas = reservasRes;
+        filtrarYMostrarReservas(); // Mantiene los filtros actuales
+    } catch (error) {
+        console.error('Error recargando reservas:', error);
+        mostrarMensaje('Error al actualizar la lista de reservas');
+    }
+    }
+
     function inicializarFiltroFecha() {
     const inputFecha = document.getElementById('filtro-fecha');
     const btnLimpiar = document.getElementById('limpiar-fecha');
 
-    // Mostrar/ocultar botón X según haya fecha
     inputFecha.addEventListener('input', () => {
         btnLimpiar.style.display = inputFecha.value ? 'block' : 'none';
     });
 
-    // Cambio manual de fecha
     inputFecha.addEventListener('change', (e) => {
-        filtroFecha = e.target.value;
+        filtroFecha = e.target.value || null;
+        guardarFiltros();
         filtrarYMostrarReservas();
     });
 
-    // Botón limpiar fecha
     btnLimpiar.addEventListener('click', () => {
         inputFecha.value = '';
         filtroFecha = null;
         btnLimpiar.style.display = 'none';
+        guardarFiltros();
         filtrarYMostrarReservas();
     });
     }
 
-    // Establecer fecha de hoy por defecto
-    function establecerFechaHoyPorDefecto() {
-    const inputFecha = document.getElementById('filtro-fecha');
-    const btnLimpiar = document.getElementById('limpiar-fecha');
-    const hoy = new Date();
-
-    const year = hoy.getFullYear();
-    const month = String(hoy.getMonth() + 1).padStart(2, '0');
-    const day = String(hoy.getDate()).padStart(2, '0');
-    const fechaHoyISO = `${year}-${month}-${day}`;
-
-    inputFecha.value = fechaHoyISO;
-    filtroFecha = fechaHoyISO;
-    btnLimpiar.style.display = 'block';
-
-    filtrarYMostrarReservas();
-    }
-
-    // Autocomplete para Usuario
+    // Autocomplete para Usuario (con guardado de filtros)
     function inicializarAutocompleteUsuario() {
     const input = document.getElementById('busqueda-usuario-filtro');
     const sugerencias = document.getElementById('sugerencias-usuario-filtro');
@@ -101,6 +167,7 @@
 
         if (query.length < 2) {
         filtroUsuarioId = null;
+        guardarFiltros();
         filtrarYMostrarReservas();
         return;
         }
@@ -117,6 +184,7 @@
             input.value = user.nombre;
             filtroUsuarioId = user.id;
             sugerencias.style.display = 'none';
+            guardarFiltros();
             filtrarYMostrarReservas();
         };
         sugerencias.appendChild(item);
@@ -129,6 +197,7 @@
         setTimeout(() => {
         if (input.value.trim() === '') {
             filtroUsuarioId = null;
+            guardarFiltros();
             filtrarYMostrarReservas();
         }
         sugerencias.style.display = 'none';
@@ -136,7 +205,7 @@
     });
     }
 
-    // Autocomplete para Establecimiento
+    // Autocomplete para Establecimiento (con guardado de filtros)
     function inicializarAutocompleteEstablecimiento() {
     const input = document.getElementById('busqueda-establecimiento-filtro');
     const sugerencias = document.getElementById('sugerencias-establecimiento-filtro');
@@ -149,6 +218,7 @@
 
         if (query.length < 2) {
         filtroEstablecimientoId = null;
+        guardarFiltros();
         filtrarYMostrarReservas();
         return;
         }
@@ -165,6 +235,7 @@
             input.value = est.nombre;
             filtroEstablecimientoId = est.id;
             sugerencias.style.display = 'none';
+            guardarFiltros();
             filtrarYMostrarReservas();
         };
         sugerencias.appendChild(item);
@@ -177,6 +248,7 @@
         setTimeout(() => {
         if (input.value.trim() === '') {
             filtroEstablecimientoId = null;
+            guardarFiltros();
             filtrarYMostrarReservas();
         }
         sugerencias.style.display = 'none';
@@ -184,7 +256,6 @@
     });
     }
 
-    // Filtrar y mostrar reservas
     function filtrarYMostrarReservas() {
     let reservasFiltradas = allReservas;
 
@@ -207,7 +278,6 @@
         });
     }
 
-    // Orden descendente por fecha
     reservasFiltradas.sort((a, b) => {
         const [da, ma, ya] = a.fecha_reserva.split('/');
         const [db, mb, yb] = b.fecha_reserva.split('/');
@@ -216,6 +286,8 @@
 
     mostrarReservas(reservasFiltradas);
     }
+
+    // ... (mostrarReservas, cancelarReserva, reagendarReserva, mostrarMensaje permanecen iguales)
 
     function mostrarReservas(reservas) {
     const lista = document.getElementById('lista-reservas');
@@ -289,7 +361,6 @@
         lista.appendChild(card);
     });
 
-    // Eventos delegados
     document.querySelectorAll('.btn-cancelar:not([disabled])').forEach(btn => {
         btn.addEventListener('click', (e) => {
         const id = e.currentTarget.dataset.id;
@@ -306,18 +377,8 @@
     }
 
     function cancelarReserva(id) {
-    if (!confirm('¿Estás seguro de que querés cancelar esta reserva?')) return;
-
-    fetch(`http://localhost:3000/reservas/${id}`, { method: 'DELETE' })
-        .then(response => {
-        if (!response.ok) throw new Error('Error al cancelar');
-        return response.json();
-        })
-        .then(() => {
-        mostrarMensaje('Reserva cancelada exitosamente');
-        filtrarYMostrarReservas();
-        })
-        .catch(() => mostrarMensaje('Error al cancelar la reserva'));
+    reservaACancelarId = id;
+    document.getElementById('modal-cancelar').classList.add('is-active');
     }
 
     function reagendarReserva(id) {
@@ -340,4 +401,4 @@
     document.body.appendChild(div);
 
     setTimeout(() => div.remove(), 4000);
-    }
+}

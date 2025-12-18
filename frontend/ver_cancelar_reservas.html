@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/styles.css">
     <title>Cancha Ya - Manejo de Reservas</title>
-    </head>
+</head>
 <body>
     <!-- Navigation bar -->
     <div id="navbar-container"></div>
@@ -86,6 +86,36 @@
         </div>
         </div>
     </section>
+
+    <!-- Modal de confirmación de cancelación (rojo fuerte) -->
+    <div class="modal" id="modal-cancelar">
+        <div class="modal-background"></div>
+        <div class="modal-content">
+        <div class="box has-background-danger has-text-white">
+            <h2 class="title has-text-white mb-4">
+            <span class="icon mr-3">
+                <i class="fas fa-exclamation-triangle"></i>
+            </span>
+            ¿Estás seguro de cancelar esta reserva?
+            </h2>
+            <p class="subtitle has-text-white is-5 mb-5">
+            Esta acción no se puede deshacer. El dinero pagado será devuelto según la política de cancelación.
+            </p>
+            <div class="buttons is-right">
+            <button class="button is-medium is-light" id="confirmar-cancelar">
+                <span class="icon">
+                <i class="fas fa-trash"></i>
+                </span>
+                <span>Sí, cancelar reserva</span>
+            </button>
+            <button class="button is-medium is-white" id="cerrar-modal">
+                <span>No, volver</span>
+            </button>
+            </div>
+        </div>
+        </div>
+        <button class="modal-close is-large" aria-label="close" id="cerrar-modal-close"></button>
+    </div>
 
     <script src="assets/js/shared.js"></script>
     <script src="assets/js/ver_cancelar_reservas.js"></script>

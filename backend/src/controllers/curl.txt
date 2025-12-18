@@ -206,12 +206,12 @@ curl -X PUT http://localhost:3000/reservas/21 \
   }' -i
 
 5) UPDATE para testeo (copiar el UPDATE de arriba y eliminarle/actualizarle campos)
-curl -X PUT http://localhost:3000/reservas/21 \
+curl -X PUT http://localhost:3000/reservas/23 \
   -H "Content-Type: application/json" \
   -d '{
-    "cancha_id": 4,
-    "usuario_id": 1,
-    "fecha_reserva": "2025-10-31",
+    "cancha_id": 17,
+    "usuario_id": 2,
+    "fecha_reserva": "2026-05-31",
     "reserva_hora_inicio": "09:30:00",
     "reserva_hora_fin": "11:30:00",
     "monto_pagado": 50000
