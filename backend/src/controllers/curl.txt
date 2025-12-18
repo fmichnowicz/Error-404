@@ -173,11 +173,11 @@ curl http://localhost:3000/reservas/6
 curl -X POST http://localhost:3000/reservas \
   -H "Content-Type: application/json" \
   -d '{
-    "cancha_id": 17,
-    "usuario_id": 2,
-    "fecha_reserva": "2025-12-18",
-    "reserva_hora_inicio": "16:30:00",
-    "reserva_hora_fin": "17:30:00",
+    "cancha_id": 20,
+    "usuario_id": 4,
+    "fecha_reserva": "2025-12-19",
+    "reserva_hora_inicio": "08:30:00",
+    "reserva_hora_fin": "09:30:00",
     "monto_pagado": 28000
   }' -i
 
