@@ -54,15 +54,15 @@ curl http://localhost:3000/canchas/5
 curl -X POST http://localhost:3000/canchas \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Cancha 37",
-    "deporte": "Pádel",
-    "establecimiento_id": 35,
-    "precio_hora": 25000,
+    "nombre": "Cancha 1",
+    "deporte": "Básquet 3v3",
+    "establecimiento_id": 2,
+    "precio_hora": 14000.00,
     "descripcion": "Cancha super rápida",
     "superficie": "Sintética",
     "iluminacion": true,
     "cubierta": false
-  }'
+  }' -i
 
 3) POST para testeo (copiar el POST de arriba y modificarle cualquier cosa para testear)
 curl -X POST http://localhost:3000/canchas \
@@ -173,12 +173,12 @@ curl http://localhost:3000/reservas/6
 curl -X POST http://localhost:3000/reservas \
   -H "Content-Type: application/json" \
   -d '{
-    "cancha_id": 37,
-    "usuario_id": 34,
-    "fecha_reserva": "2025-12-25",
-    "reserva_hora_inicio": "16:30:00",
-    "reserva_hora_fin": "17:30:00",
-    "monto_pagado": 25000
+    "cancha_id": 20,
+    "usuario_id": 4,
+    "fecha_reserva": "2025-12-19",
+    "reserva_hora_inicio": "08:30:00",
+    "reserva_hora_fin": "09:30:00",
+    "monto_pagado": 28000
   }' -i
 
 3) POST para testeo (copiar el POST de arriba y modificarle cualquier cosa para testear)

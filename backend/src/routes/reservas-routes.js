@@ -4,11 +4,13 @@ import {
     getReservaById,
     createReserva,
     updateReserva,
-    deleteReserva
+    deleteReserva,
+    getReservasParaGrilla
 } from "../controllers/reservas-controllers.js"
 
 const router = Router();
 
+router.get("/grilla", getReservasParaGrilla);
 router.get("/", getAllReservas);
 router.get("/:id", getReservaById);
 router.post("/", createReserva);

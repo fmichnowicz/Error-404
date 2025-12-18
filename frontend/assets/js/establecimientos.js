@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <footer class="card-footer mt-auto">
                 <a href="reservas.html?establecimiento=${est.id}" 
                 class="card-footer-item has-text-weight-bold has-background-primary has-text-white">
-                Ver reservas
+                Crear reservas
                 </a>
             </footer>
             </div>
