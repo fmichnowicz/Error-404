@@ -256,7 +256,7 @@ const updateReserva = async (req, res) => {
         monto_pagado
         } = req.body;
 
-        // === NUEVA VALIDACIÓN: usuario_id ES OBLIGATORIO ===
+        // === usuario_id ES OBLIGATORIO ===
         if (usuario_id === undefined) {
         return res.status(400).json({
             error: 'Campo requerido faltante',
@@ -289,7 +289,7 @@ const updateReserva = async (req, res) => {
         const errores = [];
         const camposActualizar = {};
 
-        // Validaciones de los otros campos (solo si se envían)
+        // Validaciones de campos opcionales
         if (cancha_id !== undefined) {
         if (!Number.isInteger(Number(cancha_id)) || Number(cancha_id) <= 0) {
             errores.push('cancha_id debe ser un número entero positivo');
@@ -330,41 +330,93 @@ const updateReserva = async (req, res) => {
         return res.status(400).json({ error: 'Errores de validación', detalles: errores });
         }
 
-        // === OBTENER LA RESERVA ACTUAL ===
-        const { rows: reservaActual } = await pool.query(
+        // === OBTENER RESERVA ACTUAL ===
+        const { rows: [reservaActual] } = await pool.query(
         'SELECT * FROM reservas WHERE id = $1',
         [reservaId]
         );
 
-        if (reservaActual.length === 0) {
+        if (!reservaActual) {
         return res.status(404).json({
             error: 'Reserva no encontrada',
             detalles: `No existe una reserva con id ${reservaId}`
         });
         }
 
-        const actual = reservaActual[0];
-
-        // === VALIDACIÓN CLAVE: EL USUARIO DEBE SER EL DUEÑO ===
-        const usuarioIdEnviado = parseInt(usuario_id);
-        if (usuarioIdEnviado !== actual.usuario_id) {
+        // === VALIDAR QUE EL USUARIO SEA EL DUEÑO ===
+        if (parseInt(usuario_id) !== reservaActual.usuario_id) {
         return res.status(403).json({
             error: 'Acceso denegado',
             detalles: 'No se puede modificar la reserva de otro usuario'
         });
         }
 
-        // A partir de aquí, el usuario es el correcto → podemos proceder
+        // === OBTENER DATOS DE LA CANCHA ORIGINAL ===
+        const { rows: [canchaOriginal] } = await pool.query(
+        'SELECT establecimiento_id, deporte FROM canchas WHERE id = $1',
+        [reservaActual.cancha_id]
+        );
+
+        if (!canchaOriginal) {
+        return res.status(500).json({ error: 'Error interno: cancha original no encontrada' });
+        }
+
+        const establecimientoOriginalId = canchaOriginal.establecimiento_id;
+        const deporteOriginal = canchaOriginal.deporte.trim(); // por si hay espacios
+
+        // === DETERMINAR LA CANCHA FINAL (nueva o la misma) ===
+        const finalCanchaId = camposActualizar.cancha_id ?? reservaActual.cancha_id;
+
+        // Si la cancha no cambia → todo OK, pasamos directo
+        if (finalCanchaId === reservaActual.cancha_id) {
+        // No hay cambio de cancha → seguimos con el resto
+        } else {
+        // === VALIDAR NUEVA CANCHA: MISMO ESTABLECIMIENTO Y MISMO DEPORTE ===
+        const { rows: [canchaNueva] } = await pool.query(
+            `SELECT establecimiento_id, deporte 
+            FROM canchas 
+            WHERE id = $1`,
+            [finalCanchaId]
+        );
+
+        if (!canchaNueva) {
+            return res.status(404).json({ error: 'Cancha no encontrada' });
+        }
+
+        const establecimientoNuevo = canchaNueva.establecimiento_id;
+        const deporteNuevo = canchaNueva.deporte.trim();
+
+        if (establecimientoNuevo !== establecimientoOriginalId) {
+            return res.status(403).json({
+            error: 'Cancha no permitida',
+            detalles: 'Solo se puede cambiar a una cancha del mismo establecimiento que la reserva original'
+            });
+        }
+
+        if (deporteNuevo !== deporteOriginal) {
+            return res.status(403).json({
+            error: 'Cancha no permitida',
+            detalles: `Solo se puede cambiar a una cancha del mismo deporte (${deporteOriginal})`
+            });
+        }
+        }
+
+        // === OBTENER PRECIO DE LA CANCHA FINAL (para cálculo de monto) ===
+        const { rows: [canchaFinal] } = await pool.query(
+        'SELECT precio_hora FROM canchas WHERE id = $1',
+        [finalCanchaId]
+        );
+
+        if (!canchaFinal) {
+        return res.status(404).json({ error: 'Cancha no encontrada' });
+        }
+
         // Valores finales
-        const finalCanchaId = camposActualizar.cancha_id ?? actual.cancha_id;
-        const finalUsuarioId = actual.usuario_id; // Nunca cambia
-        const finalFecha = camposActualizar.fecha_reserva ?? actual.fecha_reserva.toISOString().split('T')[0];
-        const finalHoraInicio = camposActualizar.reserva_hora_inicio ?? actual.reserva_hora_inicio;
-        const finalHoraFin = camposActualizar.reserva_hora_fin ?? actual.reserva_hora_fin;
+        const finalFecha = camposActualizar.fecha_reserva ?? reservaActual.fecha_reserva.toISOString().split('T')[0];
+        const finalHoraInicio = camposActualizar.reserva_hora_inicio ?? reservaActual.reserva_hora_inicio;
+        const finalHoraFin = camposActualizar.reserva_hora_fin ?? reservaActual.reserva_hora_fin;
 
-        // ... (el resto del código permanece igual: validaciones de fecha, horario, duración, precio, superposición, etc.)
-
-        // === REGLAS DE FECHA, HORARIO Y DURACIÓN ===
+        // === VALIDACIONES DE FECHA, HORARIO Y DURACIÓN ===
         const opcionesTZ = { timeZone: 'America/Argentina/Buenos_Aires' };
         const mañanaDate = new Date();
         mañanaDate.setDate(mañanaDate.getDate() + 1);
@@ -401,15 +453,8 @@ const updateReserva = async (req, res) => {
         return res.status(400).json({ error: 'Errores de validación', detalles: errores });
         }
 
-        // === PRECIO Y MONTO ===
-        const { rows: canchaRows } = await pool.query(
-        'SELECT precio_hora FROM canchas WHERE id = $1',
-        [finalCanchaId]
-        );
-        if (canchaRows.length === 0) {
-        return res.status(404).json({ error: 'Cancha no encontrada' });
-        }
-        const precioPorHora = parseFloat(canchaRows[0].precio_hora);
+        // === CÁLCULO DE MONTO ===
+        const precioPorHora = parseFloat(canchaFinal.precio_hora);
         const duracionHoras = duracionMin / 60;
         const montoCalculado = duracionHoras * precioPorHora;
 
@@ -446,7 +491,7 @@ const updateReserva = async (req, res) => {
         });
         }
 
-        // === ARMAR UPDATE DINÁMICO (usuario_id nunca se actualiza) ===
+        // === UPDATE DINÁMICO ===
         const campos = [];
         const valores = [];
         let index = 1;
@@ -459,7 +504,6 @@ const updateReserva = async (req, res) => {
         campos.push(`monto_pagado = $${index++}`);
         valores.push(montoCalculado);
         campos.push(`fecha_modificacion_reserva = CURRENT_TIMESTAMP`);
-
         valores.push(reservaId);
 
         const updateQuery = `
