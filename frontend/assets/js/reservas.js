@@ -29,19 +29,25 @@ async function inicializarFiltros() {
   document.getElementById('filtro-fecha').value = minDate;
   fechaSeleccionada = minDate;
 
+  const establecimientoId = new URLSearchParams(window.location.search).get("establecimiento");
+
   try {
     const response = await fetch('http://localhost:3000/establecimientos');
     if (!response.ok) throw new Error('Error establecimientos');
     const establecimientos = await response.json();
 
     const selectEst = document.getElementById('filtro-establecimiento');
-    selectEst.innerHTML = '<option value="" selected>Todos los establecimientos</option>';
+    selectEst.innerHTML = '<option value="">Todos los establecimientos</option>';
 
     establecimientos.forEach(est => {
       const option = document.createElement('option');
       option.value = est.id;
       option.textContent = est.nombre;
       selectEst.appendChild(option);
+
+      if(establecimientoId && (est.id.toString() === establecimientoId)){
+        option.selected = true;
+      }
     });
   } catch (error) {
     console.error('Error cargando establecimientos:', error);
@@ -50,6 +56,7 @@ async function inicializarFiltros() {
   document.getElementById('filtro-establecimiento').addEventListener('change', actualizarFiltroDeportes);
   document.getElementById('btn-aplicar-filtros').addEventListener('click', aplicarFiltros);
 
+  await actualizarFiltroDeportes();
   await aplicarFiltros();
 }
 
