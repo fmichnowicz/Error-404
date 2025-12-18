@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="card has-same-height mx-4 my-4">
             <div class="card-image">
                 <figure class="image is-4by3">
-                <img src="https://via.placeholder.com/400x300?text=${encodeURIComponent(est.nombre)}" 
+                <img src="https://placehold.co/600x400" 
                     alt="${est.nombre}" 
                     style="object-fit: cover;">
                 </figure>

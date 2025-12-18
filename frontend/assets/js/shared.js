@@ -83,6 +83,12 @@ function manejarModalReservas() {
         modal.classList.add('is-active');
     });
   
+  
+    modal.querySelectorAll('.delete').forEach(btn => {
+      btn.addEventListener('click', () => {
+        modal.classList.remove('is-active');
+      });
+    });
 
   // Deshabilitar cierre con background
   modal.querySelector('.modal-background').style.pointerEvents = 'none';
