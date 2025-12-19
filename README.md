@@ -3,6 +3,12 @@
 **CanchaYa** Es un sitio web donde podes manejar de forma centralizada reservas de canchas de diferentes deportes: ` Pádel `, ` Fútbol 4 `, ` Fútbol 5 `,  ` Fútbol 6 `,  ` Fútbol 7 `,  ` Fútbol 8 `,  ` Fútbol 9 `,  ` Fútbol 10 `,  ` Fútbol 11 `, 
  ` Tenis 4 `, ` Básquet 3v3 `,  ` Básquet 5v5 `, ` Vóley `,  ` Handball `.
 
+# Funciones principales
+- Registro y validacion de usuarios
+- Reserva de canchas de distintos deportes
+- Filtro para la busqueda de canchas
+- Posibilidad de reagendar o eliminar la reserva
+
  ---
 
  # Estructura
@@ -52,7 +58,7 @@ El frontend fue desarrollado como una aplicacion multi-page, utiliza una API RES
 El backend fue desarrollado como una API REST encargada de la logica de la administracion de datos, tanto recibirlos, como mandarlos,borrarlos o modificarlos
 
 ### Tecnologias
-- Node.js
+- Node.js <img width="30" height="auto" alt="Image" src="https://github.com/user-attachments/assets/7c483782-2e0c-45ff-916d-f7052cf15044" />
 - Express.js
 - PostgreSQL
 
@@ -84,3 +90,5 @@ El backend fue desarrollado como una API REST encargada de la logica de la admin
 ### Administracion de datos
 - Acceso a la base de datos mediante el backend
 - Operaciones CRUD realizadas a traves de los controladores
+
+# Flujo de usuario
