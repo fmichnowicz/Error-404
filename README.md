@@ -140,3 +140,7 @@ cd Error-404/
 ```  
 docker compose up --build
 ```
+# Creditos:
+- Fernando Michnowicz
+- Leonardo Portocarrero
+- Franco D'orazio
