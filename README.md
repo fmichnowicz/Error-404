@@ -58,7 +58,7 @@ El frontend fue desarrollado como una aplicacion multi-page, utiliza una API RES
 El backend fue desarrollado como una API REST encargada de la logica de la administracion de datos, tanto recibirlos, como mandarlos,borrarlos o modificarlos
 
 ### Tecnologias
-- Node.js <img width="30" height="auto" alt="Image" src="https://github.com/user-attachments/assets/7c483782-2e0c-45ff-916d-f7052cf15044" />
+- Node.js
 - Express.js
 - PostgreSQL
 
@@ -92,3 +92,4 @@ El backend fue desarrollado como una API REST encargada de la logica de la admin
 - Operaciones CRUD realizadas a traves de los controladores
 
 # Flujo de usuario
+<img width="1014" height="1578" alt="Image" src="https://github.com/user-attachments/assets/c90ed2b5-fc82-4ee2-8c9c-1e7c2704de6c" />
