@@ -153,8 +153,3 @@ VALUES
 (3, 6, '2025-12-23', '15:00:00', '16:30:00', 5000.00),  -- Cancha 3, usuario 6, 1.5 hs
 (2, 9, '2025-12-24', '19:00:00', '20:30:00', 6500.00),  -- Cancha 2, usuario 9, 1.5 hs
 (4, 10, '2025-12-25', '17:00:00', '19:00:00', 8000.00); -- Cancha 4, usuario 10, 2 hs
-
-
-INSERT INTO reservas (cancha_id, usuario_id, fecha_reserva, reserva_hora_inicio, reserva_hora_fin, monto_pagado)
-VALUES
-(1, 25, '2025-12-18', '17:00:00', '19:00:00', 25000.00);
