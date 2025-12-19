@@ -27,6 +27,13 @@ stop-db:
 start-frontend:
 	cd frontend && http-server --cors
 
-# Alias más comunes (opcional)
-up: start-db run-backend start-frontend
+# Levantamos todo
+up:
+	$(MAKE) start-db
+	cd backend && npm run dev & 
+	cd frontend && http-server --cors &
+	@echo "¡Todo levantado! Backend y frontend corriendo en background."
+	@echo "Para ver logs del backend: cd backend && npm run dev (en otra terminal)"
+	@echo "Para detener: make down o Ctrl+C en las terminales correspondientes"
+
 down: stop-db
