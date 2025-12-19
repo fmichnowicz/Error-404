@@ -23,15 +23,13 @@
 │ │ ├── utils/
 │ │ ├── server.js
 │ ├── .env
-│ ├── dockerfile
+│ ├── docker-compose.yml
 ├── frontend/
 │ ├── assets/
 │ │ ├── css/
 │ │ ├── images/
 │ │ ├── js/
 │ ├── index.html
-│ ├── dockerfile
-├──docker-compose.yml
 ├── makefile
 ├── readme.md
 
