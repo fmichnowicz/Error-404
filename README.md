@@ -30,17 +30,39 @@
 ```
 
 ## Frontend
-    El frontend fue desarrollado como una aplicacion multi-page, utiliza una API REST para gestionar las reservas de las canchas
+El frontend fue desarrollado como una aplicacion multi-page, utiliza una API REST para gestionar las reservas de las canchas
 
 ### Tecnologias
-    * HTML
-    * CSS
-    * JS
+- HTML
+- CSS
+- JS
 
 ### Comunicacion con backend
-    * Utilizacion de API REST mediante fetch
-    * Manejo de errores y cargas
+- Utilizacion de API REST mediante fetch
+- Manejo de errores y cargas
 
-## Arquitectura
-    * Separacion por componentes
-    * Capa de servicios para comunicacion con el backend
+### Arquitectura
+- Separacion por componentes
+- Capa de servicios para comunicacion con el backend
+
+
+
+
+ ## Backend
+El backend fue desarrollado como una API REST encargada de la logica de la administracion de datos, tanto recibirlos, como mandarlos,borrarlos o modificarlos
+
+### Tecnologias
+- Node.js
+- Express.js
+- PostgreSQL
+
+### Arquitectura
+- Separacion entre rutas y controladores
+- Capa de servicios para comunicacion con el backend
+
+### Endpoints principales
+- GET /reservas
+- GET /reservas/:id
+- POST /reservas
+- PUT /reservas/:id
+- DELETE /reservas/:id
