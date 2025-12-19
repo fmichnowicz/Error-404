@@ -1,4 +1,5 @@
 <img width="975" height="297" alt="Image" src="https://github.com/user-attachments/assets/a98c2497-3f96-4645-ac16-148adf3746c7" />
+ ---
 
 **CanchaYa** Es 1 sitio web donde podes manejar de forma centralizada reservas a canchas de diferentes deportes: ` Pádel `, ` Fútbol 4 `, ` Fútbol 5 `,  ` Fútbol 6 `,  ` Fútbol 7 `,  ` Fútbol 8 `,  ` Fútbol 9 `,  ` Fútbol 10 `,  ` Fútbol 11 `, 
  ` Tenis 4 `, ` Básquet 3v3 `,  ` Básquet 5v5 `, ` Vóley `,  ` Handball `.
