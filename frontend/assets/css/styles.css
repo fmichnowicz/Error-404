@@ -391,3 +391,50 @@
 .control.has-icons-left.has-icons-right .icon.is-right.is-clickable {
   pointer-events: auto; /* Pero sí permitimos clics en la X */
 }
+
+/* Card con imagen de fondo completa y responsive */
+.card.has-background-image {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  height: 450px; /* Aumenté un poco la altura para que quepa el texto grande */
+  width: 100%;
+}
+
+/* Fondo de imagen */
+.card-background-container {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('../images/establecimientos/Gemini_created_canchas.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Overlay oscuro */
+.card-background-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.4));
+  z-index: 1;
+}
+
+/* Contenido centrado y con texto grande */
+.card-content-overlay {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px;
+  color: white;
+  text-align: center; /* Centrado total */
+}
+
+/* Botón */
+.card-footer-overlay {
+  margin-top: auto;
+}

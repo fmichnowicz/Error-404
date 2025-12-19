@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   inicializarFiltros();
   inicializarBusquedaUsuario();
 
-  // Eventos del modal post-reserva (solo cierra con botones)
+  // Eventos del modal post-reserva
   const modalPost = document.getElementById('modal-post-reserva');
   const btnSeguir = document.getElementById('btn-seguir-creando');
   const btnVer = document.getElementById('btn-ver-reservas');
@@ -33,8 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
   btnVer.addEventListener('click', () => {
     window.location.href = 'ver_cancelar_reservas.html';
   });
-
-  // No agregamos eventos al fondo ni a ninguna X → no se puede cerrar de otra forma
 });
 
 async function inicializarFiltros() {
@@ -48,6 +46,7 @@ async function inicializarFiltros() {
 
   const btnAplicar = document.getElementById('btn-aplicar-filtros');
 
+  // Feedback visual al cambiar cualquier filtro
   document.getElementById('filtro-establecimiento').addEventListener('change', () => {
     actualizarFiltroDeportes();
     destacarBoton();
@@ -81,7 +80,47 @@ async function inicializarFiltros() {
     });
 
     allCanchas = canchasRes;
+
+    // === LEER PARÁMETROS DE URL ===
+    const urlParams = new URLSearchParams(window.location.search);
+    const establecimientoId = urlParams.get('establecimiento');
+    const deporteParam = urlParams.get('deporte');
+
+    let aplicadoDesdeEstablecimientos = false;
+
+    // 1. Seleccionar establecimiento si viene en URL
+    if (establecimientoId) {
+      const option = selectEst.querySelector(`option[value="${establecimientoId}"]`);
+      if (option) {
+        option.selected = true;
+        aplicadoDesdeEstablecimientos = true;
+      }
+    }
+
+    // 2. Actualizar lista de deportes
     actualizarFiltroDeportes();
+
+    const selectDep = document.getElementById('filtro-deporte');
+
+    // 3. Seleccionar deporte si viene en URL
+    if (deporteParam) {
+      const decodedDeporte = decodeURIComponent(deporteParam);
+      const optionDep = Array.from(selectDep.options).find(opt => 
+        opt.value.toLowerCase() === decodedDeporte.toLowerCase()
+      );
+      if (optionDep) {
+        optionDep.selected = true;
+        aplicadoDesdeEstablecimientos = true;
+      }
+    }
+
+    // === APLICAR FILTROS Y MOSTRAR MENSAJE AMARILLO CENTRADO ===
+    if (aplicadoDesdeEstablecimientos) {
+      renderizarTablaFiltrada();
+      mostrarMensajeAmarillo('Filtros aplicados automáticamente desde la página de establecimientos');
+    } else {
+      await aplicarFiltros();
+    }
 
   } catch (error) {
     console.error('Error cargando datos iniciales:', error);
@@ -89,8 +128,6 @@ async function inicializarFiltros() {
   }
 
   btnAplicar.addEventListener('click', aplicarFiltros);
-
-  await aplicarFiltros();
 }
 
 async function actualizarFiltroDeportes() {
@@ -137,9 +174,7 @@ async function cargarDatosYRenderizar() {
   try {
     const reservasRes = await fetch(`http://localhost:3000/reservas/grilla?fecha=${fechaSeleccionada}`).then(r => r.json());
     allReservas = reservasRes;
-
     renderizarTablaFiltrada();
-
   } catch (error) {
     console.error('Error:', error);
     document.getElementById('tabla-body').innerHTML =
@@ -392,17 +427,14 @@ async function confirmarReserva() {
       return;
     }
 
-    // Limpiar formulario
     deseleccionarTodo();
     document.getElementById('busqueda-usuario').value = '';
     usuarioSeleccionado = null;
     document.getElementById('usuario-seleccionado').style.display = 'none';
     document.getElementById('resumen-reserva').style.display = 'none';
 
-    // Actualizar grilla
     await cargarDatosYRenderizar();
 
-    // MOSTRAR SOLO EL MODAL (sin mensaje flotante)
     document.getElementById('modal-post-reserva').classList.add('is-active');
 
   } catch (error) {
@@ -410,8 +442,6 @@ async function confirmarReserva() {
     mostrarMensaje('Error de conexión');
   }
 }
-
-// (El resto del código: toggleHorario, validarSeleccion, horaToMinutos, minutosToHora, deseleccionarTodo, mostrarMensaje permanece igual)
 
 function toggleHorario(btn) {
   const canchaId = btn.dataset.cancha;
@@ -498,4 +528,27 @@ function mostrarMensaje(texto) {
   document.body.appendChild(div);
 
   setTimeout(() => div.remove(), 4000);
+}
+
+function mostrarMensajeAmarillo(texto) {
+  const existente = document.getElementById('mensaje-error');
+  if (existente) existente.remove();
+
+  const div = document.createElement('div');
+  div.id = 'mensaje-error';
+  div.className = 'notification is-warning is-light has-text-centered mensaje-flotante';
+  div.style.position = 'fixed';
+  div.style.top = '50%';
+  div.style.left = '50%';
+  div.style.transform = 'translate(-50%, -50%)';
+  div.style.zIndex = '1000';
+  div.style.padding = '2rem';
+  div.style.borderRadius = '12px';
+  div.style.boxShadow = '0 8px 25px rgba(0,0,0,0.2)';
+  div.style.maxWidth = '600px';
+  div.style.fontSize = '1.2rem';
+  div.textContent = texto;
+  document.body.appendChild(div);
+
+  setTimeout(() => div.remove(), 1500);
 }
