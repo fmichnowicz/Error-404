@@ -136,22 +136,7 @@ git clone <clave_ssh>
 cd Error-404/
 ```
 
-### 3.Instalar dependencias
+### 3.Levantar los servicios
 ```  
-npm install
-```
-
-### 4.Levantar base de datos
-```  
-make start-db
-```
-
-### 5.Levantar backend
-```  
-make start-backend
-```
-
-### 6.Levantar base de datos
-```  
-make start-frontend
+docker compose up --build
 ```
