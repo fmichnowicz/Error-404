@@ -11,7 +11,7 @@ let filtroFecha = null;
 
 let reservaACancelarId = null;
 
-// === Funciones para guardar y cargar filtros en localStorage ===
+// === Guardar filtros mientras el usuario está en la página ===
 function guardarFiltros() {
     const filtros = {
         usuarioId: filtroUsuarioId,
@@ -21,28 +21,7 @@ function guardarFiltros() {
         textoEstablecimiento: document.getElementById('busqueda-establecimiento-filtro').value,
         inputFecha: document.getElementById('filtro-fecha').value
     };
-    localStorage.setItem('filtrosReservasAdmin', JSON.stringify(filtros));
-    }
-
-    function cargarFiltrosGuardados() {
-    const guardado = localStorage.getItem('filtrosReservasAdmin');
-    if (!guardado) return;
-
-    const filtros = JSON.parse(guardado);
-
-    // Restaurar valores en inputs
-    document.getElementById('busqueda-usuario-filtro').value = filtros.textoUsuario || '';
-    document.getElementById('busqueda-establecimiento-filtro').value = filtros.textoEstablecimiento || '';
-    document.getElementById('filtro-fecha').value = filtros.inputFecha || '';
-
-    // Restaurar variables de filtro
-    filtroUsuarioId = filtros.usuarioId;
-    filtroEstablecimientoId = filtros.establecimientoId;
-    filtroFecha = filtros.fecha;
-
-    // Mostrar/ocultar botón limpiar fecha
-    const btnLimpiar = document.getElementById('limpiar-fecha');
-    btnLimpiar.style.display = filtros.inputFecha ? 'block' : 'none';
+    sessionStorage.setItem('filtrosReservasAdmin', JSON.stringify(filtros));
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -75,7 +54,6 @@ function guardarFiltros() {
         })
         .then(() => {
             mostrarMensaje('Reserva cancelada exitosamente');
-            // Actualizamos datos y mantenemos filtros
             recargarReservasYMantenerFiltros();
             cerrarModal();
         })
@@ -106,8 +84,20 @@ function guardarFiltros() {
         inicializarAutocompleteUsuario();
         inicializarAutocompleteEstablecimiento();
 
-        // Cargamos filtros guardados (si existen) y mostramos reservas
-        cargarFiltrosGuardados();
+        // === RESETEAR FILTROS AL ENTRAR A LA PÁGINA ===
+        sessionStorage.removeItem('filtrosReservasAdmin');
+
+        // Inputs vacíos y variables en null
+        document.getElementById('busqueda-usuario-filtro').value = '';
+        document.getElementById('busqueda-establecimiento-filtro').value = '';
+        document.getElementById('filtro-fecha').value = '';
+        document.getElementById('limpiar-fecha').style.display = 'none';
+
+        filtroUsuarioId = null;
+        filtroEstablecimientoId = null;
+        filtroFecha = null;
+
+        // Mostrar todas las reservas
         filtrarYMostrarReservas();
 
         loading.style.display = 'none';
@@ -119,12 +109,11 @@ function guardarFiltros() {
     }
     }
 
-    // Función para recargar solo las reservas después de una acción (cancelar, etc.)
     async function recargarReservasYMantenerFiltros() {
     try {
         const reservasRes = await fetch('http://localhost:3000/reservas').then(r => r.json());
         allReservas = reservasRes;
-        filtrarYMostrarReservas(); // Mantiene los filtros actuales
+        filtrarYMostrarReservas(); // Usa los filtros actuales (que se guardan en cada cambio)
     } catch (error) {
         console.error('Error recargando reservas:', error);
         mostrarMensaje('Error al actualizar la lista de reservas');
@@ -154,7 +143,6 @@ function guardarFiltros() {
     });
     }
 
-    // Autocomplete para Usuario (con guardado de filtros)
     function inicializarAutocompleteUsuario() {
     const input = document.getElementById('busqueda-usuario-filtro');
     const sugerencias = document.getElementById('sugerencias-usuario-filtro');
@@ -205,7 +193,6 @@ function guardarFiltros() {
     });
     }
 
-    // Autocomplete para Establecimiento (con guardado de filtros)
     function inicializarAutocompleteEstablecimiento() {
     const input = document.getElementById('busqueda-establecimiento-filtro');
     const sugerencias = document.getElementById('sugerencias-establecimiento-filtro');
@@ -286,8 +273,6 @@ function guardarFiltros() {
 
     mostrarReservas(reservasFiltradas);
     }
-
-    // ... (mostrarReservas, cancelarReserva, reagendarReserva, mostrarMensaje permanecen iguales)
 
     function mostrarReservas(reservas) {
     const lista = document.getElementById('lista-reservas');
