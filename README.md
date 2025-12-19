@@ -117,3 +117,41 @@ El backend fue desarrollado como una API REST encargada de la logica de la admin
 ## Usuarios
 
 <img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/b484bc69-3e14-4867-8182-592367c2be3e" />
+
+# Levantar el proyecto
+
+## Requisitos
+- Docker compose
+- Node.js
+- Express.js
+
+## Pasos a seguir
+### 1.Clonar el repositorio
+```  
+git clone <clave_ssh>
+```
+
+### 2.Entrar el directorio
+```  
+cd Error-404/
+```
+
+### 3.Instalar dependencias
+```  
+npm install
+```
+
+### 4.Levantar base de datos
+```  
+make start-db
+```
+
+### 5.Levantar backend
+```  
+make start-backend
+```
+
+### 6.Levantar base de datos
+```  
+make start-frontend
+```
