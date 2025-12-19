@@ -3,7 +3,7 @@ import pool from '../config/db.config.js';
 const getAllEstablecimientos = async (req, res) => {
   try {
     const result = await pool.query("" +
-      'SELECT id, nombre, barrio, torneo ' +
+      'SELECT id, nombre, barrio, torneo, imagen ' +
       'FROM establecimientos ' +
       'ORDER BY nombre'
     );
@@ -37,7 +37,7 @@ const getEstablecimientoById = async (req, res) => {
 
 const createEstablecimiento = async (req, res) => {
   try {
-    const { nombre, barrio, torneo } = req.body;
+    const { nombre, barrio, torneo, imagen } = req.body;
 
     const errores = [];
 
@@ -58,7 +58,11 @@ const createEstablecimiento = async (req, res) => {
     if (torneo !== undefined && torneo !== null && typeof torneo !== 'string') {
       errores.push('El campo torneo debe ser un texto o null');
     }
-
+    if (imagen !== undefined && imagen !== null && typeof imagen !== 'string') {
+       errores.push('El campo imagen debe ser una URL válida o null');
+    }else if (imagen && imagen.trim().length > 500) {
+        errores.push('La URL de la imagen no puede exceder los 500 caracteres');
+    }
     if (errores.length > 0) {
       return res.status(400).json({
         error: 'Errores de validación',
@@ -69,6 +73,7 @@ const createEstablecimiento = async (req, res) => {
     const nombreTrim = nombre.trim();
     const barrioTrim = barrio.trim();
     const torneoTrim = (torneo && typeof torneo === 'string') ? torneo.trim() || null : null;
+    const imagenTrim = (imagen && typeof imagen === 'string') ? imagen.trim() || null : null;
 
     // === VALIDACIÓN: NOMBRE ÚNICO (insensible a mayúsculas, acentos y espacios) ===
     const checkNombreQuery = `
@@ -87,12 +92,12 @@ const createEstablecimiento = async (req, res) => {
 
     // === INSERCIÓN FINAL ===
     const insertQuery = `
-      INSERT INTO establecimientos (nombre, barrio, torneo)
-      VALUES ($1, $2, $3)
+      INSERT INTO establecimientos (nombre, barrio, torneo, imagen)
+      VALUES ($1, $2, $3, $4)
       RETURNING *;
     `;
 
-    const values = [nombreTrim, barrioTrim, torneoTrim];
+    const values = [nombreTrim, barrioTrim, torneoTrim, imagenTrim];
 
     const { rows } = await pool.query(insertQuery, values);
 
@@ -171,7 +176,17 @@ const updateEstablecimiento = async (req, res) => {
     maxLength: 250,
     requiredIfSent: true
   });
-
+  if (imagen !== undefined) {
+    if (imagen !== null && typeof imagen !== 'string') {
+    errores.push('El campo imagen debe ser una URL válida o null');
+  } else if (imagen && imagen.trim().length > 500) {
+    errores.push('La URL de la imagen no puede exceder los 500 caracteres');
+  } else {
+    const imagenProcesada = (imagen && typeof imagen === 'string') ? imagen.trim() || null : null;
+    setParts.push(`imagen = $${paramIndex++}`);
+    values.push(imagenProcesada);
+  }
+}
   // torneo es opcional (puede ser string, null o no enviado)
   if (torneo !== undefined) {
     if (torneo !== null && typeof torneo !== 'string') {

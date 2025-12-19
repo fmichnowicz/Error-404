@@ -1,9 +1,12 @@
+DROP TABLE IF EXISTS establecimientos CASCADE;
+
 -- Tablas independientes (sólo reciben foreign keys)
 CREATE TABLE establecimientos (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(250) NOT NULL UNIQUE,
     barrio VARCHAR(250) NOT NULL,
-    torneo TEXT
+    torneo TEXT,
+    imagen TEXT
 );
 
 CREATE TABLE usuarios (

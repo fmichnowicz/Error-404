@@ -1,17 +1,17 @@
 -- Tablas independientes (sólo reciben foreign keys)
-INSERT INTO establecimientos (nombre, barrio, torneo) VALUES
-('Grün FC Núñez', 'Núñez', 'Sólo de fútbol 5'),
-('Central Paddle Gym', 'Abasto', 'No'),
-('Barrio Parque Fútbol Club', 'Palermo', 'Sí, torneos de fútbol 5 y 7'),
-('Distrito Fútbol Belgrano', 'Belgrano', 'Torneos internos de fútbol'),
-('Complejo Belaustegui', 'Villa Crespo', 'No'),
-('Fútbol Vieytes', 'Barracas', 'Sí, torneos grandes'),
-('Justo Fútbol 5', 'Palermo', 'Torneos de fútbol 5 y 6'),
-('Racket Club', 'Belgrano', 'Torneos de pádel y fútbol'),
-('Open Gallo', 'Almagro', 'No'),
-('Villa Malcolm', 'Villa Crespo', 'Torneos comunitarios'),
-('Costa Salguero Fútbol', 'Costanera Norte', 'Sí, eventos corporativos'),
-('Distrito Fútbol Constitución', 'Constitución', 'Torneos de fútbol 5');
+INSERT INTO establecimientos (nombre, barrio, torneo, imagen) VALUES
+('Grün FC Núñez', 'Núñez', 'Sólo de fútbol 5', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png'), 
+('Central Paddle Gym', 'Abasto', 'No', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png'),
+('Barrio Parque Fútbol Club', 'Palermo', 'Sí, torneos de fútbol 5 y 7', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png'),
+('Distrito Fútbol Belgrano', 'Belgrano', 'Torneos internos de fútbol', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png'),
+('Complejo Belaustegui', 'Villa Crespo', 'No', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png'),
+('Fútbol Vieytes', 'Barracas', 'Sí, torneos grandes', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png'),
+('Justo Fútbol 5', 'Palermo', 'Torneos de fútbol 5 y 6', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png'),
+('Racket Club', 'Belgrano', 'Torneos de pádel y fútbol', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png'),
+('Open Gallo', 'Almagro', 'No', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png'),
+('Villa Malcolm', 'Villa Crespo', 'Torneos comunitarios', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png'),
+('Costa Salguero Fútbol', 'Costanera Norte', 'Sí, eventos corporativos', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png'),
+('Distrito Fútbol Constitución', 'Constitución', 'Torneos de fútbol 5', 'https://infodeportes.com.ar/wp-content/uploads/2023/06/imagen-84-1024x576.png');
 
 INSERT INTO usuarios (nombre, email, telefono, dni, domicilio) VALUES
 ('Juan Pérez', 'juan.perez@gmail.com', '11-3456-7890', '30123456', 'Av. Corrientes 1234, CABA'),
