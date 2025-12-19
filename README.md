@@ -92,4 +92,28 @@ El backend fue desarrollado como una API REST encargada de la logica de la admin
 - Operaciones CRUD realizadas a traves de los controladores
 
 # Flujo de usuario
+
+## Pagina principal
+
 <img width="1014" height="1578" alt="Image" src="https://github.com/user-attachments/assets/c90ed2b5-fc82-4ee2-8c9c-1e7c2704de6c" />
+
+## Establecimientos
+<img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/dd0b4c7a-b8f6-4995-b67c-e3f423826476" />
+
+## Reservas
+<img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/a2c548a8-4129-407f-a1d0-ef902cec2b7b" />
+
+## Crear reservas
+
+<img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/fc856e27-576e-4a5d-855f-dfcb2bf37632" />
+<img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/da2636ed-40dd-41ec-b996-8461b2db81f3" />
+<img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/8a4f7a3d-824b-425e-9e6b-c08b2f330a1d" />
+
+## Editar/Eliminar reservas
+
+<img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/1ee15dd7-0340-4883-acde-a5139d80e396" />
+<img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/696b6bb6-53df-4dc6-9036-b68e6b8770c8" />
+
+## Usuarios
+
+<img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/b484bc69-3e14-4867-8182-592367c2be3e" />
