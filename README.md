@@ -88,6 +88,7 @@ El backend fue desarrollado como una API REST encargada de la logica de la admin
 #### Tablas independientes
 
 - Establecimientos
+
 | id          | nombre       | barrio       | torneo |
 | ----------- | ------------ | ------------ | ------ |
 | SERIAL      | VARCHAR(250) | VARCHAR(250) | TEXT   |
@@ -95,6 +96,7 @@ El backend fue desarrollado como una API REST encargada de la logica de la admin
 |             | UNIQUE       |              |        |
 
 - Usuarios
+
 | id          | nombre       | email        | telefono    | dni         | domicilio    |
 | ----------- | ------------ | ------------ | ----------- | ----------- | ------------ |
 | SERIAL      | VARCHAR(250) | VARCHAR(255) | VARCHAR(30) | VARCHAR(20) | VARCHAR(100) |
@@ -104,6 +106,7 @@ El backend fue desarrollado como una API REST encargada de la logica de la admin
 #### Tablas dependientes
 
 - Canchas
+
 | id          | nombre       | deporte      | establecimiento_id       | precio_hora     | descripcion | superficie   | iluminacion   | cubierta      |
 | ----------- | ------------ | ------------ | ------------------------ | --------------- | ----------- | ------------ | ------------- | ------------- |
 | SERIAL      | VARCHAR(100) | VARCHAR(100) | INTEGER                  | DECIMAL (10, 2) | TEXT        | VARCHAR(100) | BOOLEAN       | BOOLEAN       |
@@ -112,6 +115,7 @@ El backend fue desarrollado como una API REST encargada de la logica de la admin
 |             |              |              | ON DELETE CASCADE        |                 |             |              |               |               |
 
 - Reservas
+
 | id          | cancha_id         | usuario_id        | fecha_reserva | reserva_hora_inicio | reserva_hora_fin | fecha_creacion_reserva    |
 | ----------- | ----------------- | ----------------- | ------------- | ------------------- | ---------------- | ------------------------- |
 | SERIAL      | INTEGER           | INTEGER           | DATE          | TIME                | TIME             | TIMESTAMPTZ               |
@@ -129,7 +133,7 @@ Continuación de la tabla Reservas
 |                            |                 |
 
 #### Conexión visual entre tablas
-
+<img width="845" height="596" alt="image" src="https://github.com/user-attachments/assets/d5ff9691-3d98-42b3-972b-73a9169abc51" />
 
 ### Administracion de datos
 - Acceso a la base de datos mediante el backend
