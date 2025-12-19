@@ -2,7 +2,11 @@ import pool from '../config/db.config.js';
 
 const getAllEstablecimientos = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM establecimientos');
+    const result = await pool.query("" +
+      'SELECT id, nombre, barrio, torneo ' +
+      'FROM establecimientos ' +
+      'ORDER BY nombre'
+    );
     res.json(result.rows);
   } catch (error) {
     console.error('Error al obtener todos los establecimientos:', error);

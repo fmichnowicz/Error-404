@@ -2,7 +2,23 @@ import pool from '../config/db.config.js';
 
 const getAllCanchas = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM canchas');
+    const result = await pool.query(`
+      SELECT 
+        c.id, 
+        c.nombre AS nombre_cancha, 
+        c.deporte, 
+        c.superficie, 
+        c.precio_hora, 
+        c.descripcion, 
+        c.iluminacion, 
+        c.cubierta, 
+        c.establecimiento_id, 
+        e.nombre AS nombre_establecimiento, 
+        e.barrio 
+        FROM canchas c 
+        JOIN establecimientos e ON c.establecimiento_id = e.id 
+        ORDER BY c.precio_hora, e.nombre, c.deporte, c.nombre
+      `);
     res.json(result.rows);
   } catch (error) {
     console.error('Error al obtener todas las canchas:', error);

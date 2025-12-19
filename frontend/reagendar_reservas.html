@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <title>Cancha Ya - Reagendar Reserva</title>
+    </head>
+<body>
+    <!-- Navigation bar -->
+    <div id="navbar-container"></div>
+
+    <section class="section">
+        <div class="container">
+        <h2 class="title has-text-centered mb-2">Reagendar Reserva</h2>
+
+        <!-- Texto explicativo -->
+        <div class="notification is-info is-light has-text-centered mb-5">
+            <p class="subtitle is-5">
+            Selecciona un nuevo horario para tu reserva. Solo puedes elegir canchas del mismo establecimiento y deporte.
+            </p>
+        </div>
+
+        <!-- Información fija de la reserva original -->
+        <div class="columns is-centered mb-6">
+            <div class="column is-two-thirds">
+            <div class="box has-background-info has-text-white">
+                <div class="columns">
+                <div class="column">
+                    <p><strong>Establecimiento:</strong> <span id="info-establecimiento">Cargando...</span></p>
+                    <p><strong>Deporte:</strong> <span id="info-deporte">Cargando...</span></p>
+                </div>
+                <div class="column">
+                    <p><strong>Usuario:</strong> <span id="info-usuario">Cargando...</span></p>
+                    <p><strong>Fecha actual de la reserva:</strong> <span id="info-fecha-actual">Cargando...</span></p>
+                    <p><strong>Horario actual:</strong> <span id="info-horario-actual">Cargando...</span></p> <!-- Ahora debajo de la fecha -->
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- Filtro de fecha -->
+        <div class="columns is-centered mb-5">
+            <div class="column is-one-third">
+            <div class="field">
+                <label class="label">Nueva fecha de reserva</label>
+                <div class="control">
+                <input class="input" type="date" id="filtro-fecha">
+                </div>
+                <p class="help">Solo fechas a partir de mañana</p>
+            </div>
+            </div>
+        </div>
+
+        <!-- Botón más intuitivo -->
+        <div class="has-text-centered mb-6">
+            <button class="button is-primary is-large is-rounded" id="btn-aplicar-filtros">
+            <span class="icon is-medium">
+                <i class="fas fa-sync-alt fa-lg"></i>
+            </span>
+            <span>Actualizar grilla con esta fecha</span>
+            </button>
+            <p class="help mt-3 has-text-grey">Cambia la fecha arriba y presiona este botón para ver los horarios disponibles</p>
+        </div>
+
+        <!-- Grilla de horarios -->
+        <div class="table-container">
+            <table class="table is-bordered is-striped is-hoverable is-fullwidth" id="tabla-reservas">
+            <thead id="tabla-header"></thead>
+            <tbody id="tabla-body">
+                <tr>
+                <td colspan="31" class="has-text-centered">
+                    <progress class="progress is-small is-primary" max="100">Cargando...</progress>
+                </td>
+                </tr>
+            </tbody>
+            </table>
+        </div>
+        </div>
+    </section>
+
+    <!-- Resumen de la nueva reserva -->
+    <section class="section" id="seccion-resumen" style="display: none;">
+        <div class="container">
+        <div class="notification is-primary is-light">
+            <p class="title is-5 has-text-centered mb-4">Resumen de la nueva reserva</p>
+            <div class="content">
+            <p><strong>Cancha:</strong> <span id="resumen-cancha"></span></p>
+            <p><strong>Establecimiento:</strong> <span id="resumen-establecimiento"></span></p>
+            <p><strong>Deporte:</strong> <span id="resumen-deporte"></span></p>
+            <p><strong>Fecha:</strong> <span id="resumen-fecha"></span></p>
+            <p><strong>Horario:</strong> de <span id="resumen-hora-inicio"></span> a <span id="resumen-hora-fin"></span></p>
+
+            <!-- NUEVO: Saldo diferencial -->
+            <div id="resumen-saldo" class="mt-5" style="display: none;">
+                <p class="title is-4 has-text-centered" id="resumen-saldo-texto"></p>
+            </div>
+            </div>
+        </div>
+
+        <div class="has-text-centered mt-6">
+            <button class="button is-large is-success" id="btn-confirmar-reagendar" disabled>
+            <span class="icon"><i class="fas fa-check"></i></span>
+            <span>Confirmar reagenda</span>
+            </button>
+        </div>
+        </div>
+    </section>
+
+    <script src="assets/js/shared.js"></script>
+    <script src="assets/js/reagendar_reservas.js"></script>
+</body>
+</html>

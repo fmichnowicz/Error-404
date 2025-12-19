@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <title>Cancha Ya - Establecimientos</title>
+    </head>
+<body>
+    <!-- Navigation bar -->
+    <div id="navbar-container"></div>
+
+    <section class="section">
+        <div class="container">
+        <h2 class="title has-text-centered mb-6">Establecimientos disponibles</h2>
+
+        <!-- Filtros -->
+        <div class="columns is-centered mb-6">
+            <div class="column is-one-third">
+            <div class="field">
+                <label class="label">Buscar por barrio</label>
+                <div class="control has-icons-left">
+                <input class="input" type="text" id="filtro-barrio" placeholder="Ej: Palermo" autocomplete="off">
+                <span class="icon is-left">
+                    <i class="fas fa-map-marker-alt"></i>
+                </span>
+                </div>
+            </div>
+            <div id="sugerencias-barrio" class="panel mt-2" style="display: none; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+
+            <div class="column is-one-third">
+            <div class="field">
+                <label class="label">Buscar por deporte</label>
+                <div class="control has-icons-left">
+                <input class="input" type="text" id="filtro-deporte" placeholder="Ej: Fútbol" autocomplete="off">
+                <span class="icon is-left">
+                    <i class="fas fa-futbol"></i>
+                </span>
+                </div>
+            </div>
+            <div id="sugerencias-deporte" class="panel mt-2" style="display: none; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+        </div>
+
+        <!-- Mensaje de carga -->
+        <div id="loading-message" class="has-text-centered mb-5">
+            <progress class="progress is-medium is-primary" max="100">Cargando...</progress>
+        </div>
+
+        <!-- Grilla de establecimientos -->
+        <div class="columns is-multiline is-centered" id="establecimientos-grid">
+            <!-- Cards generadas por JS -->
+        </div>
+
+        <!-- Paginación -->
+        <div class="has-text-centered mt-6" id="boton_paginacion"></div>
+        </div>
+    </section>
+
+    <script src="assets/js/shared.js"></script>
+    <script src="assets/js/establecimientos.js"></script>
+</body>
+</html>

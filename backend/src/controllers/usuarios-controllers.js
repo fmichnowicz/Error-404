@@ -358,4 +358,31 @@ const deleteUsuario = async (req, res) => {
   }
 };
 
-export { getAllUsuarios, getUsuarioById, createUsuario, updateUsuario, deleteUsuario };
+// Endpoint para el form de usuarios de la página crear_reservas
+const buscarUsuariosPorNombre = async (req, res) => {
+  try {
+    const { q } = req.query; // q = query de búsqueda (ej: "Fer")
+
+    if (!q || q.trim().length < 2) {
+      return res.json([]); // Si es muy corto, devolvemos vacío
+    }
+
+    const query = q.trim();
+
+    const result = await pool.query(`
+      SELECT id, nombre, email, telefono, dni, domicilio
+      FROM usuarios
+      WHERE nombre ILIKE $1
+      ORDER BY nombre
+      LIMIT 10
+    `, [`%${query}%`]);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error al buscar usuarios por nombre:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+//Ejemplo de uso http://localhost:3000/usuarios/buscar?q=Fernando
+
+export { getAllUsuarios, getUsuarioById, createUsuario, updateUsuario, deleteUsuario, buscarUsuariosPorNombre };

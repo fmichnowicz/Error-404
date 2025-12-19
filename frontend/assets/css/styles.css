@@ -1,0 +1,440 @@
+/* 1.a Estilos Sección index-FAQ */
+.card-header {
+    background-color: var(--bulma-primary);
+}
+
+/* 1.b Transición suave al abrir/cerrar */
+.card-content {
+    transition: all 0.3s ease;
+}
+/* 1.c Ocultamos el contenido cuando está cerrado */
+.card-content.is-hidden {
+    max-height: 0;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.card-items {
+    overflow: hidden;
+    border-radius: 12px !important;     /* esquinas redondeadas */
+    margin-bottom: 1rem;               /* espacio entre secciones */
+    box-shadow: 0 4px 12px rgba(10, 10, 10, 0.1);
+}
+
+/* 2.a Estilos Sección index-hero */
+.hero {
+    position: relative;
+    height: 60vh; /* Altura completa de la pantalla */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Para que las imágenes no se salgan */
+    color: white;
+    text-align: center;
+}
+
+/* 2.b Contenedor de las imágenes de fondo */
+.hero-slideshow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Detrás del contenido */
+}
+
+/* 2.c Cada slide (imagen de fondo) */
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover; /* Cubre toda el área sin distorsión */
+    background-position: center;
+    opacity: 0; /* Empiezan invisibles */
+    transition: opacity 1.5s ease-in-out; /* Transición suave de 1.5 segundos */
+}
+
+/* 2.d Slide activo (visible) */
+.slide.active {
+    opacity: 1;
+}
+
+/* Cambia solamente "Cancha" */
+.brand-title {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.8rem; 
+    font-weight: 800;    
+    color: #2e7d32; 
+}
+
+/* Sobrescribe solo el color del texto "Ya!" */
+.highlight {
+    font-weight: 900; 
+    color: #ff9800; 
+}
+
+
+
+
+/* 2.e Contenido overlay (texto, botones, etc.) */
+.hero-content {
+    z-index: 1;
+    max-width: 800px;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.4); /* Fondo semi-transparente para legibilidad */
+    border-radius: 12px;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero h1 { font-size: 2rem; }
+}
+
+/* Estilos sección bodypage 1 */
+.titulo {
+    font-size: clamp(1.5rem, 2vw, 4rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+}
+
+.subtitulo {
+    font-size: clamp(0.9rem, 1vw, 1.6rem);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+/* Responsiveness para modal en modo mobile */
+@media (max-width: 768px) {
+    .modal-card {
+        margin: 1rem;               /* Espacio alrededor */
+        max-height: calc(100vh - 2rem);
+        border-radius: 12px;        /* Bordes más redondeados */
+    }
+    
+    .modal-card-head {
+        padding: 0.9rem;
+    }
+    
+    .modal-card-body {
+        padding: 1rem;
+    }
+    
+    .buttons.are-large {
+        flex-direction: column;     /* Botones uno debajo del otro en móvil */
+        gap: 0.5rem;                /* Espacio entre botones */
+    }
+}
+
+/* Estilos para las cards de la página establecimientos */
+/* Todas las cards misma altura */
+.has-same-height {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* espacio entre contenido y footer */
+}
+
+/* El contenido crece para empujar el footer abajo */
+.card-content.flex-grow {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* centra verticalmente el texto */
+}
+
+/* Imagen cubre todo el espacio */
+.card-image .image {
+    height: 200px; /* altura fija para uniformidad */
+    overflow: hidden;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Hover bonito */
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+/* Paginación en móvil: apilar elementos verticalmente */
+@media screen and (max-width: 768px) {
+    .pagination {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem; /* espacio entre botones y texto */
+    }
+
+    .pagination .pagination-previous,
+    .pagination .pagination-next {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .pagination-list {
+        margin-top: 0.5rem;
+    }
+
+    .pagination-ellipsis {
+        font-size: 1rem;
+    }
+}
+
+
+/* ===================================
+   ESTILOS PÁGINA RESERVAS (crear_reserva.html)
+   =================================== */
+
+/* Tabla general */
+#tabla-reservas th,
+#tabla-reservas td {
+  text-align: center;
+  vertical-align: middle;
+  padding: 0.75rem 0.5rem;
+}
+
+/* Primera columna (Cancha) - más ancha y con buen contraste */
+#tabla-reservas th:first-child,
+#tabla-reservas td:first-child {
+  width: 260px;
+  min-width: 260px;
+  text-align: left;
+  padding-left: 1.5rem;
+  background-color: #00d1b2 !important; /* verde Bulma primary */
+  color: white;
+  font-weight: bold;
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+
+/* Header "Cancha" más grande */
+#tabla-reservas th:first-child {
+  font-size: 1.4rem !important;
+  font-weight: 900;
+}
+
+/* Columna "Precio por hora" */
+#tabla-reservas th:nth-child(2) {
+  background-color: #3273dc !important; /* azul Bulma */
+  color: white !important;
+  font-weight: bold;
+  font-size: 1.1rem;
+  width: 120px;
+}
+
+#tabla-reservas td:nth-child(2) {
+  background-color: #eef3fc;
+  color: #3273dc;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* Horarios en header - contraste alto */
+#tabla-reservas th:not(:first-child):not(:nth-child(2)) {
+  background-color: #363636 !important; /* gris oscuro */
+  color: white !important;
+  font-weight: bold;
+  font-size: 1rem;
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+/* Columnas de horarios (celdas) */
+#tabla-reservas td:not(:first-child):not(:nth-child(2)) {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+/* Botones de horario - estilo claro por defecto */
+.boton-horario {
+  width: 100%;
+  height: 100%;
+  min-height: 60px;
+  border-radius: 8px;
+  border: 2px solid #dbdbdb;
+  background-color: #f9f9f9;
+  color: #7a7a7a;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boton-horario:hover:not(.seleccionado):not(.ocupado) {
+  background-color: #e8f4fd;
+  border-color: #00d1b2;
+}
+
+.boton-horario.seleccionado {
+  background-color: #00d1b2;
+  color: white;
+  border-color: #00b89c;
+}
+
+.boton-horario.ocupado {
+  background-color: #f14668;
+  color: white;
+  cursor: not-allowed;
+  border-color: #f14668;
+}
+
+/* Texto adicional en primera columna (superficie, iluminación, cubierta) */
+#tabla-reservas td:first-child .is-size-5 {
+  font-weight: 900;
+  font-size: 1.3rem;
+  color: white;
+}
+
+#tabla-reservas td:first-child .is-size-6 {
+  color: #e0f7fa;
+  font-weight: 600;
+}
+
+#tabla-reservas td:first-child .info-adicional {
+  color: #b2ebf2;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+#tabla-reservas td:first-child .separador {
+  color: #80deea;
+  margin: 0 0.5rem;
+}
+
+/* Mensaje de error flotante */
+.mensaje-error {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f14668;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 1000;
+  font-weight: bold;
+  animation: fadeInOut 4s forwards;
+}
+
+@keyframes fadeInOut {
+  0%   { opacity: 0; transform: translate(-50%, -20px); }
+  10%  { opacity: 1; transform: translateX(-50%); }
+  90%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Scroll horizontal suave en móvil */
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Barra de desplazamiento más gruesa y visible */
+.table-container::-webkit-scrollbar {
+  height: 25px; /* grosor de la barra horizontal */
+  width: 16px;  /* grosor de la barra vertical (por si aparece) */
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #00d1b2; /* color verde de tu app */
+  border-radius: 10px;
+  border: 3px solid #f1f1f1;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #00b89c; /* un poco más oscuro al hover */
+}
+
+/* ESTILOS PARA VER_CANCELAR_RESERVAS*/
+/* Alineación perfecta de íconos en input con has-icons-left y has-icons-right */
+.control.has-icons-left.has-icons-right .icon {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control.has-icons-left.has-icons-right .icon.is-right {
+  pointer-events: none; /* Evita que el ícono izquierdo bloquee clics */
+}
+
+.control.has-icons-left.has-icons-right .icon.is-right.is-clickable {
+  pointer-events: auto; /* Pero sí permitimos clics en la X */
+}
+
+/* Card con imagen de fondo completa y responsive */
+.card.has-background-image {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  height: 450px; /* Aumenté un poco la altura para que quepa el texto grande */
+  width: 100%;
+}
+
+/* Fondo de imagen */
+.card-background-container {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('../images/establecimientos/Gemini_created_canchas.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Overlay oscuro */
+.card-background-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.4));
+  z-index: 1;
+}
+
+/* Contenido centrado y con texto grande */
+.card-content-overlay {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px;
+  color: white;
+  text-align: center; /* Centrado total */
+}
+
+/* Botón */
+.card-footer-overlay {
+  margin-top: auto;
+}

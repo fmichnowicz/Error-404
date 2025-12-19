@@ -7,42 +7,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" 
     integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" 
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="styles.css">
-    <title>Reserva de canchas</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <title>Cancha Ya - Página principal</title>
 </head>
 <body>
     <!-- Navigation bar -->
-    <nav class="navbar has-shadow is-primary">
-        <!--Logo/Brand-->
-        <div class="navbar-brand">
-            <!-- Nombre del emprendimiento -->
-            <div class="navbar-item brand-title pl-2">
-                Cancha<span class="highlight">Ya!</span>
-            </div>
-
-            <a class="navbar-burger" id="burger">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </a>
-        </div>
-
-        <div class="navbar-menu" id="nav-links">
-            <div class="navbar-end">
-                <a class="navbar-item">Establecimientos</a>
-                <a class="navbar-item">Sign in</a>
-            </div>
-        </div>
-    </nav>
+    <div id="navbar-container"></div>
 
     <!-- Banner -->
     <section class="hero is-medium">
         <div class="hero-slideshow">
             <!-- Imágenes de fondo (fuente: freepik.com)-->
-            <div class="slide active" style="background-image: url('assets/futbol.jpg');"></div>
-            <div class="slide" style="background-image: url('assets/basket.jpg');"></div>
-            <div class="slide" style="background-image: url('assets/tenis.jpg');"></div>
+            <div class="slide active" style="background-image: url('assets/images/index/futbol.jpg');"></div>
+            <div class="slide" style="background-image: url('assets/images/index/basket.jpg');"></div>
+            <div class="slide" style="background-image: url('assets/images/index/tenis.jpg');"></div>
         </div>
 
         <!-- Contenido del hero -->
@@ -62,7 +40,7 @@
                         <p class="titulo">¡Juego con tus amigos en las mejores canchas de la Ciudad de Buenos Aires!</p>
                     </div>
                     <div class="block">
-                        <p class="subtitulo">Puedes reservar las mejores canchas de fútbol, basket, tenis y paddle</p>
+                        <p class="subtitulo">Puedes reservar las mejores canchas de fútbol, basket, tenis, handball, paddle y vóley.</p>
                     </div>
                 </div>
             </div>
@@ -88,7 +66,9 @@
                             </header>
                             <div class="card-content contenido-desplegable is-hidden">
                                 <div class="content">
-                                    Para reservar, seleccioná la fecha, hora y tipo de cancha en nuestro calendario.
+                                    <p>Para crear 1 reserva podes ir directamente a la sección Reservas de la barra de navegación y luego seleccionar Crear Reserva.</p>
+                                    <p>También podes hacerlo desde la sección Establecimientos donde de paso podes ver más información sobre los lugares que tenemos disponibles.</p>
+
                                 </div>
                             </div>
                         </div>
@@ -104,7 +84,9 @@
                             </header>
                             <div class="card-content contenido-desplegable is-hidden">
                                 <div class="content">
-                                    Aceptamos tarjetas de crédito/débito (Visa, Mastercard), transferencias bancarias y pago por QR.El costo es el mismo para cualquier método de pago
+                                    <p>Por el momento, debido a restricciones operativas, no podemos procesar pagos online.</p>
+                                    <p>Los pagos deberán realizarse presencialmente en el establecimiento donde se reservó la cancha.</p>
+                                    <p>No te preocupes. Todos los establecimientos aceptan tarjetas de crédito/débito (Visa, Mastercard, AMEX), transferencias bancarias, pago por QR y efectivo.</p>
                                 </div>
                             </div>
                         </div>
@@ -120,10 +102,102 @@
                             </header>
                             <div class="card-content contenido-desplegable is-hidden">
                                 <div class="content">
-                                    Sí, podes cancelar hasta 24 horas antes sin cargo. Después de eso, sólo se reembolsa un 50%. Contacta a soporte@soporte.com para asistencia.
+                                    <p>Sí, podes cancelar tu reserva hasta 24 hs ántes de la hora de inicio de tu reserva. Tené en cuenta que sólo se te reembolsará un 50% del monto pagado.</p>
+                                    <p>Dentro de las 24 hs de inicio de la reserva y a posteriori ya no se puede cancelar más y no se realizan devoluciones.</p>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="card-items">
+                            <header class="card-header header-desplegable">
+                                <p class="card-header-title">¿Dónde cancelo mi reserva?</p>
+                                <button class="card-header-icon boton-desplegar" aria-label="Desplegar texto">
+                                    <span class="icon has-text-white">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </header>
+                            <div class="card-content contenido-desplegable is-hidden">
+                                <div class="content">
+                                    <p>Podes cancelar tu reserva desde la sección Reservas y luego seleccionar Reagendar / Cancelar Reserva</p>
+                                    <p>Luego podes buscar tu reserva por tu nombre de usuario y fecha de reserva.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-items">
+                            <header class="card-header header-desplegable">
+                                <p class="card-header-title">¿Puedo reagendar mi reserva?</p>
+                                <button class="card-header-icon boton-desplegar" aria-label="Desplegar texto">
+                                    <span class="icon has-text-white">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </header>
+                            <div class="card-content contenido-desplegable is-hidden">
+                                <div class="content">
+                                    <p>Sí, podes reagendar tu reserva hasta 24 hs ántes de la hora de inicio de tu reserva.</p>
+                                    <p>Podes reagendar la misma cancha o alguna otra cancha del mismo establecimiento y el mismo deporte que escogiste originalmente.</p>
+                                    <p>Por favor, tené en cuenta que dentro de las 24 hs de inicio de la reserva y a posteriori ya no se puede reagendar más y no se realizan devoluciones.</p>
+                                    <p>Si la nueva reserva que generes es más barata que lo habías reservado originalmente, se te generará un saldo a favor para tu próxima reserva.</p>
+                                    <p>Si la nueva reserva que generes es más cara que lo habías reservado originalmente, se te generará un saldo deudor que deberás abonar.</p>
+                                    <p></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-items">
+                            <header class="card-header header-desplegable">
+                                <p class="card-header-title">¿Donde reagendo mi reserva?</p>
+                                <button class="card-header-icon boton-desplegar" aria-label="Desplegar texto">
+                                    <span class="icon has-text-white">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </header>
+                            <div class="card-content contenido-desplegable is-hidden">
+                                <div class="content">
+                                    <p>Podes reagendar tu reserva desde la sección Reservas y luego seleccionar Reagendar / Cancelar Reserva</p>
+                                    <p>Luego podes buscar tu reserva por tu nombre de usuario y fecha de reserva.</p>                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-items">
+                            <header class="card-header header-desplegable">
+                                <p class="card-header-title">¿Qué pasa si no tengo un usuario creado?</p>
+                                <button class="card-header-icon boton-desplegar" aria-label="Desplegar texto">
+                                    <span class="icon has-text-white">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </header>
+                            <div class="card-content contenido-desplegable is-hidden">
+                                <div class="content">
+                                    <p>Tené en cuenta que no vas a poder crear reservas si no creas tu usuario primero.</p>
+                                    <p>Lo puedes hacer facilmente desde la sección Usuario.</p>                                    
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="card-items">
+                            <header class="card-header header-desplegable">
+                                <p class="card-header-title">Ingresé mis datos de usuario mal. ¿Cómo hago para modificarlos?</p>
+                                <button class="card-header-icon boton-desplegar" aria-label="Desplegar texto">
+                                    <span class="icon has-text-white">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                    </span>
+                                </button>
+                            </header>
+                            <div class="card-content contenido-desplegable is-hidden">
+                                <div class="content">
+                                    <p>Por el momento, por restricciones operativas, no se puede actualizar información del usuario de manera online.</p>
+                                    <p>Cualquier inquietud que tengas podes contactarte con canchaya@soporte-usuario.com.</p>                                    
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -136,7 +210,7 @@
             <p>Copyright Grupo Error-404</p>
         </div>
     </footer>
-
-    <script src="index.js"></script>
+    <script src="assets/js/index.js"></script>
+    <script src="assets/js/shared.js"></script>
 </body>
 </html>
