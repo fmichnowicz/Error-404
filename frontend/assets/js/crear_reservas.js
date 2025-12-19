@@ -1,5 +1,5 @@
 // frontend/assets/js/crear_reservas.js
-
+alert("version nueva del js cargada")
 const HORARIOS = [];
 for (let h = 7; h <= 22; h++) {
   HORARIOS.push(`${h.toString().padStart(2, '0')}:00`);
