@@ -159,7 +159,7 @@ Continuación de la tabla Reservas
 <img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/da2636ed-40dd-41ec-b996-8461b2db81f3" />
 <img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/8a4f7a3d-824b-425e-9e6b-c08b2f330a1d" />
 
-## Editar/Eliminar reservas
+## Reagendar / Cancelar reservas
 
 <img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/1ee15dd7-0340-4883-acde-a5139d80e396" />
 <img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/696b6bb6-53df-4dc6-9036-b68e6b8770c8" />
@@ -208,6 +208,13 @@ make start-frontend
 ```  
 make down
 ```
+# Limitaciones:
+- Base de datos inicial no es robusta (pocos datos)
+- UX --> se trató de que sea lo más amigable posible pero hay algunas páginas como crear_reservas.html que en modo mobile puede resultar dificultaso su uso. Habría que rediseñar como se ve en modo mobile
+- Dificultad para manejar los formatos de horarios / fechas entre el frontend, el backend y la base datos. Algunos muestren UTC, otros hora local lo que dificultó mucho las validaciones que se hacían.
+- La web está pensada sólo para los usuarios que buscan crear / reagendar / cancelar reservas. No se pueden crear nuevos establecimientos o nuevas canchas desde la web.
+- Manejo muy básico de usuarios. 
+
 
 # Creditos:
 - Fernando Michnowicz
