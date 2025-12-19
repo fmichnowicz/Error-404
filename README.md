@@ -5,7 +5,7 @@
 
  ---
 
- ## Estructura
+ # Estructura
 
 ```
 ├── backend/
@@ -29,7 +29,7 @@
 
 ```
 
-## Frontend
+# Frontend
 El frontend fue desarrollado como una aplicacion multi-page, utiliza una API REST para gestionar las reservas de las canchas
 
 ### Tecnologias
@@ -48,7 +48,7 @@ El frontend fue desarrollado como una aplicacion multi-page, utiliza una API RES
 
 
 
- ## Backend
+# Backend
 El backend fue desarrollado como una API REST encargada de la logica de la administracion de datos, tanto recibirlos, como mandarlos,borrarlos o modificarlos
 
 ### Tecnologias
@@ -66,3 +66,21 @@ El backend fue desarrollado como una API REST encargada de la logica de la admin
 - POST /reservas
 - PUT /reservas/:id
 - DELETE /reservas/:id
+
+# Base de datos
+
+### Tecnologias
+- PostgreSQL
+- Docker Compose para la inicializacion del entorno
+
+### Modelo de datos
+- Establecimientos
+- Canchas
+  - Asociadas a un establecimiento
+- Usuarios
+- Reservas
+  - Asociadas a una cancha y a un usuario
+
+### Administracion de datos
+- Acceso a la base de datos mediante el backend
+- Operaciones CRUD realizadas a traves de los controladores
