@@ -1,4 +1,4 @@
-// frontend/assets/js/reservas.js
+// frontend/assets/js/crear_reservas.js
 
 const HORARIOS = [];
 for (let h = 7; h <= 22; h++) {
@@ -15,11 +15,26 @@ let seleccionActual = {
   horarios: []
 };
 
-let usuarioSeleccionado = null; // { id, nombre, email, telefono }
+let usuarioSeleccionado = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   inicializarFiltros();
   inicializarBusquedaUsuario();
+
+  // Eventos del modal post-reserva (solo cierra con botones)
+  const modalPost = document.getElementById('modal-post-reserva');
+  const btnSeguir = document.getElementById('btn-seguir-creando');
+  const btnVer = document.getElementById('btn-ver-reservas');
+
+  btnSeguir.addEventListener('click', () => {
+    modalPost.classList.remove('is-active');
+  });
+
+  btnVer.addEventListener('click', () => {
+    window.location.href = 'ver_cancelar_reservas.html';
+  });
+
+  // No agregamos eventos al fondo ni a ninguna X → no se puede cerrar de otra forma
 });
 
 async function inicializarFiltros() {
@@ -31,26 +46,49 @@ async function inicializarFiltros() {
   document.getElementById('filtro-fecha').value = minDate;
   fechaSeleccionada = minDate;
 
+  const btnAplicar = document.getElementById('btn-aplicar-filtros');
+
+  document.getElementById('filtro-establecimiento').addEventListener('change', () => {
+    actualizarFiltroDeportes();
+    destacarBoton();
+  });
+  document.getElementById('filtro-deporte').addEventListener('change', () => destacarBoton());
+  document.getElementById('filtro-fecha').addEventListener('change', () => destacarBoton());
+
+  function destacarBoton() {
+    btnAplicar.classList.add('is-loading');
+    btnAplicar.classList.add('has-background-primary-dark');
+    setTimeout(() => {
+      btnAplicar.classList.remove('is-loading');
+      btnAplicar.classList.remove('has-background-primary-dark');
+    }, 800);
+  }
+
   try {
-    const response = await fetch('http://localhost:3000/establecimientos');
-    if (!response.ok) throw new Error('Error establecimientos');
-    const establecimientos = await response.json();
+    const [establecimientosRes, canchasRes] = await Promise.all([
+      fetch('http://localhost:3000/establecimientos').then(r => r.json()),
+      fetch('http://localhost:3000/canchas').then(r => r.json())
+    ]);
 
     const selectEst = document.getElementById('filtro-establecimiento');
     selectEst.innerHTML = '<option value="" selected>Todos los establecimientos</option>';
 
-    establecimientos.forEach(est => {
+    establecimientosRes.forEach(est => {
       const option = document.createElement('option');
       option.value = est.id;
       option.textContent = est.nombre;
       selectEst.appendChild(option);
     });
+
+    allCanchas = canchasRes;
+    actualizarFiltroDeportes();
+
   } catch (error) {
-    console.error('Error cargando establecimientos:', error);
+    console.error('Error cargando datos iniciales:', error);
+    mostrarMensaje('Error al cargar establecimientos o canchas');
   }
 
-  document.getElementById('filtro-establecimiento').addEventListener('change', actualizarFiltroDeportes);
-  document.getElementById('btn-aplicar-filtros').addEventListener('click', aplicarFiltros);
+  btnAplicar.addEventListener('click', aplicarFiltros);
 
   await aplicarFiltros();
 }
@@ -65,27 +103,22 @@ async function actualizarFiltroDeportes() {
 
   selectDep.innerHTML = '<option value="" selected>Todos los deportes</option>';
 
-  try {
-    const response = await fetch('http://localhost:3000/canchas');
-    if (!response.ok) throw new Error('Error canchas');
-    const canchas = await response.json();
+  let canchasParaDeportes = allCanchas;
 
-    let canchasFiltradas = canchas;
-    if (estSeleccionados.length > 0) {
-      canchasFiltradas = canchas.filter(c => estSeleccionados.includes(c.establecimiento_id.toString()));
-    }
-
-    const deportesUnicos = [...new Set(canchasFiltradas.map(c => c.deporte))].sort();
-
-    deportesUnicos.forEach(dep => {
-      const option = document.createElement('option');
-      option.value = dep;
-      option.textContent = dep;
-      selectDep.appendChild(option);
-    });
-  } catch (error) {
-    console.error('Error cargando deportes:', error);
+  if (estSeleccionados.length > 0) {
+    canchasParaDeportes = allCanchas.filter(c =>
+      estSeleccionados.includes(c.establecimiento_id.toString())
+    );
   }
+
+  const deportesUnicos = [...new Set(canchasParaDeportes.map(c => c.deporte))].sort();
+
+  deportesUnicos.forEach(dep => {
+    const option = document.createElement('option');
+    option.value = dep;
+    option.textContent = dep;
+    selectDep.appendChild(option);
+  });
 }
 
 async function aplicarFiltros() {
@@ -102,19 +135,14 @@ async function aplicarFiltros() {
 
 async function cargarDatosYRenderizar() {
   try {
-    const [canchasRes, reservasRes] = await Promise.all([
-      fetch('http://localhost:3000/canchas').then(r => r.json()),
-      fetch(`http://localhost:3000/reservas/grilla?fecha=${fechaSeleccionada}`).then(r => r.json())
-    ]);
-
-    allCanchas = canchasRes;
+    const reservasRes = await fetch(`http://localhost:3000/reservas/grilla?fecha=${fechaSeleccionada}`).then(r => r.json());
     allReservas = reservasRes;
 
     renderizarTablaFiltrada();
 
   } catch (error) {
     console.error('Error:', error);
-    document.getElementById('tabla-body').innerHTML = 
+    document.getElementById('tabla-body').innerHTML =
       '<tr><td colspan="32" class="has-text-danger has-text-centered">Error al cargar datos</td></tr>';
   }
 }
@@ -186,7 +214,6 @@ function renderizarTabla(canchas, reservasOcupadas) {
             ${cancha.cubierta ? 'Cubierta' : ''}
           </div>
         </td>
-
         <td class="has-background-light has-text-centered has-text-weight-bold" style="width: 120px;">
           $${Number(cancha.precio_hora).toLocaleString('es-AR')}
           <br><small class="has-text-grey">por hora</small>
@@ -211,7 +238,6 @@ function renderizarTabla(canchas, reservasOcupadas) {
   body.innerHTML = bodyHTML;
 }
 
-// Búsqueda de usuario existente
 function inicializarBusquedaUsuario() {
   const input = document.getElementById('busqueda-usuario');
   const sugerencias = document.getElementById('sugerencias-usuario');
@@ -268,7 +294,6 @@ function inicializarBusquedaUsuario() {
   });
 }
 
-// Mostrar resumen de reserva
 function mostrarResumenReserva() {
   const resumenDiv = document.getElementById('resumen-reserva');
   if (!usuarioSeleccionado || seleccionActual.horarios.length === 0 || ![2, 3, 4].includes(seleccionActual.horarios.length)) {
@@ -276,7 +301,6 @@ function mostrarResumenReserva() {
     return;
   }
 
-  // Horarios
   const horariosOrdenados = [...seleccionActual.horarios].sort();
   const horaInicio = horariosOrdenados[0];
   const ultimaHora = horariosOrdenados[horariosOrdenados.length - 1];
@@ -286,19 +310,15 @@ function mostrarResumenReserva() {
   const horaFinM = (horaFinMin % 60).toString().padStart(2, '0');
   const horaFin = `${horaFinH}:${horaFinM}`;
 
-  // Cancha
   const cancha = allCanchas.find(c => c.id == seleccionActual.canchaId);
   if (!cancha) return;
 
-  // Monto
   const slots = horariosOrdenados.length;
   const monto = cancha.precio_hora * (slots / 2);
 
-  // Formatear fecha
   const [year, month, day] = fechaSeleccionada.split('-');
   const fechaFormateada = `${day}/${month}/${year}`;
 
-  // Llenar resumen
   document.getElementById('resumen-cancha').textContent = cancha.nombre_cancha;
   document.getElementById('resumen-establecimiento').textContent = cancha.nombre_establecimiento;
   document.getElementById('resumen-deporte').textContent = cancha.deporte;
@@ -310,19 +330,15 @@ function mostrarResumenReserva() {
   resumenDiv.style.display = 'block';
 }
 
-// Habilitar/deshabilitar botón y mostrar resumen
 function actualizarBotonConfirmar() {
   const btn = document.getElementById('btn-confirmar-reserva');
   const tieneHorarioValido = [2, 3, 4].includes(seleccionActual.horarios.length);
   const tieneUsuario = usuarioSeleccionado !== null;
 
   btn.disabled = !(tieneHorarioValido && tieneUsuario);
-
-  // Mostrar u ocultar resumen
   mostrarResumenReserva();
 }
 
-// Confirmar reserva
 document.getElementById('btn-confirmar-reserva').addEventListener('click', confirmarReserva);
 
 async function confirmarReserva() {
@@ -376,13 +392,18 @@ async function confirmarReserva() {
       return;
     }
 
-    mostrarMensaje('¡Reserva creada exitosamente!');
+    // Limpiar formulario
     deseleccionarTodo();
     document.getElementById('busqueda-usuario').value = '';
     usuarioSeleccionado = null;
     document.getElementById('usuario-seleccionado').style.display = 'none';
     document.getElementById('resumen-reserva').style.display = 'none';
+
+    // Actualizar grilla
     await cargarDatosYRenderizar();
+
+    // MOSTRAR SOLO EL MODAL (sin mensaje flotante)
+    document.getElementById('modal-post-reserva').classList.add('is-active');
 
   } catch (error) {
     console.error('Error al crear reserva:', error);
@@ -390,7 +411,8 @@ async function confirmarReserva() {
   }
 }
 
-// Toggle horario
+// (El resto del código: toggleHorario, validarSeleccion, horaToMinutos, minutosToHora, deseleccionarTodo, mostrarMensaje permanece igual)
+
 function toggleHorario(btn) {
   const canchaId = btn.dataset.cancha;
   const hora = btn.dataset.hora;
@@ -463,7 +485,15 @@ function mostrarMensaje(texto) {
 
   const div = document.createElement('div');
   div.id = 'mensaje-error';
-  div.className = 'mensaje-error';
+  div.className = 'notification is-info is-light has-text-centered mensaje-flotante';
+  div.style.position = 'fixed';
+  div.style.top = '100px';
+  div.style.left = '50%';
+  div.style.transform = 'translateX(-50%)';
+  div.style.zIndex = '1000';
+  div.style.padding = '1.5rem';
+  div.style.borderRadius = '8px';
+  div.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
   div.textContent = texto;
   document.body.appendChild(div);
 

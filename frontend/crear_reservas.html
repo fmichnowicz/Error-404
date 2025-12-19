@@ -1,122 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" 
-    integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" 
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="assets/css/styles.css">
     <title>Cancha Ya - Crear Reservas</title>
-</head>
+    </head>
 <body>
     <!-- Navigation bar -->
     <div id="navbar-container"></div>
-    <!-- Fin Navegation bar-->
-    
-    <!-- Sección de filtros -->
+
     <section class="section">
-    <div class="container">
+        <div class="container">
         <h2 class="title has-text-centered mb-2">Reservas disponibles</h2>
 
         <!-- Texto explicativo -->
         <div class="notification is-info is-light has-text-centered mb-2">
-        <p class="subtitle is-5">
+            <p class="subtitle is-5">
             Escoge el horario de tu reserva. Luego más abajo, completa la información de tu usuario y confirma tu reserva.
-        </p>
-        <p class="subtitle is-5">
+            </p>
+            <p class="subtitle is-5">
             Sólo puedes crear 1 reserva a la vez por cancha con duración de 1 hora, 1 hora y 30 minutos o 2 horas.
-        </p>
-        <p class="subtitle is-5">
+            </p>
+            <p class="subtitle is-5">
             En caso de no tener usuario, primero debes registrarte en la sección Usuarios que puedes encontrar en la barra de navegación.
-        </p>
+            </p>
         </div>
 
         <!-- FILTROS -->
         <div class="columns is-multiline is-centered mb-1">
-        <!-- Filtro Establecimiento -->
-        <div class="column is-one-third-desktop is-half-tablet is-full-mobile">
+            <!-- Filtro Establecimiento -->
+            <div class="column is-one-third-desktop is-half-tablet is-full-mobile">
             <div class="field">
-            <label class="label">Establecimiento</label>
-            <div class="control">
+                <label class="label">Establecimiento</label>
+                <div class="control">
                 <div class="select is-multiple is-fullwidth">
-                <select id="filtro-establecimiento" multiple size="6">
+                    <select id="filtro-establecimiento" multiple size="6">
                     <option value="" selected>Todos los establecimientos</option>
                     <!-- Cargado por JS -->
-                </select>
+                    </select>
                 </div>
+                </div>
+                <p class="help">Mantén presionado Ctrl para seleccionar varios</p>
             </div>
-            <p class="help">Mantén presionado Ctrl para seleccionar varios</p>
             </div>
-        </div>
 
-        <!-- Filtro Deporte (dependiente) -->
-        <div class="column is-one-third-desktop is-half-tablet is-full-mobile">
+            <!-- Filtro Deporte (dependiente) -->
+            <div class="column is-one-third-desktop is-half-tablet is-full-mobile">
             <div class="field">
-            <label class="label">Deporte</label>
-            <div class="control">
+                <label class="label">Deporte</label>
+                <div class="control">
                 <div class="select is-multiple is-fullwidth">
-                <select id="filtro-deporte" multiple size="6">
+                    <select id="filtro-deporte" multiple size="6">
                     <option value="" selected>Todos los deportes</option>
                     <!-- Cargado dinámicamente -->
-                </select>
+                    </select>
+                </div>
                 </div>
             </div>
             </div>
-        </div>
 
-        <!-- Filtro Fecha -->
-        <div class="column is-one-third-desktop is-half-tablet is-full-mobile">
+            <!-- Filtro Fecha -->
+            <div class="column is-one-third-desktop is-half-tablet is-full-mobile">
             <div class="field">
-            <label class="label">Fecha</label>
-            <div class="control">
+                <label class="label">Fecha</label>
+                <div class="control">
                 <input class="input" type="date" id="filtro-fecha">
+                </div>
+                <p class="help">Solo fechas a partir de mañana</p>
             </div>
-            <p class="help">Solo fechas a partir de mañana</p>
             </div>
-        </div>
         </div>
 
-        <!-- Botón para aplicar filtros -->
-        <div class="has-text-centered mb-5">
-        <button class="button is-primary is-large" id="btn-aplicar-filtros">
-            <span class="icon"><i class="fas fa-filter"></i></span>
-            <span>Aplicar filtros</span>
-        </button>
+        <!-- Botón más intuitivo -->
+        <div class="has-text-centered mb-6">
+            <button class="button is-primary is-large is-rounded" id="btn-aplicar-filtros">
+            <span class="icon is-medium">
+                <i class="fas fa-sync-alt fa-lg"></i>
+            </span>
+            <span>Actualizar grilla con estos filtros</span>
+            </button>
+            <p class="help mt-3 has-text-grey">
+            Cambia los filtros arriba y presiona este botón para actualizar la grilla de horarios disponibles
+            </p>
         </div>
 
         <!-- Grilla de reservas -->
         <div class="table-container">
-        <table class="table is-bordered is-striped is-hoverable is-fullwidth" id="tabla-reservas">
+            <table class="table is-bordered is-striped is-hoverable is-fullwidth" id="tabla-reservas">
             <thead id="tabla-header"></thead>
             <tbody id="tabla-body">
-            <tr>
+                <tr>
                 <td colspan="31" class="has-text-centered">
-                <progress class="progress is-small is-primary" max="100">Cargando...</progress>
+                    <progress class="progress is-small is-primary" max="100">Cargando...</progress>
                 </td>
-            </tr>
+                </tr>
             </tbody>
-        </table>
+            </table>
         </div>
-    </div>
-</section>
+        </div>
+    </section>
 
-<!-- Sección usuario -->
-<section class="section seccion_usuario" id="seccion-usuario">
-    <div class="container">
+    <!-- Sección usuario -->
+    <section class="section seccion_usuario" id="seccion-usuario">
+        <div class="container">
         <h2 class="title has-text-centered mb-5">Información del usuario</h2>
 
         <!-- Campo de búsqueda de usuario -->
         <div class="field">
-        <label class="label">Busca tu nombre de usuario</label>
-        <div class="control has-icons-left">
+            <label class="label">Busca tu nombre de usuario</label>
+            <div class="control has-icons-left">
             <input class="input is-large" type="text" id="busqueda-usuario" placeholder="Ej: Fernando M" autocomplete="off">
             <span class="icon is-left">
-            <i class="fas fa-user"></i>
+                <i class="fas fa-user"></i>
             </span>
-        </div>
-        <p class="help">Escribe tu nombre completo tal como te registraste.</p>
+            </div>
+            <p class="help">Escribe tu nombre completo tal como te registraste.</p>
         </div>
 
         <!-- Lista de sugerencias (autocomplete) -->
@@ -124,40 +127,62 @@
 
         <!-- Usuario seleccionado -->
         <div id="usuario-seleccionado" class="notification is-success is-light mt-5" style="display: none;">
-        <p><strong>Usuario seleccionado:</strong> <span id="nombre-seleccionado"></span></p>
-        <p>Email: <span id="email-seleccionado"></span> | Teléfono: <span id="telefono-seleccionado"></span></p>
+            <p><strong>Usuario seleccionado:</strong> <span id="nombre-seleccionado"></span></p>
+            <p>Email: <span id="email-seleccionado"></span> | Teléfono: <span id="telefono-seleccionado"></span></p>
         </div>
 
         <!-- Mensaje si no existe el usuario -->
         <div id="usuario-no-encontrado" class="notification is-warning is-light mt-5" style="display: none;">
-        <p>No te encontramos en nuestra base de datos.</p>
-        <p>Por favor, regístrate primero desde el menú <strong>Usuarios</strong> en la barra de navegación superior.</p>
+            <p>No te encontramos en nuestra base de datos.</p>
+            <p>Por favor, regístrate primero desde el menú <strong>Usuarios</strong> en la barra de navegación superior.</p>
         </div>
 
-        <!-- Resumen de la reserva (aparece solo cuando está todo listo) -->
+        <!-- Resumen de la reserva -->
         <div id="resumen-reserva" class="notification is-primary is-light mt-6" style="display: none;">
-        <p class="title is-5 has-text-centered mb-4">Resumen de tu reserva</p>
-        <div class="content">
+            <p class="title is-5 has-text-centered mb-4">Resumen de tu reserva</p>
+            <div class="content">
             <p><strong>Cancha:</strong> <span id="resumen-cancha"></span></p>
             <p><strong>Establecimiento:</strong> <span id="resumen-establecimiento"></span></p>
             <p><strong>Deporte:</strong> <span id="resumen-deporte"></span></p>
             <p><strong>Fecha:</strong> <span id="resumen-fecha"></span></p>
             <p><strong>Horario:</strong> de <span id="resumen-hora-inicio"></span> a <span id="resumen-hora-fin"></span></p>
             <p class="title is-4 has-text-centered has-text-primary mt-4">
-            <strong>Total a pagar: $<span id="resumen-monto"></span></strong>
+                <strong>Total a pagar: $<span id="resumen-monto"></span></strong>
             </p>
-        </div>
+            </div>
         </div>
 
         <!-- Botón confirmar reserva -->
         <div class="has-text-centered mt-6">
-        <button class="button is-large is-primary" id="btn-confirmar-reserva" disabled>
+            <button class="button is-large is-primary" id="btn-confirmar-reserva" disabled>
             <span class="icon"><i class="fas fa-check"></i></span>
             <span>Confirmar reserva</span>
-        </button>
+            </button>
         </div>
+        </div>
+    </section>
+
+    <!-- Modal post-reserva (SIN cierre alternativo) -->
+    <div class="modal" id="modal-post-reserva">
+        <div class="modal-background"></div> <!-- Fondo presente pero sin evento de cierre -->
+        <div class="modal-content">
+        <div class="box">
+            <h3 class="title has-text-centered">¡Reserva creada exitosamente!</h3>
+            <p class="subtitle has-text-centered mb-5">¿Qué deseas hacer ahora?</p>
+            <div class="buttons is-centered">
+            <button class="button is-success is-large" id="btn-seguir-creando">
+                <span class="icon"><i class="fas fa-plus-circle"></i></span>
+                <span>Seguir creando reservas</span>
+            </button>
+            <button class="button is-info is-large" id="btn-ver-reservas">
+                <span class="icon"><i class="fas fa-list"></i></span>
+                <span>Ver mis reservas</span>
+            </button>
+            </div>
+        </div>
+        </div>
+        <!-- Sin botón X de cierre -->
     </div>
-</section>
 
     <script src="assets/js/shared.js"></script>
     <script src="assets/js/crear_reservas.js"></script>
