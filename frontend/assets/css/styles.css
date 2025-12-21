@@ -438,3 +438,45 @@
 .card-footer-overlay {
   margin-top: auto;
 }
+
+/* ===================================
+   ESTILOS PÁGINA REAGENDAR RESERVAS (reagendar_reservas.html)
+   =================================== */
+
+/* Estilos exclusivos para reagendar_reservas.html */
+.boton-horario-reagendar {
+    width: 100%;
+    height: 100%;
+    min-height: 60px;
+    border-radius: 8px;
+    border: 2px solid #dbdbdb;
+    background-color: #f9f9f9 !important; /* Gris claro por defecto (libre) */
+    color: #7a7a7a;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hover SOLO para botones libres (sin seleccionado ni ocupado) */
+.boton-horario-reagendar:hover:not(.seleccionado):not(.ocupado) {
+    background-color: #e8f4fd !important;
+    border-color: #00d1b2 !important;
+}
+
+/* Verde para seleccionado (prioridad máxima) */
+.boton-horario-reagendar.seleccionado {
+    background-color: #00d1b2 !important;
+    color: white !important;
+    border-color: #00b89c !important;
+}
+
+/* Rojo para ocupado (prioridad máxima) */
+.boton-horario-reagendar.ocupado {
+    background-color: #f14668 !important;
+    color: white !important;
+    cursor: not-allowed;
+    border: #f14668 !important;
+}
