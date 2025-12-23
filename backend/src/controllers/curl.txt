@@ -68,9 +68,9 @@ curl -X POST http://localhost:3000/canchas \
 curl -X POST http://localhost:3000/canchas \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Cancha 1",
+    "nombre": "Cancha 2",
     "deporte": "Básquet 3v3",
-    "establecimiento_id": 1,
+    "establecimiento_id": 14,
     "precio_hora": 25000,
     "descripcion": "Cancha super rápida",
     "superficie": "Sintética",
@@ -173,12 +173,12 @@ curl http://localhost:3000/reservas/6
 curl -X POST http://localhost:3000/reservas \
   -H "Content-Type: application/json" \
   -d '{
-    "cancha_id": 44,
-    "usuario_id": 4,
-    "fecha_reserva": "2025-12-20",
+    "cancha_id": 73,
+    "usuario_id": 8,
+    "fecha_reserva": "2025-12-31",
     "reserva_hora_inicio": "09:00:00",
-    "reserva_hora_fin": "10:30:00",
-    "monto_pagado": 33000
+    "reserva_hora_fin": "10:00:00",
+    "monto_pagado": 25000
   }' -i
 
 3) POST para testeo (copiar el POST de arriba y modificarle cualquier cosa para testear)

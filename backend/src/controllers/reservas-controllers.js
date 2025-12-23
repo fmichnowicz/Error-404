@@ -623,7 +623,7 @@ const deleteReserva = async (req, res) => {
     }
 };
 
-// Endpoint para la grilla de la página crear_reservas
+// Endpoint para la grilla de la página crear_reservas.html
 const getReservasParaGrilla = async (req, res) => {
     try {
         const { fecha } = req.query;
@@ -661,6 +661,53 @@ const getReservasParaGrilla = async (req, res) => {
         });
     }
 };
-//Ejemplo de uso http://localhost:3000/reservas/grilla?fecha=2025-12-18
+// Ejemplo de uso http://localhost:3000/reservas/grilla?fecha=2025-12-18
 
-export { getAllReservas, getReservaById, createReserva, updateReserva, deleteReserva, getReservasParaGrilla };
+// Endpoint para el mensaje que aparece cuando se eliminan establecimientos en establecimientos.html
+const getReservasByEstablecimiento = async (req, res) => {
+    const { establecimiento } = req.query;
+
+    // Validación estricta
+    if (!establecimiento || isNaN(parseInt(establecimiento, 10))) {
+        return res.status(400).json({ 
+        error: 'Parámetro establecimiento requerido y debe ser un número entero válido' 
+        });
+    }
+
+    const establecimientoId = parseInt(establecimiento, 10);
+
+    try {
+        const query = `
+        SELECT r.*
+        FROM reservas r
+        INNER JOIN canchas c ON r.cancha_id = c.id
+        WHERE c.establecimiento_id = $1
+        ORDER BY r.fecha_reserva, r.reserva_hora_inicio
+        `;
+        const values = [establecimientoId];
+
+        console.log('Query ejecutada para establecimiento:', establecimientoId);
+        console.log('SQL:', query);
+        console.log('Values:', values);
+
+        const result = await pool.query(query, values);
+
+        console.log(`Filas devueltas: ${result.rowCount}`);
+
+        // Formatear fechas
+        const reservasFormateadas = result.rows.map(r => ({
+        ...r,
+        fecha_reserva: formateoFechaLocal(r.fecha_reserva),
+        fecha_creacion_reserva: formateoFechaHorarioLocal(r.fecha_creacion_reserva),
+        fecha_modificacion_reserva: formateoFechaHorarioLocal(r.fecha_modificacion_reserva)
+        }));
+
+        res.json(reservasFormateadas);
+    } catch (error) {
+        console.error('Error en getReservasByEstablecimiento:', error.message, error.stack);
+        res.status(500).json({ error: 'Error al obtener reservas', detalles: error.message });
+    }
+};
+// Ejemplo de uso http://localhost:3000/reservas/by-establecimiento?establecimiento=14
+
+export { getAllReservas, getReservaById, createReserva, updateReserva, deleteReserva, getReservasParaGrilla, getReservasByEstablecimiento };

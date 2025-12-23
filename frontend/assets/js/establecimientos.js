@@ -6,19 +6,15 @@ let allEstablecimientos = [];
 let allCanchas = [];
 let establecimientosFiltrados = [];
 
-let filtroDeporteActual = ''; // Para pasar el deporte en la URL
+let filtroDeporteActual = '';
 
-// Función auxiliar para quitar tildes y normalizar (solo para búsqueda)
-function normalizeString(str) {
-    return str
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase();
-}
+let idEstablecimientoAEliminar = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarDatos();
     inicializarFiltros();
+    inicializarModalEliminar();
+    inicializarModalExito(); // Nuevo: inicializar modal de éxito
 });
 
 async function cargarDatos() {
@@ -43,11 +39,170 @@ async function cargarDatos() {
         }
 
         renderizarPagina(1);
-
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error al cargar datos:', error);
         loadingMessage.innerHTML = '<p class="subtitle has-text-danger has-text-centered">Error al cargar los establecimientos</p>';
     }
+}
+
+function inicializarModalEliminar() {
+    const modal = document.getElementById('modal-eliminar');
+    const btnCancelar = document.getElementById('btn-cancelar');
+    const btnCerrar = document.getElementById('cerrar-modal');
+    const btnEliminarDef = document.getElementById('btn-eliminar-definitivo');
+
+    if (!modal) {
+        console.error('Modal no encontrado en el DOM');
+        return;
+    }
+
+    const cerrarModal = () => {
+        modal.classList.remove('is-active');
+        idEstablecimientoAEliminar = null;
+
+        // Limpieza segura
+        const nombreEl = document.getElementById('modal-nombre');
+        if (nombreEl) nombreEl.textContent = '';
+
+        const canchasEl = document.getElementById('modal-canchas');
+        if (canchasEl) canchasEl.textContent = '0';
+
+        const reservasEl = document.getElementById('modal-reservas');
+        if (reservasEl) reservasEl.textContent = '0';
+
+        const usuariosEl = document.getElementById('modal-usuarios');
+        if (usuariosEl) usuariosEl.textContent = '0';
+
+        const textoEl = document.getElementById('modal-texto');
+        if (textoEl) textoEl.innerHTML = '';
+
+        // console.log('Modal cerrado y estado limpiado');
+    };
+
+    btnCancelar.addEventListener('click', cerrarModal);
+    btnCerrar.addEventListener('click', cerrarModal);
+
+    btnEliminarDef.addEventListener('click', async () => {
+        if (!idEstablecimientoAEliminar) {
+            console.warn('No hay ID para eliminar');
+            return;
+        }
+
+        // console.log('Eliminando establecimiento ID:', idEstablecimientoAEliminar);
+        try {
+            const response = await fetch(`http://localhost:3000/establecimientos/${idEstablecimientoAEliminar}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                // Mostrar modal de éxito
+                mostrarModalExito();
+                cerrarModal();
+                // Refrescar después de 2 segundos
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                alert('Error al eliminar el establecimiento');
+            }
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+            alert('Error de conexión');
+        }
+    });
+}
+
+// Nuevo: Inicializar y manejar modal de éxito
+function inicializarModalExito() {
+    const modalExito = document.getElementById('modal-exito');
+    if (!modalExito) return;
+
+    const cerrarModalExito = () => {
+        modalExito.classList.remove('is-active');
+    };
+
+    document.getElementById('cerrar-modal-exito')?.addEventListener('click', cerrarModalExito);
+}
+
+function mostrarModalExito() {
+    const modalExito = document.getElementById('modal-exito');
+    if (modalExito) {
+        modalExito.classList.add('is-active');
+    }
+}
+
+async function mostrarModalEliminar(id) {
+    // console.log('Intentando abrir modal para ID:', id);
+    idEstablecimientoAEliminar = id;
+
+    const est = allEstablecimientos.find(e => e.id === id);
+    if (!est) {
+        console.error('Establecimiento no encontrado con ID:', id);
+        alert('No se encontró el establecimiento');
+        return;
+    }
+
+    // Conteos
+    const canchas = allCanchas.filter(c => c.establecimiento_id === id);
+    const numCanchas = canchas.length;
+
+    let reservas = [];
+    let numReservas = 0;
+    let numUsuarios = 0;
+
+    try {
+        // console.log('Fetch reservas para establecimiento:', id);
+        const res = await fetch(`http://localhost:3000/reservas/by-establecimiento?establecimiento=${id}`);
+        
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error('Error en fetch reservas:', res.status, errorText);
+            throw new Error(`Error ${res.status}: ${errorText}`);
+        }
+
+        reservas = await res.json();
+        numReservas = reservas.length;
+
+        const usuariosUnicos = new Set(reservas.map(res => res.usuario_id));
+        numUsuarios = usuariosUnicos.size;
+
+        // console.log(`Reservas obtenidas: ${numReservas}, Usuarios únicos: ${numUsuarios}`);
+    } catch (error) {
+        console.error('Error al obtener reservas:', error);
+        numReservas = 0;
+        numUsuarios = 0;
+    }
+
+    // Abrir el modal primero
+    const modal = document.getElementById('modal-eliminar');
+    if (modal) {
+        modal.classList.add('is-active');
+        // console.log('Modal abierto');
+    } else {
+        console.error('Modal no encontrado');
+        return;
+    }
+
+    // Esperar a que Bulma clone y renderice el modal visible
+    setTimeout(() => {
+        // Buscar el span EN EL MODAL ABIERTO (el clon de Bulma)
+        const visibleReservasSpan = document.querySelector('.modal.is-active #modal-reservas');
+        const visibleUsuariosSpan = document.querySelector('.modal.is-active #modal-usuarios');
+        const visibleCanchasSpan = document.querySelector('.modal.is-active #modal-canchas');
+
+        if (visibleReservasSpan) {
+            visibleReservasSpan.textContent = numReservas;
+            // console.log('Actualización en modal visible (clonado):', numReservas);
+        } else {
+            console.warn('No se encontró #modal-reservas en el modal abierto');
+        }
+
+        if (visibleUsuariosSpan) visibleUsuariosSpan.textContent = numUsuarios;
+        if (visibleCanchasSpan) visibleCanchasSpan.textContent = numCanchas;
+
+        // Forzar reflow
+        modal.offsetHeight;
+    }, 300);
 }
 
 function inicializarFiltros() {
@@ -59,10 +214,8 @@ function inicializarFiltros() {
     const sugerenciasEstablecimiento = document.getElementById('sugerencias-establecimiento');
     const sugerenciasDeporte = document.getElementById('sugerencias-deporte');
 
-    // Filtro por barrio
     inputBarrio.addEventListener('input', () => {
         const query = inputBarrio.value.trim().toLowerCase();
-        const normalizedQuery = normalizeString(query);
         sugerenciasBarrio.innerHTML = '';
         sugerenciasBarrio.style.display = 'none';
 
@@ -70,18 +223,15 @@ function inicializarFiltros() {
 
         if (query.length < 2) return;
 
-        // Mostrar nombres originales, pero buscar sin tildes
-        const matches = allEstablecimientos
-            .map(est => est.barrio)
-            .filter((barrio, index, self) => self.indexOf(barrio) === index) // únicos
-            .filter(barrio => normalizeString(barrio).includes(normalizedQuery));
+        const barriosUnicos = [...new Set(allEstablecimientos.map(est => est.barrio))];
+        const matches = barriosUnicos.filter(barrio => normalizeString(barrio).includes(normalizeString(query)));
 
         if (matches.length === 0) return;
 
         matches.forEach(barrio => {
             const item = document.createElement('a');
             item.className = 'panel-block is-clickable';
-            item.textContent = barrio; // nombre original con tildes
+            item.textContent = barrio;
             item.onclick = () => {
                 inputBarrio.value = barrio;
                 sugerenciasBarrio.style.display = 'none';
@@ -93,10 +243,8 @@ function inicializarFiltros() {
         sugerenciasBarrio.style.display = 'block';
     });
 
-    // Filtro por establecimiento
     inputEstablecimiento.addEventListener('input', () => {
         const query = inputEstablecimiento.value.trim().toLowerCase();
-        const normalizedQuery = normalizeString(query);
         sugerenciasEstablecimiento.innerHTML = '';
         sugerenciasEstablecimiento.style.display = 'none';
 
@@ -104,14 +252,14 @@ function inicializarFiltros() {
 
         if (query.length < 2) return;
 
-        const matches = allEstablecimientos.filter(est => normalizeString(est.nombre).includes(normalizedQuery));
+        const matches = allEstablecimientos.filter(est => normalizeString(est.nombre).includes(normalizeString(query)));
 
         if (matches.length === 0) return;
 
         matches.forEach(est => {
             const item = document.createElement('a');
             item.className = 'panel-block is-clickable';
-            item.textContent = est.nombre; // nombre original con tildes
+            item.textContent = est.nombre;
             item.onclick = () => {
                 inputEstablecimiento.value = est.nombre;
                 sugerenciasEstablecimiento.style.display = 'none';
@@ -123,10 +271,8 @@ function inicializarFiltros() {
         sugerenciasEstablecimiento.style.display = 'block';
     });
 
-    // Filtro por deporte
     inputDeporte.addEventListener('input', () => {
         const query = inputDeporte.value.trim().toLowerCase();
-        const normalizedQuery = normalizeString(query);
         sugerenciasDeporte.innerHTML = '';
         sugerenciasDeporte.style.display = 'none';
 
@@ -137,17 +283,15 @@ function inicializarFiltros() {
             return;
         }
 
-        // Obtener deportes únicos originales
         const deportesUnicos = [...new Set(allCanchas.map(c => c.deporte))];
-
-        const matches = deportesUnicos.filter(dep => normalizeString(dep).includes(normalizedQuery));
+        const matches = deportesUnicos.filter(dep => normalizeString(dep).includes(normalizeString(query)));
 
         if (matches.length === 0) return;
 
         matches.forEach(dep => {
             const item = document.createElement('a');
             item.className = 'panel-block is-clickable';
-            item.textContent = dep; // nombre original con tildes
+            item.textContent = dep;
             item.onclick = () => {
                 inputDeporte.value = dep;
                 filtroDeporteActual = dep;
@@ -160,7 +304,6 @@ function inicializarFiltros() {
         sugerenciasDeporte.style.display = 'block';
     });
 
-    // Cerrar sugerencias al hacer clic fuera
     document.addEventListener('click', (e) => {
         if (!inputBarrio.contains(e.target) && !sugerenciasBarrio.contains(e.target)) {
             sugerenciasBarrio.style.display = 'none';
@@ -291,7 +434,7 @@ function crearPaginacion(page) {
             </button>
             <ul class="pagination-list">
                 <li>
-                    <span class="pagination-ellipsis">&nbsp;Página ${page} de ${totalPages}&nbsp;</span>
+                    <span class="pagination-ellipsis">Página ${page} de ${totalPages}</span>
                 </li>
             </ul>
         </nav>
@@ -310,27 +453,18 @@ function crearPaginacion(page) {
     currentPage = page;
 }
 
-// Funciones para los nuevos botones
 function actualizarEstablecimiento(id) {
     window.location.href = `editar_establecimiento.html?id=${id}`;
 }
 
 function eliminarEstablecimiento(id) {
-    if (confirm(`¿Estás seguro de eliminar el establecimiento ID: ${id}?`)) {
-        fetch(`http://localhost:3000/establecimientos/${id}`, {
-            method: 'DELETE'
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Establecimiento eliminado exitosamente');
-                location.reload();
-            } else {
-                alert('Error al eliminar el establecimiento');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error de conexión');
-        });
-    }
+    // console.log('Click en Eliminar para ID:', id);
+    mostrarModalEliminar(id);
+}
+
+function normalizeString(str) {
+    return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
 }
