@@ -78,6 +78,47 @@
     </div>
   </section>
 
+  <!-- Modal de confirmación de eliminación -->
+  <div id="modal-eliminar" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Confirmar eliminación</p>
+        <button class="delete" aria-label="close" id="cerrar-modal"></button>
+      </header>
+      <section class="modal-card-body">
+        <p id="modal-texto">¿Estás seguro de eliminar el establecimiento <strong id="modal-nombre"></strong>?</p>
+        <div class="content mt-4">
+          <ul>
+            <li><strong>Canchas a eliminar:</strong> <span id="modal-canchas">0</span></li>
+            <li><strong>Reservas activas:</strong> <span id="modal-reservas">0</span></li>
+            <li><strong>Usuarios impactados:</strong> <span id="modal-usuarios">0</span></li>
+          </ul>
+        </div>
+        <p class="has-text-danger">Esta acción no se puede deshacer.</p>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button" id="btn-cancelar">Cancelar</button>
+        <button class="button is-danger" id="btn-eliminar-definitivo" style="margin-left: 1rem;">Eliminar definitivamente</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal de éxito al eliminar -->
+  <div id="modal-exito" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head has-background-success has-text-white">
+        <p class="modal-card-title">¡Eliminado exitosamente!</p>
+        <button class="delete" aria-label="close" id="cerrar-modal-exito"></button>
+      </header>
+      <section class="modal-card-body">
+        <p class="has-text-centered">El establecimiento ha sido eliminado correctamente.</p>
+        <p class="has-text-centered mt-3">La página se recargará en unos segundos...</p>
+      </section>
+    </div>
+  </div>
+
   <script src="assets/js/shared.js"></script>
   <script src="assets/js/establecimientos.js"></script>
 </body>
