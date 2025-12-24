@@ -53,7 +53,6 @@ function inicializarModalEliminar() {
 
     const btnCancelar = document.getElementById('btn-cancelar');
     const btnEliminarDef = document.getElementById('btn-eliminar-definitivo');
-    const closeButton = modal.querySelector('.delete'); // La X original
 
     const cerrarModal = () => {
         modal.classList.remove('is-active');
@@ -76,16 +75,8 @@ function inicializarModalEliminar() {
         if (textoEl) textoEl.innerHTML = '';
     };
 
-    // Cerrar con Cancelar
+    // Sólo cerrar con el botón Cancelar
     btnCancelar.addEventListener('click', cerrarModal);
-
-    // Cerrar con la X (original)
-    if (closeButton) {
-        closeButton.addEventListener('click', cerrarModal);
-    }
-
-    // Opcional: cerrar con clic en background
-    modal.querySelector('.modal-background').addEventListener('click', cerrarModal);
 
     btnEliminarDef.addEventListener('click', async () => {
         if (!idEstablecimientoAEliminar) {
