@@ -18,7 +18,7 @@
             <a class="navbar-item" href="establecimientos.html">Establecimientos</a>
             
             <!-- Botón que abre el modal -->
-            <a class="navbar-item is-clickable modal-trigger" data-target="modal-reservas">
+            <a class="navbar-item is-clickable" id="reservas-trigger">
                 Reservas
             </a>
             <a class="navbar-item is-clickable modal-trigger" data-target="modal-registrar-usuario">
@@ -27,34 +27,6 @@
         </div>
     </div>
 </nav>
-
-<!-- MODAL DE RESERVAS -->
-<div id="modal-reservas" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title is-size-6-mobile">Gestión de Reservas</p>
-            <button class="delete is-large" aria-label="close"></button>
-        </header>
-        <section class="modal-card-body has-text-centered">
-            <p class="title is-5 mb-5 is-size-6-mobile">¿Qué deseas hacer?</p>
-            <div class="buttons is-centered">
-                <a href="crear_reservas.html" class="button is-primary is-large mr-4">
-                    <span class="icon">
-                        <i class="fas fa-plus"></i>
-                    </span>
-                    <span class="has-text-weight-semibold is-size-6-mobile">Crear Reserva</span>
-                </a>
-                <a href="ver_cancelar_reservas.html" class="button is-warning is-large">
-                    <span class="icon">
-                        <i class="fas fa-edit"></i>
-                    </span>
-                    <span class="has-text-weight-semibold is-size-6-mobile">Reagendar / Cancelar</span>
-                </a>
-            </div>
-        </section>
-    </div>
-</div>
 
 <!-- MODAL REGISTRAR USUARIO -->
         <div id="modal-registrar-usuario" class="modal">

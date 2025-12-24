@@ -24,23 +24,25 @@ function mostrarMensaje(texto, tipo = 'success') {
 
 // Cargar navbar
 function cargarNavbar() {
-  fetch('navbar.html')
-    .then(response => {
-      if (!response.ok) throw new Error('Error al cargar navbar');
-      return response.text();
-    })
-    .then(data => {
-      document.getElementById('navbar-container').innerHTML = data;
+    fetch('navbar.html')
+        .then(response => {
+            if (!response.ok) throw new Error('Error al cargar navbar');
+            return response.text();
+        })
+        .then(data => {
+            document.getElementById('navbar-container').innerHTML = data;
 
-      activarBurgerMenu();
-      manejarModalReservas();
-      manejarModalRegistroUsuario();
-    })
-    .catch(err => {
-      console.error('Error cargando navbar:', err);
-      document.getElementById('navbar-container').innerHTML = 
-        '<p class="has-text-danger">Error al cargar el menú</p>';
-    });
+            activarBurgerMenu();
+            manejarModalRegistroUsuario();
+
+            // Llamamos a manejarModalReservas DESPUÉS de insertar el navbar
+            manejarModalReservas();
+        })
+        .catch(err => {
+            console.error('Error cargando navbar:', err);
+            document.getElementById('navbar-container').innerHTML = 
+                '<p class="has-text-danger">Error al cargar el menú</p>';
+        });
 }
 
 // Burger menu
@@ -58,26 +60,73 @@ function activarBurgerMenu() {
 
 // Modal de Reservas - SOLO cierra con la X
 function manejarModalReservas() {
-  const trigger = document.querySelector('.modal-trigger[data-target="modal-reservas"]');
-  const modal = document.getElementById('modal-reservas');
+    const trigger = document.getElementById('reservas-trigger');
+    if (!trigger) {
+        console.log('Trigger reservas no encontrado');
+        return;
+    }
 
-  if (!trigger || !modal) return;
+    // Limpiar cualquier modal viejo que pueda quedar
+    let oldModal = document.getElementById('modal-reservas');
+    if (oldModal) {
+        oldModal.remove(); // Borramos el viejo para evitar duplicados
+    }
 
-  // Abrir
-  trigger.addEventListener('click', (e) => {
-    e.preventDefault();
-    modal.classList.add('is-active');
-  });
+    // Crear el modal fresco
+    const modal = document.createElement('div');
+    modal.id = 'modal-reservas';
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title is-size-6-mobile">Gestión de Reservas</p>
+                <button class="delete is-large" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body has-text-centered">
+                <p class="title is-5 mb-5 is-size-6-mobile">¿Qué deseas hacer?</p>
+                <div class="buttons is-centered">
+                    <a href="crear_reservas.html" class="button is-primary is-large mr-4">
+                        <span class="icon"><i class="fas fa-plus"></i></span>
+                        <span class="has-text-weight-semibold is-size-6-mobile">Crear Reserva</span>
+                    </a>
+                    <a href="ver_cancelar_reservas.html" class="button is-warning is-large">
+                        <span class="icon"><i class="fas fa-edit"></i></span>
+                        <span class="has-text-weight-semibold is-size-6-mobile">Reagendar / Cancelar</span>
+                    </a>
+                </div>
+            </section>
+        </div>
+    `;
+    document.body.appendChild(modal);
 
-  // SOLO cerrar con la X (class="delete")
-  modal.querySelectorAll('.delete').forEach(btn => {
-    btn.addEventListener('click', () => {
-      modal.classList.remove('is-active');
+    // Forzar estilos de Bulma
+    modal.style.position = 'fixed';
+    modal.style.inset = '0';
+    modal.style.zIndex = '1986';
+    modal.style.display = 'none'; // Empieza oculto
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+
+    // Abrir con click
+    trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Click en Reservas detectado - abriendo modal');
+        modal.style.display = 'flex'; // Mostrar con flex para centrar
+        modal.classList.add('is-active');
+        document.body.classList.add('is-clipped'); // Bloquea scroll
     });
-  });
 
-  // Deshabilitar cierre con background
-  modal.querySelector('.modal-background').style.pointerEvents = 'none';
+    // Cerrar con X o fondo
+    modal.addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete') || 
+            e.target.closest('.delete') || 
+            e.target.classList.contains('modal-background')) {
+            modal.classList.remove('is-active');
+            modal.style.display = 'none';
+            document.body.classList.remove('is-clipped');
+        }
+    });
 }
 
 // Modal de Registro de Usuario - SOLO cierra con la X
