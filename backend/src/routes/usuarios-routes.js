@@ -10,7 +10,10 @@ import {
 
 const router = Router();
 
+// Rutas específicas
 router.get("/buscar", buscarUsuariosPorNombre);
+
+// Rutas genéricas
 router.get("/", getAllUsuarios);
 router.get("/:id", getUsuarioById);
 router.post("/", createUsuario);
