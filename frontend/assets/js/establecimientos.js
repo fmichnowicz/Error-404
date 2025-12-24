@@ -7,14 +7,13 @@ let allCanchas = [];
 let establecimientosFiltrados = [];
 
 let filtroDeporteActual = '';
-
 let idEstablecimientoAEliminar = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarDatos();
     inicializarFiltros();
     inicializarModalEliminar();
-    inicializarModalExito(); // Nuevo: inicializar modal de éxito
+    inicializarModalExito();
 });
 
 async function cargarDatos() {
@@ -47,14 +46,14 @@ async function cargarDatos() {
 
 function inicializarModalEliminar() {
     const modal = document.getElementById('modal-eliminar');
-    const btnCancelar = document.getElementById('btn-cancelar');
-    const btnCerrar = document.getElementById('cerrar-modal');
-    const btnEliminarDef = document.getElementById('btn-eliminar-definitivo');
-
     if (!modal) {
         console.error('Modal no encontrado en el DOM');
         return;
     }
+
+    const btnCancelar = document.getElementById('btn-cancelar');
+    const btnEliminarDef = document.getElementById('btn-eliminar-definitivo');
+    const closeButton = modal.querySelector('.delete'); // La X original
 
     const cerrarModal = () => {
         modal.classList.remove('is-active');
@@ -67,7 +66,7 @@ function inicializarModalEliminar() {
         const canchasEl = document.getElementById('modal-canchas');
         if (canchasEl) canchasEl.textContent = '0';
 
-        const reservasEl = document.getElementById('modal-reservas');
+        const reservasEl = document.getElementById('reservas-activas');
         if (reservasEl) reservasEl.textContent = '0';
 
         const usuariosEl = document.getElementById('modal-usuarios');
@@ -75,12 +74,18 @@ function inicializarModalEliminar() {
 
         const textoEl = document.getElementById('modal-texto');
         if (textoEl) textoEl.innerHTML = '';
-
-        // console.log('Modal cerrado y estado limpiado');
     };
 
+    // Cerrar con Cancelar
     btnCancelar.addEventListener('click', cerrarModal);
-    btnCerrar.addEventListener('click', cerrarModal);
+
+    // Cerrar con la X (original)
+    if (closeButton) {
+        closeButton.addEventListener('click', cerrarModal);
+    }
+
+    // Opcional: cerrar con clic en background
+    modal.querySelector('.modal-background').addEventListener('click', cerrarModal);
 
     btnEliminarDef.addEventListener('click', async () => {
         if (!idEstablecimientoAEliminar) {
@@ -88,17 +93,14 @@ function inicializarModalEliminar() {
             return;
         }
 
-        // console.log('Eliminando establecimiento ID:', idEstablecimientoAEliminar);
         try {
             const response = await fetch(`http://localhost:3000/establecimientos/${idEstablecimientoAEliminar}`, {
                 method: 'DELETE'
             });
 
             if (response.ok) {
-                // Mostrar modal de éxito
                 mostrarModalExito();
                 cerrarModal();
-                // Refrescar después de 2 segundos
                 setTimeout(() => {
                     location.reload();
                 }, 2000);
@@ -112,7 +114,6 @@ function inicializarModalEliminar() {
     });
 }
 
-// Nuevo: Inicializar y manejar modal de éxito
 function inicializarModalExito() {
     const modalExito = document.getElementById('modal-exito');
     if (!modalExito) return;
@@ -121,6 +122,8 @@ function inicializarModalExito() {
         modalExito.classList.remove('is-active');
     };
 
+    // Cerrar con X o botón
+    modalExito.querySelector('.delete')?.addEventListener('click', cerrarModalExito);
     document.getElementById('cerrar-modal-exito')?.addEventListener('click', cerrarModalExito);
 }
 
@@ -132,7 +135,6 @@ function mostrarModalExito() {
 }
 
 async function mostrarModalEliminar(id) {
-    // console.log('Intentando abrir modal para ID:', id);
     idEstablecimientoAEliminar = id;
 
     const est = allEstablecimientos.find(e => e.id === id);
@@ -151,58 +153,49 @@ async function mostrarModalEliminar(id) {
     let numUsuarios = 0;
 
     try {
-        // console.log('Fetch reservas para establecimiento:', id);
         const res = await fetch(`http://localhost:3000/reservas/by-establecimiento?establecimiento=${id}`);
-        
-        if (!res.ok) {
-            const errorText = await res.text();
-            console.error('Error en fetch reservas:', res.status, errorText);
-            throw new Error(`Error ${res.status}: ${errorText}`);
-        }
-
+        if (!res.ok) throw new Error('Error en fetch reservas');
         reservas = await res.json();
         numReservas = reservas.length;
-
         const usuariosUnicos = new Set(reservas.map(res => res.usuario_id));
         numUsuarios = usuariosUnicos.size;
-
-        // console.log(`Reservas obtenidas: ${numReservas}, Usuarios únicos: ${numUsuarios}`);
     } catch (error) {
         console.error('Error al obtener reservas:', error);
-        numReservas = 0;
-        numUsuarios = 0;
     }
 
     // Abrir el modal primero
     const modal = document.getElementById('modal-eliminar');
     if (modal) {
         modal.classList.add('is-active');
-        // console.log('Modal abierto');
     } else {
         console.error('Modal no encontrado');
         return;
     }
 
-    // Esperar a que Bulma clone y renderice el modal visible
+    // Esperar a que Bulma clone el modal y actualizar los elementos CLONADOS
     setTimeout(() => {
-        // Buscar el span EN EL MODAL ABIERTO (el clon de Bulma)
-        const visibleReservasSpan = document.querySelector('.modal.is-active #modal-reservas');
-        const visibleUsuariosSpan = document.querySelector('.modal.is-active #modal-usuarios');
-        const visibleCanchasSpan = document.querySelector('.modal.is-active #modal-canchas');
+        const activeModal = document.querySelector('.modal.is-active');
+        if (!activeModal) return;
 
-        if (visibleReservasSpan) {
-            visibleReservasSpan.textContent = numReservas;
-            // console.log('Actualización en modal visible (clonado):', numReservas);
-        } else {
-            console.warn('No se encontró #modal-reservas en el modal abierto');
-        }
+        // Actualizar en el modal activo (clonado)
+        const nombreEl = activeModal.querySelector('#modal-nombre');
+        if (nombreEl) nombreEl.textContent = est.nombre;
 
-        if (visibleUsuariosSpan) visibleUsuariosSpan.textContent = numUsuarios;
-        if (visibleCanchasSpan) visibleCanchasSpan.textContent = numCanchas;
+        const canchasEl = activeModal.querySelector('#modal-canchas');
+        if (canchasEl) canchasEl.textContent = numCanchas;
 
-        // Forzar reflow
-        modal.offsetHeight;
-    }, 300);
+        const reservasEl = activeModal.querySelector('#reservas-activas');
+        if (reservasEl) reservasEl.textContent = numReservas;
+
+        const usuariosEl = activeModal.querySelector('#modal-usuarios');
+        if (usuariosEl) usuariosEl.textContent = numUsuarios;
+
+        const textoEl = activeModal.querySelector('#modal-texto');
+        if (textoEl) textoEl.innerHTML = `¿Estás seguro de eliminar el establecimiento <strong>${est.nombre}</strong>?`;
+
+        // Forzar reflow para que Bulma pinte bien
+        activeModal.offsetHeight;
+    }, 100);  // 100ms suele ser suficiente
 }
 
 function inicializarFiltros() {
@@ -376,42 +369,41 @@ function renderizarPagina(page) {
         }
 
         const cardHTML = `
-            <div class="column is-one-third-desktop is-half-tablet is-full-mobile">
-                <div class="card has-background-image mx-4 my-4" style="display: flex; flex-direction: column; height: 100%; min-height: 520px;">
-                    <div class="card-background-container"></div>
-                    <div class="card-content-overlay has-text-centered" style="flex-grow: 1; display: flex; flex-direction: column;">
-                        <div class="content has-text-white flex-grow-1 p-5">
-                            <p class="title is-3 has-text-white mb-4">${est.nombre}</p>
-                            <p class="title is-5 has-text-white mb-5">${est.barrio}</p>
-                            <div class="mt-6">
-                                <p class="title is-5 has-text-white has-text-weight-bold">Se realizan torneos:</p>
-                                <p class="title is-4 has-text-white mb-4">${textoTorneos}</p>
-                                <p class="title is-5 has-text-white has-text-weight-bold">Deportes disponibles:</p>
-                                <p class="subtitle is-4 has-text-white-light">${deportesDelEst}</p>
-                            </div>
-                        </div>
-                        <footer class="card-footer-overlay mt-auto p-4">
-                            <a href="${url}" class="button is-primary is-large is-fullwidth has-text-weight-bold mb-4">
-                                Crear reservas
-                            </a>
-
-                            <div class="columns is-mobile">
-                                <div class="column is-half">
-                                    <button class="button is-info is-medium is-fullwidth" onclick="actualizarEstablecimiento(${est.id})">
-                                        <span class="is-block">Actualizar</span>
-                                    </button>
-                                </div>
-                                <div class="column is-half">
-                                    <button class="button is-danger is-medium is-fullwidth" onclick="eliminarEstablecimiento(${est.id})">
-                                        Eliminar
-                                    </button>
-                                </div>
-                            </div>
-                        </footer>
-                    </div>
+<div class="column is-one-third-desktop is-half-tablet is-full-mobile">
+    <div class="card has-background-image mx-4 my-4" style="display: flex; flex-direction: column; height: 100%; min-height: 520px;">
+        <div class="card-background-container"></div>
+        <div class="card-content-overlay has-text-centered" style="flex-grow: 1; display: flex; flex-direction: column;">
+            <div class="content has-text-white flex-grow-1 p-5">
+                <p class="title is-3 has-text-white mb-4">${est.nombre}</p>
+                <p class="title is-5 has-text-white mb-5">${est.barrio}</p>
+                <div class="mt-6">
+                    <p class="title is-5 has-text-white has-text-weight-bold">Se realizan torneos:</p>
+                    <p class="title is-4 has-text-white mb-4">${textoTorneos}</p>
+                    <p class="title is-5 has-text-white has-text-weight-bold">Deportes disponibles:</p>
+                    <p class="subtitle is-4 has-text-white-light">${deportesDelEst}</p>
                 </div>
             </div>
-        `;
+            <footer class="card-footer-overlay mt-auto p-4">
+                <a href="${url}" class="button is-primary is-large is-fullwidth has-text-weight-bold mb-4">
+                    Crear reservas
+                </a>
+                <div class="columns is-mobile">
+                    <div class="column is-half">
+                        <button class="button is-info is-medium is-fullwidth" onclick="actualizarEstablecimiento(${est.id})">
+                            <span class="is-block">Actualizar</span>
+                        </button>
+                    </div>
+                    <div class="column is-half">
+                        <button class="button is-danger is-medium is-fullwidth" onclick="eliminarEstablecimiento(${est.id})">
+                            Eliminar
+                        </button>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+</div>
+`;
         grid.insertAdjacentHTML('beforeend', cardHTML);
     });
 
@@ -425,20 +417,20 @@ function crearPaginacion(page) {
     if (totalPages <= 1) return;
 
     const paginacionHTML = `
-        <nav class="pagination is-centered" role="navigation" aria-label="pagination">
-            <button id="btn-anterior" class="button pagination-previous" ${page === 1 ? 'disabled' : ''}>
-                Anterior
-            </button>
-            <button id="btn-siguiente" class="button pagination-next" ${page >= totalPages ? 'disabled' : ''}>
-                Siguiente
-            </button>
-            <ul class="pagination-list">
-                <li>
-                    <span class="pagination-ellipsis">Página ${page} de ${totalPages}</span>
-                </li>
-            </ul>
-        </nav>
-    `;
+<nav class="pagination is-centered" role="navigation" aria-label="pagination">
+    <button id="btn-anterior" class="button pagination-previous" ${page === 1 ? 'disabled' : ''}>
+        Anterior
+    </button>
+    <button id="btn-siguiente" class="button pagination-next" ${page >= totalPages ? 'disabled' : ''}>
+        Siguiente
+    </button>
+    <ul class="pagination-list">
+        <li>
+            <span class="pagination-ellipsis">Página ${page} de ${totalPages}</span>
+        </li>
+    </ul>
+</nav>
+`;
 
     paginacionContainer.innerHTML = paginacionHTML;
 
@@ -458,7 +450,6 @@ function actualizarEstablecimiento(id) {
 }
 
 function eliminarEstablecimiento(id) {
-    // console.log('Click en Eliminar para ID:', id);
     mostrarModalEliminar(id);
 }
 
