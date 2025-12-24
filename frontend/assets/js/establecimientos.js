@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarDatos();
   inicializarFiltros();
   inicializarModalEliminar();
-  inicializarModalExito();          // Éxito de eliminación
-  inicializarModalExitoEditar();    // Nuevo: éxito de actualización
+  inicializarModalExito(); // Éxito de eliminación
+  inicializarModalExitoEditar(); // Éxito de actualización
   inicializarModalEditar();
 });
 
@@ -111,13 +111,21 @@ function inicializarModalExito() {
   const modalExito = document.getElementById('modal-exito');
   if (!modalExito) return;
 
-  const cerrarModalExito = () => {
-    modalExito.classList.remove('is-active');
-  };
+  // Deshabilitar cierre manual (sin cruz ni clic en fondo)
+  modalExito.querySelector('.modal-background').style.pointerEvents = 'none';
+  // No agregamos listeners para .delete porque ya no existe
+}
 
-  // Cerrar con X o botón (solo para eliminación)
-  modalExito.querySelector('.delete')?.addEventListener('click', cerrarModalExito);
-  document.getElementById('cerrar-modal-exito')?.addEventListener('click', cerrarModalExito);
+// Función para mostrar el modal de éxito de eliminación (con cierre automático)
+function mostrarModalExito() {
+  const modalExito = document.getElementById('modal-exito');
+  if (modalExito) {
+    modalExito.classList.add('is-active');
+    // Cierre automático después de 2 segundos
+    setTimeout(() => {
+      modalExito.classList.remove('is-active');
+    }, 2000);
+  }
 }
 
 // Nuevo: Inicialización del modal de éxito para actualización (sin cierre manual)
@@ -207,7 +215,7 @@ async function mostrarModalEliminar(id) {
 
     // Forzar reflow para que Bulma pinte bien
     activeModal.offsetHeight;
-  }, 100); // 100ms suele ser suficiente
+  }, 100);
 }
 
 function inicializarModalEditar() {
