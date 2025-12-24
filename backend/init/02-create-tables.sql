@@ -1,9 +1,9 @@
 -- Tablas independientes (sólo reciben foreign keys)
 CREATE TABLE establecimientos (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(250) NOT NULL UNIQUE,
-    barrio VARCHAR(250) NOT NULL,
-    torneo TEXT
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    barrio VARCHAR(25) NOT NULL,
+    torneo VARCHAR(50)
 );
 
 CREATE TABLE usuarios (

@@ -10,17 +10,17 @@ curl http://localhost:3000/establecimientos/6
 curl -X POST http://localhost:3000/establecimientos \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Metegol salchipapas",
+    "nombre": "Metegol Hasta Pronto",
     "barrio": "Núñez",
-    "torneo": "Se realizan torneos de fútbol 5"
+    "torneo": ""
   }'
 
 3) POST para testeo (copiar el POST de arriba y modificarle cualquier cosa para testear)
 curl -X POST http://localhost:3000/establecimientos \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "",
-    "barrio": "",
+    "nombre": "Nos vemos fútbol club",
+    "barrio": "Núñez",
     "torneo": "Se realizan torneos de fútbol 5"
   }'
 
@@ -55,8 +55,8 @@ curl -X POST http://localhost:3000/canchas \
   -H "Content-Type: application/json" \
   -d '{
     "nombre": "Cancha 1",
-    "deporte": "Básquet 3v3",
-    "establecimiento_id": 2,
+    "deporte": "Fútbol 5",
+    "establecimiento_id": 17,
     "precio_hora": 14000.00,
     "descripcion": "Cancha super rápida",
     "superficie": "Sintética",

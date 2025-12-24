@@ -120,8 +120,7 @@ function manejarModalReservas() {
     // Cerrar con X o fondo
     modal.addEventListener('click', (e) => {
         if (e.target.classList.contains('delete') || 
-            e.target.closest('.delete') || 
-            e.target.classList.contains('modal-background')) {
+            e.target.closest('.delete')) {
             modal.classList.remove('is-active');
             modal.style.display = 'none';
             document.body.classList.remove('is-clipped');
