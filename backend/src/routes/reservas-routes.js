@@ -11,8 +11,11 @@ import {
 
 const router = Router();
 
-router.get("/grilla", getReservasParaGrilla);
+// Rutas específicas
 router.get("/by-establecimiento", getReservasByEstablecimiento);
+router.get("/grilla", getReservasParaGrilla);
+
+// Rutas genéricas
 router.get("/", getAllReservas);
 router.get("/:id", getReservaById);
 router.post("/", createReserva);

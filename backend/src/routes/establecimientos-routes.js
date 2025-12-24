@@ -9,6 +9,7 @@ import {
 
 const router = Router();
 
+// Rutas genéricas
 router.get("/", getAllEstablecimientos);
 router.get("/:id", getEstablecimientoById);
 router.post("/", createEstablecimiento);

@@ -9,6 +9,7 @@ import {
 
 const router = Router();
 
+// Rutas genéricas
 router.get("/", getAllCanchas);
 router.get("/:id", getCanchaById);
 router.post("/", createCancha);
