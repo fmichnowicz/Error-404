@@ -44,19 +44,27 @@ const createEstablecimiento = async (req, res) => {
     // === VALIDACIONES BÁSICAS ===
     if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
       errores.push('El nombre es obligatorio y no puede estar vacío');
-    } else if (nombre.trim().length > 250) {
-      errores.push('El nombre no puede exceder los 250 caracteres');
+    } else if (nombre.trim().length > 50) {
+      errores.push('El nombre no puede exceder los 50 caracteres');
     }
 
     if (!barrio || typeof barrio !== 'string' || barrio.trim() === '') {
       errores.push('El barrio es obligatorio y no puede estar vacío');
-    } else if (barrio.trim().length > 250) {
-      errores.push('El barrio no puede exceder los 250 caracteres');
+    } else if (barrio.trim().length > 25) {
+      errores.push('El barrio no puede exceder los 25 caracteres');
     }
 
-    // torneo es opcional, pero si se envía debe ser string o null
-    if (torneo !== undefined && torneo !== null && typeof torneo !== 'string') {
-      errores.push('El campo torneo debe ser un texto o null');
+    // === VALIDACIÓN DEL CAMPO TORNEO ===
+    // Es opcional, pero si se envía debe ser string y ≤ 50 caracteres
+    if (torneo !== undefined && torneo !== null) {
+      if (typeof torneo !== 'string') {
+        errores.push('El campo torneo debe ser un texto (string)');
+      } else {
+        const torneoTrim = torneo.trim();
+        if (torneoTrim.length > 50) {
+          errores.push('El campo torneo no puede exceder los 50 caracteres');
+        }
+      }
     }
 
     if (errores.length > 0) {
@@ -68,7 +76,10 @@ const createEstablecimiento = async (req, res) => {
 
     const nombreTrim = nombre.trim();
     const barrioTrim = barrio.trim();
-    const torneoTrim = (torneo && typeof torneo === 'string') ? torneo.trim() || null : null;
+    // Si torneo se envió y es válido → lo trimmeamos; si no → null
+    const torneoTrim = (torneo !== undefined && torneo !== null && typeof torneo === 'string')
+      ? torneo.trim() || null
+      : null;
 
     // === VALIDACIÓN: NOMBRE ÚNICO (insensible a mayúsculas, acentos y espacios) ===
     const checkNombreQuery = `
@@ -104,7 +115,7 @@ const createEstablecimiento = async (req, res) => {
   } catch (error) {
     console.error('Error al crear establecimiento:', error);
 
-    // Si es error de función unaccent no encontrada (por si alguien no tiene la extensión)
+    // Si es error de función unaccent no encontrada
     if (error.message && error.message.includes('unaccent')) {
       return res.status(500).json({
         error: 'Error de configuración: falta extensión unaccent en la base de datos'
@@ -161,25 +172,35 @@ const updateEstablecimiento = async (req, res) => {
   validarYAgregar('nombre', nombre, {
     string: true,
     trim: true,
-    maxLength: 250,
+    maxLength: 50,
     requiredIfSent: true  // no permitimos nombre vacío si lo envían
   });
 
   validarYAgregar('barrio', barrio, {
     string: true,
     trim: true,
-    maxLength: 250,
+    maxLength: 25,
     requiredIfSent: true
   });
 
-  // torneo es opcional (puede ser string, null o no enviado)
+  // === VALIDACIÓN Y PROCESAMIENTO DE TORNEO ===
   if (torneo !== undefined) {
     if (torneo !== null && typeof torneo !== 'string') {
-      errores.push('El campo torneo debe ser un texto o null');
+      errores.push('El campo torneo debe ser un texto (string) o null');
+    } else if (torneo !== null) {
+      // Si es string, validamos longitud
+      const torneoTrim = torneo.trim();
+      if (torneoTrim.length > 50) {
+        errores.push('El campo torneo no puede exceder los 50 caracteres');
+      } else {
+        // Agregamos al update (si es vacío → null)
+        setParts.push(`torneo = $${paramIndex++}`);
+        values.push(torneoTrim || null);
+      }
     } else {
-      const torneoProcesado = (torneo && typeof torneo === 'string') ? torneo.trim() || null : null;
+      // Si enviaron null explícitamente → lo permitimos
       setParts.push(`torneo = $${paramIndex++}`);
-      values.push(torneoProcesado);
+      values.push(null);
     }
   }
 
@@ -209,9 +230,9 @@ const updateEstablecimiento = async (req, res) => {
     `;
     const sameResult = await pool.query(checkSameQuery, [nombreFinal, currentNombre]);
     if (sameResult.rowCount > 0) {
-      // Es el mismo nombre → permitimos (no hay riesgo de duplicado)
+      // Es el mismo nombre → permitimos
     } else {
-      // Es un nombre diferente → verificar que no exista otro con nombre similar
+      // Verificar que no exista otro con nombre similar
       const checkDuplicadoQuery = `
         SELECT 1 FROM establecimientos 
         WHERE unaccent(UPPER(nombre)) = unaccent(UPPER($1))
