@@ -118,6 +118,58 @@
     </div>
   </div>
 
+  <!-- Modal de edición de establecimiento -->
+  <div id="modal-editar" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Editar Establecimiento</p>
+        <!-- NO agregamos botón .delete (cruz) -->
+      </header>
+      <section class="modal-card-body">
+        <div class="field">
+          <label class="label">Nombre</label>
+          <div class="control">
+            <input class="input" type="text" id="edit-nombre" maxlength="50" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Barrio</label>
+          <div class="control">
+            <input class="input" type="text" id="edit-barrio" maxlength="25" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Torneo (opcional)</label>
+          <div class="control">
+            <input class="input" type="text" id="edit-torneo" maxlength="50" placeholder="Ej: Torneo de Verano">
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button" id="btn-cancelar-edit">Cancelar</button>
+        <button class="button is-primary" id="btn-guardar-edit" style="margin-left: 1rem;">Confirmar cambios</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal de éxito al actualizar establecimiento -->
+  <div id="modal-exito-editar" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head has-background-success has-text-white">
+        <p class="modal-card-title">Cambios realizados con éxito</p>
+        <!-- NO agregamos botón .delete (cruz) -->
+      </header>
+      <section class="modal-card-body">
+        <p class="has-text-centered">El establecimiento ha sido actualizado correctamente.</p>
+        <p class="has-text-centered mt-3">La página se recargará en unos segundos...</p>
+      </section>
+    </div>
+  </div>
+
   <script src="assets/js/shared.js"></script>
   <script src="assets/js/establecimientos.js"></script>
 </body>
