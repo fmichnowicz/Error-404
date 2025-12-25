@@ -476,7 +476,7 @@ function renderizarPagina(page) {
         .map(c => c.deporte)
     )].join(', ') || 'No disponible';
 
-    const textoTorneos = est.torneo ? 'Sí' : 'No';
+    const textoTorneos = est.torneo ? est.torneo : 'No';
 
     let url = `crear_reservas.html?establecimiento=${est.id}`;
     if (filtroDeporteActual) {
@@ -493,9 +493,9 @@ function renderizarPagina(page) {
               <p class="title is-5 has-text-white mb-5">${est.barrio}</p>
               <div class="mt-6">
                 <p class="title is-5 has-text-white has-text-weight-bold">Se realizan torneos:</p>
-                <p class="title is-4 has-text-white mb-4">${textoTorneos}</p>
+                <p class="subtitle is-4 has-text-white-light m-2">${textoTorneos}</p>
                 <p class="title is-5 has-text-white has-text-weight-bold">Deportes disponibles:</p>
-                <p class="subtitle is-4 has-text-white-light">${deportesDelEst}</p>
+                <p class="subtitle is-4 has-text-white-light m-2">${deportesDelEst}</p>
               </div>
             </div>
             <footer class="card-footer-overlay mt-auto p-4">
