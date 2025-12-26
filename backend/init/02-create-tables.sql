@@ -18,12 +18,12 @@ CREATE TABLE usuarios (
 -- Tablas dependientes (hacen referencia a otras tablas)
 CREATE TABLE canchas (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    deporte VARCHAR(100) NOT NULL,
+    nombre VARCHAR(10) NOT NULL,
+    deporte VARCHAR(15) NOT NULL,
     establecimiento_id INTEGER NOT NULL,
     precio_hora DECIMAL(10, 2) NOT NULL,
-    descripcion TEXT,
-    superficie VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(100),
+    superficie VARCHAR(50) NOT NULL,
     iluminacion BOOLEAN DEFAULT FALSE,
     cubierta BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (establecimiento_id) REFERENCES establecimientos(id) ON DELETE CASCADE  --Elimina las canchas de 1 establecimiento si se lo borra
