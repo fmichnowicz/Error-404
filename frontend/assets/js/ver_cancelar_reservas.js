@@ -334,7 +334,7 @@ function guardarFiltros() {
                 <span class="icon"><i class="fas fa-calendar-alt"></i></span>
                 <span>Reagendar</span>
                 </button>
-                <button class="button is-danger btn-cancelar" data-id="${reserva.id}" ${reservaPasada ? 'disabled title="No se puede cancelar reservas de hoy o pasadas"' : ''}>
+                <button class="button is-danger btn-cancelar ml-3" data-id="${reserva.id}" ${reservaPasada ? 'disabled title="No se puede cancelar reservas de hoy o pasadas"' : ''}>
                 <span class="icon"><i class="fas fa-trash"></i></span>
                 <span>Cancelar</span>
                 </button>
