@@ -66,22 +66,22 @@ const createCancha = async (req, res) => {
     // nombre
     if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
       errores.push('El nombre es obligatorio y no puede estar vacío');
-    } else if (nombre.trim().length > 100) {
-      errores.push('El nombre no puede exceder los 100 caracteres');
+    } else if (nombre.trim().length > 10) {
+      errores.push('El nombre no puede exceder los 10 caracteres');
     }
 
     // deporte
     if (!deporte || typeof deporte !== 'string' || deporte.trim() === '') {
       errores.push('El deporte es obligatorio y no puede estar vacío');
-    } else if (deporte.trim().length > 100) {
-      errores.push('El deporte no puede exceder los 100 caracteres');
+    } else if (deporte.trim().length > 15) {
+      errores.push('El deporte no puede exceder los 15 caracteres');
     }
 
     // superficie
     if (!superficie || typeof superficie !== 'string' || superficie.trim() === '') {
       errores.push('La superficie es obligatoria y no puede estar vacía');
-    } else if (superficie.trim().length > 100) {
-      errores.push('El comentario para superficie no puede exceder los 100 caracteres');
+    } else if (superficie.trim().length > 50) {
+      errores.push('El comentario para superficie no puede exceder los 50 caracteres');
     }
 
     // precio_hora
@@ -110,6 +110,11 @@ const createCancha = async (req, res) => {
     // descripcion (opcional)
     if (descripcion !== undefined && descripcion !== null && typeof descripcion !== 'string') {
       errores.push('La descripcion debe ser un texto o null');
+    } else if (descripcion !== undefined && descripcion !== null) {
+      const descTrim = descripcion.trim();
+      if (descTrim.length > 100) {
+        errores.push('La descripción no puede exceder los 100 caracteres');
+      }
     }
 
     if (errores.length > 0) {
@@ -294,21 +299,21 @@ const updateCancha = async (req, res) => {
     required: true,
     string: true,
     trim: true,
-    maxLength: 100
+    maxLength: 10
   });
 
   validarYAgregar('deporte', deporte, {
     required: true,
     string: true,
     trim: true,
-    maxLength: 100
+    maxLength: 15
   });
 
   validarYAgregar('superficie', superficie, {
     required: true,
     string: true,
     trim: true,
-    maxLength: 100
+    maxLength: 50
   });
 
   validarYAgregar('precio_hora', precio_hora, {
@@ -317,7 +322,12 @@ const updateCancha = async (req, res) => {
     positive: true
   });
 
-  validarYAgregar('descripcion', descripcion, { string: true, trim: true });
+  validarYAgregar('descripcion', descripcion, { 
+  string: true, 
+  trim: true, 
+  maxLength: 100 
+  });
+
   validarYAgregar('iluminacion', iluminacion, { boolean: true });
   validarYAgregar('cubierta', cubierta, { boolean: true });
 
