@@ -62,13 +62,7 @@ const createCancha = async (req, res) => {
 
     const errores = [];
 
-    // === VALIDACIONES BÁSICAS ===
-    // nombre
-    if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
-      errores.push('El nombre es obligatorio y no puede estar vacío');
-    } else if (nombre.trim().length > 10) {
-      errores.push('El nombre no puede exceder los 10 caracteres');
-    }
+    // === VALIDACIONES BÁSICAS (sin nombre todavía) ===
 
     // deporte
     if (!deporte || typeof deporte !== 'string' || deporte.trim() === '') {
@@ -93,10 +87,14 @@ const createCancha = async (req, res) => {
       errores.push('El precio_hora debe tener máximo 2 decimales');
     }
 
-    // establecimiento_id
-    const estId = parseInt(establecimiento_id, 10);
-    if (isNaN(estId) || estId <= 0) {
-      errores.push('El establecimiento_id es obligatorio y debe ser un número entero positivo');
+    // establecimiento_id → obligatorio y entero positivo
+    if (establecimiento_id === undefined || establecimiento_id === null) {
+      errores.push('El establecimiento_id es obligatorio');
+    } else {
+      const estId = parseInt(establecimiento_id, 10);
+      if (isNaN(estId) || estId <= 0 || !Number.isInteger(estId)) {
+        errores.push('El establecimiento_id debe ser un número entero positivo');
+      }
     }
 
     // iluminacion y cubierta
@@ -124,8 +122,8 @@ const createCancha = async (req, res) => {
       });
     }
 
-    const nombreTrim = nombre.trim();
     const deporteTrim = deporte.trim();
+    const estId = parseInt(establecimiento_id, 10);
 
     // === VALIDACIÓN: DEPORTE PERMITIDO ===
     const deportesPermitidos = [
@@ -141,26 +139,48 @@ const createCancha = async (req, res) => {
       });
     }
 
-    // === VALIDACIÓN: NOMBRE ÚNICO (insensible a mayúsculas, acentos y espacios) ===
-    const checkNombreQuery = `
-      SELECT 1 FROM canchas 
-      WHERE establecimiento_id = $1 
-        AND deporte = $2
-        AND unaccent(UPPER(nombre)) = unaccent(UPPER($3))
-    `;
+    // === NUEVA VALIDACIÓN Y CÁLCULO DEL NOMBRE ===
+    if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
+      errores.push('El nombre es obligatorio');
+    } else {
+      const nombreTrim = nombre.trim();
 
-    const { rowCount: nombreExiste } = await pool.query(checkNombreQuery, [
-      estId,
-      deporteTrim,
-      nombreTrim
-    ]);
+      // Verificar formato exacto: "Cancha " + número entero positivo
+      const match = nombreTrim.match(/^Cancha (\d+)$/);
+      if (!match) {
+        errores.push('El nombre debe ser exactamente "Cancha N" donde N es un número entero positivo (ej: Cancha 1, Cancha 15)');
+      } else {
+        const numeroEnviado = parseInt(match[1], 10);
 
-    if (nombreExiste > 0) {
+        // Calcular el siguiente número disponible para este establecimiento + deporte
+        const queryUltimoNumero = `
+          SELECT MAX(CAST(SUBSTRING(nombre FROM 'Cancha (\\d+)') AS INTEGER)) AS max_num
+          FROM canchas
+          WHERE establecimiento_id = $1
+            AND deporte = $2
+            AND nombre LIKE 'Cancha %';
+        `;
+
+        const { rows: [row] } = await pool.query(queryUltimoNumero, [estId, deporteTrim]);
+        const ultimoNumero = row.max_num ? parseInt(row.max_num, 10) : 0;
+        const numeroEsperado = ultimoNumero + 1;
+
+        if (numeroEnviado !== numeroEsperado) {
+          errores.push(
+            `El nombre debe ser "Cancha ${numeroEsperado}" (el siguiente disponible para ${deporteTrim} en este establecimiento)`
+          );
+        }
+      }
+    }
+
+    if (errores.length > 0) {
       return res.status(400).json({
-        error: 'Nombre de cancha duplicado',
-        detalles: `Ya existe una cancha con nombre similar a "${nombreTrim}" para el deporte "${deporteTrim}" en este establecimiento`
+        error: 'Errores de validación',
+        detalles: errores
       });
     }
+
+    const nombreFinal = nombre.trim(); // ya validado
 
     // === Verificamos que el establecimiento exista ===
     const { rowCount: estExiste } = await pool.query(
@@ -172,7 +192,7 @@ const createCancha = async (req, res) => {
       return res.status(400).json({ error: 'El establecimiento_id proporcionado no existe' });
     }
 
-    // === Insert final (conservamos el casing y acentos originales) ===
+    // === Insert final ===
     const insertQuery = `
       INSERT INTO canchas 
       (nombre, deporte, establecimiento_id, precio_hora, descripcion, superficie, iluminacion, cubierta)
@@ -181,7 +201,7 @@ const createCancha = async (req, res) => {
     `;
 
     const values = [
-      nombreTrim,
+      nombreFinal,
       deporteTrim,
       estId,
       precio,
@@ -200,11 +220,9 @@ const createCancha = async (req, res) => {
 
   } catch (error) {
     console.error('Error al crear cancha:', error);
-
     if (error.code === '23503') {
       return res.status(400).json({ error: 'Referencia inválida (foreign key)' });
     }
-
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -212,7 +230,6 @@ const createCancha = async (req, res) => {
 const updateCancha = async (req, res) => {
   const { id } = req.params;
 
-  // Validamos ID de la cancha
   const canchaId = parseInt(id, 10);
   if (isNaN(canchaId) || canchaId <= 0) {
     return res.status(400).json({ error: 'ID de cancha inválido' });
@@ -231,28 +248,35 @@ const updateCancha = async (req, res) => {
 
   const errores = [];
 
+  // === RECHAZAR CAMPOS NO MODIFICABLES ===
+  if (nombre !== undefined) {
+    errores.push('No se puede modificar el nombre de la cancha');
+  }
+  if (deporte !== undefined) {
+    errores.push('No se puede modificar el deporte de la cancha');
+  }
+  if (establecimiento_id !== undefined) {
+    errores.push('No se puede modificar el establecimiento_id de la cancha');
+  }
+
+  if (errores.length > 0) {
+    return res.status(400).json({
+      error: 'Campos no permitidos para modificación',
+      detalles: errores
+    });
+  }
+
   const setParts = [];
   const values = [];
   let paramIndex = 1;
 
-  // Lista de deportes permitidos
-  const deportesPermitidos = [
-    'Pádel', 'Fútbol 4', 'Fútbol 5', 'Fútbol 6', 'Fútbol 7',
-    'Fútbol 8', 'Fútbol 9', 'Fútbol 10', 'Fútbol 11',
-    'Tenis', 'Básquet 3v3', 'Básquet 5v5', 'Vóley', 'Handball'
-  ];
-
-  // Helper para validar y agregar un campo al UPDATE
+  // Helper para validar y agregar campos modificables
   const validarYAgregar = (campo, valor, reglas) => {
     if (valor === undefined) return;
 
-    if (reglas.required && (valor === null || valor === '' || valor === undefined)) {
-      errores.push(`El campo ${campo} es obligatorio y no puede ser vacío o null`);
-      return;
-    }
-
+    // No requerimos campos obligatorios en update, solo validamos si se envían
     if (reglas.string && typeof valor !== 'string') {
-      errores.push(`El campo ${campo} debe ser una cadena de texto`);
+      errores.push(`El campo ${campo} debe ser texto`);
       return;
     }
 
@@ -261,17 +285,10 @@ const updateCancha = async (req, res) => {
       return;
     }
 
-    let valorProcesado = valor;
-    if (reglas.trim && typeof valor === 'string') {
-      valorProcesado = valor.trim();
-      if (reglas.required && valorProcesado === '') {
-        errores.push(`El campo ${campo} no puede quedar vacío después de recortar espacios`);
-        return;
-      }
-    }
+    let valorProcesado = reglas.trim && typeof valor === 'string' ? valor.trim() : valor;
 
     if (reglas.number && (isNaN(valor) || typeof valor !== 'number')) {
-      errores.push(`El campo ${campo} debe ser un número válido`);
+      errores.push(`El campo ${campo} debe ser un número`);
       return;
     }
 
@@ -285,142 +302,28 @@ const updateCancha = async (req, res) => {
       return;
     }
 
-    if (reglas.integer && !Number.isInteger(valor)) {
-      errores.push(`El campo ${campo} debe ser un número entero`);
-      return;
-    }
-
     setParts.push(`${campo} = $${paramIndex++}`);
     values.push(valorProcesado);
   };
 
-  // Aplicamos validaciones campo por campo
-  validarYAgregar('nombre', nombre, {
-    required: true,
-    string: true,
-    trim: true,
-    maxLength: 10
-  });
-
-  validarYAgregar('deporte', deporte, {
-    required: true,
-    string: true,
-    trim: true,
-    maxLength: 15
-  });
-
-  validarYAgregar('superficie', superficie, {
-    required: true,
-    string: true,
-    trim: true,
-    maxLength: 50
-  });
-
-  validarYAgregar('precio_hora', precio_hora, {
-    required: true,
-    number: true,
-    positive: true
-  });
-
-  validarYAgregar('descripcion', descripcion, { 
-  string: true, 
-  trim: true, 
-  maxLength: 100 
-  });
-
+  // Validaciones para campos permitidos
+  validarYAgregar('precio_hora', precio_hora, { number: true, positive: true });
+  validarYAgregar('descripcion', descripcion, { string: true, trim: true, maxLength: 100 });
+  validarYAgregar('superficie', superficie, { string: true, trim: true, maxLength: 50 });
   validarYAgregar('iluminacion', iluminacion, { boolean: true });
   validarYAgregar('cubierta', cubierta, { boolean: true });
-
-  // === Validación de deporte permitido (con valor final) ===
-  let deporteFinalParaValidar = deporte !== undefined ? (typeof deporte === 'string' ? deporte.trim() : deporte) : undefined;
-
-  // === Validación especial para establecimiento_id ===
-  if (establecimiento_id !== undefined) {
-    const estId = parseInt(establecimiento_id, 10);
-    if (isNaN(estId) || estId <= 0) {
-      errores.push('establecimiento_id debe ser un número entero positivo');
-    } else {
-      try {
-        const { rowCount } = await pool.query(
-          'SELECT 1 FROM establecimientos WHERE id = $1',
-          [estId]
-        );
-        if (rowCount === 0) {
-          errores.push('El establecimiento_id proporcionado no existe');
-        } else {
-          setParts.push(`establecimiento_id = $${paramIndex++}`);
-          values.push(estId);
-        }
-      } catch (err) {
-        errores.push('Error al verificar el establecimiento');
-      }
-    }
-  }
-
-  // === VALIDACIÓN DE NOMBRE ÚNICO (igual que en createCancha) ===
-  if (nombre !== undefined || deporte !== undefined || establecimiento_id !== undefined) {
-    let nombreFinal = nombre !== undefined ? nombre.trim() : null;
-    let deporteFinal = deporte !== undefined ? (typeof deporte === 'string' ? deporte.trim() : deporte) : null;
-    let estIdFinal = establecimiento_id !== undefined ? parseInt(establecimiento_id, 10) : null;
-
-    // Obtener valores actuales de la cancha
-    const currentQuery = 'SELECT nombre, deporte, establecimiento_id FROM canchas WHERE id = $1';
-    try {
-      const { rows: currentRows } = await pool.query(currentQuery, [canchaId]);
-
-      if (currentRows.length === 0) {
-        return res.status(404).json({ error: 'Cancha no encontrada' });
-      }
-
-      const current = currentRows[0];
-
-      nombreFinal = nombreFinal ?? current.nombre.trim();
-      deporteFinal = deporteFinal ?? current.deporte;
-      estIdFinal = estIdFinal ?? current.establecimiento_id;
-
-      // Validar deporte permitido con el valor final
-      if (!deportesPermitidos.includes(deporteFinal)) {
-        errores.push(`Deporte no permitido. Debe ser uno de: ${deportesPermitidos.join(', ')}`);
-      }
-
-      // Verificar duplicado usando unaccent + UPPER (igual que en create)
-      const checkNombreQuery = `
-        SELECT 1 FROM canchas 
-        WHERE establecimiento_id = $1 
-          AND deporte = $2
-          AND unaccent(UPPER(nombre)) = unaccent(UPPER($3))
-          AND id != $4
-      `;
-
-      const { rowCount: nombreExiste } = await pool.query(checkNombreQuery, [
-        estIdFinal,
-        deporteFinal,
-        nombreFinal,
-        canchaId
-      ]);
-
-      if (nombreExiste > 0) {
-        errores.push(
-          `Ya existe una cancha con nombre similar a "${nombreFinal}" para el deporte "${deporteFinal}" en este establecimiento`
-        );
-      }
-    } catch (err) {
-      console.error('Error al verificar unicidad del nombre en update:', err);
-      errores.push('Error interno al verificar unicidad del nombre');
-    }
-  }
 
   // Si hay errores de validación
   if (errores.length > 0) {
     return res.status(400).json({ error: 'Errores de validación', detalles: errores });
   }
 
-  // Si no hay campos para actualizar
+  // Si no se envió ningún campo modificable
   if (setParts.length === 0) {
     return res.status(400).json({ error: 'No se proporcionaron campos para actualizar' });
   }
 
-  // Agregamos el ID al final para el WHERE
+  // Agregar el WHERE
   values.push(canchaId);
 
   const query = `
