@@ -16,6 +16,19 @@ document.addEventListener('DOMContentLoaded', () => {
   inicializarModalExito(); // Éxito de eliminación
   inicializarModalExitoEditar(); // Éxito de actualización
   inicializarModalEditar();
+  inicializarModalAgregar(); // Nuevo: modal de agregar establecimiento
+
+  // Evento del botón Agregar establecimiento
+  document.getElementById('btn-agregar-establecimiento')?.addEventListener('click', () => {
+    const modal = document.getElementById('modal-agregar-establecimiento');
+    if (modal) {
+      modal.classList.add('is-active');
+      // Inicializar contadores en 0
+      document.getElementById('contador-nombre').textContent = '0';
+      document.getElementById('contador-barrio').textContent = '0';
+      document.getElementById('contador-torneo').textContent = '0';
+    }
+  });
 });
 
 async function cargarDatos() {
@@ -113,22 +126,18 @@ function inicializarModalExito() {
 
   // Deshabilitar cierre manual (sin cruz ni clic en fondo)
   modalExito.querySelector('.modal-background').style.pointerEvents = 'none';
-  // No agregamos listeners para .delete porque ya no existe
 }
 
-// Función para mostrar el modal de éxito de eliminación (con cierre automático)
 function mostrarModalExito() {
   const modalExito = document.getElementById('modal-exito');
   if (modalExito) {
     modalExito.classList.add('is-active');
-    // Cierre automático después de 2 segundos
     setTimeout(() => {
       modalExito.classList.remove('is-active');
     }, 2000);
   }
 }
 
-// Nuevo: Inicialización del modal de éxito para actualización (sin cierre manual)
 function inicializarModalExitoEditar() {
   const modal = document.getElementById('modal-exito-editar');
   if (!modal) {
@@ -136,17 +145,13 @@ function inicializarModalExitoEditar() {
     return;
   }
 
-  // Deshabilitar cierre manual
   modal.querySelector('.modal-background').style.pointerEvents = 'none';
-  // No hay botón .delete ni listeners de cierre
 }
 
-// Nuevo: Mostrar modal de éxito para actualización (cierre automático)
 function mostrarModalExitoEditar() {
   const modal = document.getElementById('modal-exito-editar');
   if (modal) {
     modal.classList.add('is-active');
-    // Cierre automático después de 2 segundos + recarga
     setTimeout(() => {
       modal.classList.remove('is-active');
       location.reload();
@@ -164,7 +169,6 @@ async function mostrarModalEliminar(id) {
     return;
   }
 
-  // Conteos
   const canchas = allCanchas.filter(c => c.establecimiento_id === id);
   const numCanchas = canchas.length;
 
@@ -183,7 +187,6 @@ async function mostrarModalEliminar(id) {
     console.error('Error al obtener reservas:', error);
   }
 
-  // Abrir el modal primero
   const modal = document.getElementById('modal-eliminar');
   if (modal) {
     modal.classList.add('is-active');
@@ -192,12 +195,10 @@ async function mostrarModalEliminar(id) {
     return;
   }
 
-  // Esperar a que Bulma clone el modal y actualizar los elementos CLONADOS
   setTimeout(() => {
     const activeModal = document.querySelector('.modal.is-active');
     if (!activeModal) return;
 
-    // Actualizar en el modal activo (clonado)
     const nombreEl = activeModal.querySelector('#modal-nombre');
     if (nombreEl) nombreEl.textContent = est.nombre;
 
@@ -213,7 +214,6 @@ async function mostrarModalEliminar(id) {
     const textoEl = activeModal.querySelector('#modal-texto');
     if (textoEl) textoEl.innerHTML = `¿Estás seguro de eliminar el establecimiento <strong>${est.nombre}</strong>?`;
 
-    // Forzar reflow para que Bulma pinte bien
     activeModal.offsetHeight;
   }, 100);
 }
@@ -228,28 +228,46 @@ function inicializarModalEditar() {
   const btnCancelar = document.getElementById('btn-cancelar-edit');
   const btnGuardar = document.getElementById('btn-guardar-edit');
 
-  // Cerrar solo con Cancelar
+  // Seteamos variables para contar caracteres
+  const inputNombre = document.getElementById('edit-nombre');
+  const inputBarrio = document.getElementById('edit-barrio');
+  const inputTorneo = document.getElementById('edit-torneo');
+
+  const contadorNombre = document.getElementById('contador-edit-nombre');
+  const contadorBarrio = document.getElementById('contador-edit-barrio');
+  const contadorTorneo = document.getElementById('contador-edit-torneo');
+
+  // Contadores de caracteres en tiempo real
+  inputNombre.addEventListener('input', () => {
+    contadorNombre.textContent = inputNombre.value.length;
+  });
+  inputBarrio.addEventListener('input', () => {
+    contadorBarrio.textContent = inputBarrio.value.length;
+  });
+  inputTorneo.addEventListener('input', () => {
+    contadorTorneo.textContent = inputTorneo.value.length;
+  });
+
   btnCancelar.addEventListener('click', () => {
     modal.classList.remove('is-active');
-    // Limpiar campos
     document.getElementById('edit-nombre').value = '';
     document.getElementById('edit-barrio').value = '';
     document.getElementById('edit-torneo').value = '';
+
+    // Reseteamos contadores al cerrar
+    contadorNombre.textContent = '0';
+    contadorBarrio.textContent = '0';
+    contadorTorneo.textContent = '0';
   });
 
-  // Guardar cambios (PUT)
   btnGuardar.addEventListener('click', async () => {
     const id = modal.dataset.id;
-    if (!id) {
-      console.error('No hay ID para editar');
-      return;
-    }
+    if (!id) return;
 
     const nombre = document.getElementById('edit-nombre').value.trim();
     const barrio = document.getElementById('edit-barrio').value.trim();
     const torneo = document.getElementById('edit-torneo').value.trim() || null;
 
-    // Validaciones básicas en frontend
     if (!nombre || nombre.length > 50) {
       alert('El nombre es obligatorio y no debe superar 50 caracteres');
       return;
@@ -276,17 +294,14 @@ function inicializarModalEditar() {
         return;
       }
 
-      // Éxito: mostrar el nuevo modal específico
       mostrarModalExitoEditar();
       modal.classList.remove('is-active');
-
     } catch (error) {
       console.error('Error al actualizar:', error);
       alert('Error de conexión');
     }
   });
 
-  // Deshabilitar cierre con clic en background
   modal.querySelector('.modal-background').style.pointerEvents = 'none';
 }
 
@@ -299,16 +314,23 @@ async function mostrarModalEditar(id) {
   }
 
   const modal = document.getElementById('modal-editar');
-  if (!modal) {
-    console.error('Modal de edición no encontrado');
-    return;
-  }
+  if (!modal) return;
+
   modal.classList.add('is-active');
 
-  // Llenar campos
-  document.getElementById('edit-nombre').value = est.nombre || '';
-  document.getElementById('edit-barrio').value = est.barrio || '';
-  document.getElementById('edit-torneo').value = est.torneo || '';
+  // Llenamos campos
+  const inputNombre = document.getElementById('edit-nombre');
+  const inputBarrio = document.getElementById('edit-barrio');
+  const inputTorneo = document.getElementById('edit-torneo');
+
+  inputNombre.value = est.nombre || '';
+  inputBarrio.value = est.barrio || '';
+  inputTorneo.value = est.torneo || '';
+
+  // Actualizar contadores inmediatamente con los valores cargados
+  document.getElementById('contador-edit-nombre').textContent = inputNombre.value.length;
+  document.getElementById('contador-edit-barrio').textContent = inputBarrio.value.length;
+  document.getElementById('contador-edit-torneo').textContent = inputTorneo.value.length;
 
   modal.dataset.id = id;
 }
@@ -566,6 +588,158 @@ function actualizarEstablecimiento(id) {
 
 function eliminarEstablecimiento(id) {
   mostrarModalEliminar(id);
+}
+
+// -----------------------
+// AGREGAR NUEVO ESTABLECIMIENTO
+// -----------------------
+
+function inicializarModalAgregar() {
+  const modal = document.getElementById('modal-agregar-establecimiento');
+  if (!modal) {
+    console.error('Modal de agregar establecimiento no encontrado');
+    return;
+  }
+
+  const btnCancelar = document.getElementById('btn-cancelar-agregar');
+  const btnCrear = document.getElementById('btn-crear-establecimiento');
+
+  const inputNombre = document.getElementById('agregar-nombre');
+  const inputBarrio = document.getElementById('agregar-barrio');
+  const inputTorneo = document.getElementById('agregar-torneo');
+
+  const contadorNombre = document.getElementById('contador-nombre');
+  const contadorBarrio = document.getElementById('contador-barrio');
+  const contadorTorneo = document.getElementById('contador-torneo');
+
+  // Contadores de caracteres
+  inputNombre.addEventListener('input', () => {
+    contadorNombre.textContent = inputNombre.value.length;
+  });
+  inputBarrio.addEventListener('input', () => {
+    contadorBarrio.textContent = inputBarrio.value.length;
+  });
+  inputTorneo.addEventListener('input', () => {
+    contadorTorneo.textContent = inputTorneo.value.length;
+  });
+
+  // Cerrar solo con Cancelar
+  btnCancelar.addEventListener('click', () => {
+    modal.classList.remove('is-active');
+    inputNombre.value = '';
+    inputBarrio.value = '';
+    inputTorneo.value = '';
+    contadorNombre.textContent = '0';
+    contadorBarrio.textContent = '0';
+    contadorTorneo.textContent = '0';
+  });
+
+  // Deshabilitar cierre con background
+  modal.querySelector('.modal-background').style.pointerEvents = 'none';
+
+  // Crear establecimiento
+  btnCrear.addEventListener('click', async () => {
+    const nombre = inputNombre.value.trim();
+    const barrio = inputBarrio.value.trim();
+    const torneo = inputTorneo.value.trim() || null;
+
+    // Validaciones frontend
+    if (!nombre) {
+      alert('El nombre es obligatorio');
+      return;
+    }
+    if (nombre.length > 50) {
+      alert('El nombre no debe superar los 50 caracteres');
+      return;
+    }
+    if (!barrio) {
+      alert('El barrio es obligatorio');
+      return;
+    }
+    if (barrio.length > 25) {
+      alert('El barrio no debe superar los 25 caracteres');
+      return;
+    }
+    if (torneo && torneo.length > 50) {
+      alert('La descripción de torneos no debe superar los 50 caracteres');
+      return;
+    }
+
+    // Validar unicidad del nombre (case-insensitive)
+    const existe = allEstablecimientos.some(est => normalizeString(est.nombre) === normalizeString(nombre));
+    if (existe) {
+      alert('Ya existe un establecimiento con ese nombre');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/establecimientos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, barrio, torneo })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(errorData.error || 'Error al crear el establecimiento');
+        return;
+      }
+
+      // Éxito: cerrar modal de agregar
+      modal.classList.remove('is-active');
+
+      // Mostrar modal de "¿asignar canchas?"
+      mostrarModalAsignarCanchas();
+
+    } catch (error) {
+      console.error('Error al crear:', error);
+      alert('Error de conexión');
+    }
+  });
+}
+
+function mostrarModalAsignarCanchas() {
+  const modal = document.getElementById('modal-asignar-canchas');
+  if (!modal) return;
+
+  modal.classList.add('is-active');
+
+  // Deshabilitar cierre con background
+  modal.querySelector('.modal-background').style.pointerEvents = 'none';
+
+  document.getElementById('btn-si-asignar').onclick = () => {
+    modal.classList.remove('is-active');
+    mostrarModalExitoCrear(true); // true = redirigir a canchas
+  };
+
+  document.getElementById('btn-no-asignar').onclick = () => {
+    modal.classList.remove('is-active');
+    mostrarModalExitoCrear(false); // false = recargar página
+  };
+}
+
+function mostrarModalExitoCrear(redirigirACanchas) {
+  const modal = document.getElementById('modal-exito-crear');
+  if (!modal) return;
+
+  const mensaje = document.getElementById('mensaje-exito-crear');
+  mensaje.textContent = redirigirACanchas
+    ? 'Redirigiendo a administrar canchas...'
+    : 'Refrescando la página...';
+
+  modal.classList.add('is-active');
+
+  // Deshabilitar cierre manual
+  modal.querySelector('.modal-background').style.pointerEvents = 'none';
+
+  setTimeout(() => {
+    modal.classList.remove('is-active');
+    if (redirigirACanchas) {
+      window.location.href = 'administrar_canchas.html';
+    } else {
+      location.reload();
+    }
+  }, 2000);
 }
 
 function normalizeString(str) {
