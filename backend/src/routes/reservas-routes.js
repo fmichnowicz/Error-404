@@ -6,13 +6,15 @@ import {
     updateReserva,
     deleteReserva,
     getReservasParaGrilla,
-    getReservasByEstablecimiento
+    getReservasByEstablecimiento,
+    getReservasByCancha
 } from "../controllers/reservas-controllers.js"
 
 const router = Router();
 
 // Rutas específicas
 router.get("/by-establecimiento", getReservasByEstablecimiento);
+router.get("/by-cancha", getReservasByCancha);
 router.get("/grilla", getReservasParaGrilla);
 
 // Rutas genéricas

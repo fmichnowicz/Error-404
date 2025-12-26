@@ -710,4 +710,50 @@ const getReservasByEstablecimiento = async (req, res) => {
 };
 // Ejemplo de uso http://localhost:3000/reservas/by-establecimiento?establecimiento=14
 
-export { getAllReservas, getReservaById, createReserva, updateReserva, deleteReserva, getReservasParaGrilla, getReservasByEstablecimiento };
+// Endpoint para obtener reservas por cancha (usado en confirmar eliminación de cancha)
+const getReservasByCancha = async (req, res) => {
+    const { cancha } = req.query;
+
+    // Validación estricta del parámetro
+    if (!cancha || isNaN(parseInt(cancha, 10))) {
+        return res.status(400).json({ 
+        error: 'Parámetro "cancha" requerido y debe ser un número entero válido' 
+        });
+    }
+
+    const canchaId = parseInt(cancha, 10);
+
+    try {
+        const query = `
+        SELECT r.*
+        FROM reservas r
+        WHERE r.cancha_id = $1
+        ORDER BY r.fecha_reserva, r.reserva_hora_inicio
+        `;
+        const values = [canchaId];
+
+        console.log('Query ejecutada para cancha:', canchaId);
+        console.log('SQL:', query);
+        console.log('Values:', values);
+
+        const result = await pool.query(query, values);
+
+        console.log(`Filas devueltas: ${result.rowCount}`);
+
+        // Formatear fechas (igual que en otros endpoints)
+        const reservasFormateadas = result.rows.map(r => ({
+        ...r,
+        fecha_reserva: formateoFechaLocal(r.fecha_reserva),
+        fecha_creacion_reserva: formateoFechaHorarioLocal(r.fecha_creacion_reserva),
+        fecha_modificacion_reserva: formateoFechaHorarioLocal(r.fecha_modificacion_reserva)
+        }));
+
+        res.json(reservasFormateadas);
+    } catch (error) {
+        console.error('Error en getReservasByCancha:', error.message, error.stack);
+        res.status(500).json({ error: 'Error al obtener reservas por cancha', detalles: error.message });
+    }
+};
+// Ejemplo de uso http://localhost:3000/reservas/by-cancha?cancha=2
+
+export { getAllReservas, getReservaById, createReserva, updateReserva, deleteReserva, getReservasParaGrilla, getReservasByEstablecimiento, getReservasByCancha };

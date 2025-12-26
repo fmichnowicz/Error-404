@@ -8,9 +8,13 @@ let canchasFiltradas = [];
 let filtroEstablecimiento = '';
 let filtroDeporte = '';
 
+// Variables para el modal de eliminación
+let idCanchaAEliminar = null;
+
 document.addEventListener('DOMContentLoaded', () => {
   cargarCanchas();
   inicializarFiltros();
+  inicializarModalesEliminar();
 });
 
 async function cargarCanchas() {
@@ -67,7 +71,6 @@ function inicializarFiltros() {
 
     const normalizedQuery = normalizeString(query);
 
-    // Filtrar establecimientos según el deporte seleccionado (si hay)
     let establecimientosDisponibles = [...new Set(allCanchas.map(c => c.nombre_establecimiento))];
 
     if (filtroDeporte) {
@@ -114,7 +117,6 @@ function inicializarFiltros() {
 
     const normalizedQuery = normalizeString(query);
 
-    // Filtrar deportes según el establecimiento seleccionado (si hay)
     let deportesDisponibles = [...new Set(allCanchas.map(c => c.deporte))];
 
     if (filtroEstablecimiento) {
@@ -157,7 +159,7 @@ function inicializarFiltros() {
     }
   });
 
-  // Permitir filtrar también escribiendo y presionando Enter (opcional pero útil)
+  // Permitir filtrar con Enter
   inputEst.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -225,9 +227,9 @@ function renderizarPagina(page) {
           <div class="card-content p-0">
             <div class="columns is-gapless">
               <div class="column is-one-third has-background-primary has-text-white p-5 
-                          is-flex is-flex-direction-column is-justify-content-center is-align-items-center 
-                          rounded-left">
-                <h3 class="title is-3 has-text-white mb-4">${cancha.nombre_establecimiento}</h3>
+                is-flex is-flex-direction-column is-justify-content-center is-align-items-center 
+                has-text-centered rounded-left">
+                <h3 class="title is-3 has-text-white mb-4" style="width: 100%;">${cancha.nombre_establecimiento}</h3>
                 <p class="subtitle is-4 has-text-white mb-3"><strong>Cancha:</strong> ${cancha.nombre_cancha}</p>
                 <p class="subtitle is-4 has-text-white"><strong>Deporte:</strong> ${cancha.deporte}</p>
               </div>
@@ -273,14 +275,14 @@ function crearPaginacion(page) {
 
   paginasHTML += `
     <a class="pagination-previous ${page === 1 ? 'is-disabled' : ''}" 
-       onclick="${page > 1 ? 'renderizarPagina(' + (page - 1) + ')' : ''}">
+      onclick="${page > 1 ? 'renderizarPagina(' + (page - 1) + ')' : ''}">
       Anterior
     </a>
   `;
 
   paginasHTML += `
     <a class="pagination-next ${page === totalPages ? 'is-disabled' : ''}" 
-       onclick="${page < totalPages ? 'renderizarPagina(' + (page + 1) + ')' : ''}">
+      onclick="${page < totalPages ? 'renderizarPagina(' + (page + 1) + ')' : ''}">
       Siguiente
     </a>
   `;
@@ -290,7 +292,7 @@ function crearPaginacion(page) {
     paginasHTML += `
       <li>
         <a class="pagination-link ${i === page ? 'is-current' : ''}" 
-           onclick="renderizarPagina(${i})">${i}</a>
+          onclick="renderizarPagina(${i})">${i}</a>
       </li>
     `;
   }
@@ -299,11 +301,115 @@ function crearPaginacion(page) {
   paginacion.innerHTML = paginasHTML;
 }
 
-// Funciones placeholder
-function modificarCancha(id) {
-  console.log(`Modificar cancha ID: ${id}`);
+// Inicializar modales de eliminación
+function inicializarModalesEliminar() {
+  const modalEliminar = document.getElementById('modal-eliminar-cancha');
+  if (!modalEliminar) {
+    console.error('Modal de eliminación de cancha no encontrado');
+    return;
+  }
+
+  const btnCancelar = document.getElementById('btn-cancelar-eliminar-cancha');
+  const btnEliminarDef = document.getElementById('btn-eliminar-cancha-definitivo');
+
+  // Cerrar solo con Cancelar
+  btnCancelar.addEventListener('click', () => {
+    modalEliminar.classList.remove('is-active');
+    idCanchaAEliminar = null;
+    document.getElementById('modal-nombre-cancha').textContent = '';
+    document.getElementById('reservas-activas-cancha').textContent = '0';
+    document.getElementById('usuarios-impactados-cancha').textContent = '0';
+  });
+
+  // Confirmar eliminación
+  btnEliminarDef.addEventListener('click', async () => {
+    if (!idCanchaAEliminar) return;
+
+    try {
+      const response = await fetch(`http://localhost:3000/canchas/${idCanchaAEliminar}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(errorData.error || 'Error al eliminar la cancha');
+        return;
+      }
+
+      // Mostrar éxito
+      mostrarModalExitoEliminar();
+
+      // Cerrar modal de confirmación
+      modalEliminar.classList.remove('is-active');
+      idCanchaAEliminar = null;
+
+      // Refrescar en 2 segundos
+      setTimeout(() => {
+        location.reload();
+      }, 2000);
+    } catch (error) {
+      console.error('Error al eliminar cancha:', error);
+      alert('Error de conexión');
+    }
+  });
+
+  // Bloquear cierre por background y ESC
+  modalEliminar.querySelector('.modal-background').style.pointerEvents = 'none';
+  modalEliminar.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') e.preventDefault();
+  });
+
+  // Modal de éxito
+  const modalExito = document.getElementById('modal-exito-eliminar-cancha');
+  if (modalExito) {
+    modalExito.querySelector('.modal-background').style.pointerEvents = 'none';
+    modalExito.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') e.preventDefault();
+    });
+  }
 }
 
-function eliminarCancha(id) {
-  console.log(`Eliminar cancha ID: ${id}`);
+function mostrarModalExitoEliminar() {
+  const modal = document.getElementById('modal-exito-eliminar-cancha');
+  if (modal) {
+    modal.classList.add('is-active');
+  }
+}
+
+async function eliminarCancha(id) {
+  idCanchaAEliminar = id;
+
+  const cancha = allCanchas.find(c => c.id === id);
+  if (!cancha) {
+    alert('Cancha no encontrada');
+    return;
+  }
+
+  let numReservas = 0;
+  let numUsuarios = 0;
+
+  try {
+    const res = await fetch(`http://localhost:3000/reservas/by-cancha?cancha=${id}`);
+    if (res.ok) {
+      const reservas = await res.json();
+      numReservas = reservas.length;
+      const usuariosUnicos = new Set(reservas.map(r => r.usuario_id));
+      numUsuarios = usuariosUnicos.size;
+    }
+  } catch (error) {
+    console.error('Error al obtener reservas:', error);
+  }
+
+  const modal = document.getElementById('modal-eliminar-cancha');
+  if (modal) {
+    document.getElementById('modal-nombre-cancha').textContent = cancha.nombre_cancha;
+    document.getElementById('reservas-activas-cancha').textContent = numReservas;
+    document.getElementById('usuarios-impactados-cancha').textContent = numUsuarios;
+    modal.classList.add('is-active');
+  }
+}
+
+// Funciones placeholder (puedes implementarlas después)
+function modificarCancha(id) {
+  console.log(`Modificar cancha ID: ${id}`);
 }
