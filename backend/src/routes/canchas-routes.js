@@ -4,10 +4,14 @@ import {
     getCanchaById,
     createCancha,
     updateCancha,
-    deleteCancha
+    deleteCancha,
+    getNextCanchaNumber
 } from "../controllers/canchas-controllers.js"
 
 const router = Router();
+
+// Rutas específicas
+router.get('/next-number', getNextCanchaNumber);
 
 // Rutas genéricas
 router.get("/", getAllCanchas);

@@ -480,3 +480,41 @@
     cursor: not-allowed;
     border: #f14668 !important;
 }
+
+/* ===================================
+   ESTILOS PÁGINA ADMINISTRAR CANCHAS (administrar_canchas.html)
+   =================================== */
+
+/* Para modo dark: fondo oscuro sólido y hover sutil */
+#modal-agregar-cancha .panel {
+  background-color: #242424 !important;     /* Fondo negro/gris oscuro típico de dark mode */
+  border: 1px solid #4a4a4a;                /* Borde gris oscuro */
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Sombra más pronunciada en dark */
+  z-index: 20;
+}
+
+/* Fuerza que los paneles de sugerencias tengan el mismo ancho exacto que su input */
+#sugerencias-establecimiento-modal,
+#sugerencias-deporte-modal {
+  width: 87% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  left: 30px !important;               /* Alinea perfectamente a la izquierda del input */
+  right: auto !important;           /* Evita que se extienda más allá */
+}
+
+/* Asegura que el contenedor del input sea el referente de posicionamiento */
+#modal-agregar-cancha .field .control {
+  position: relative !important;
+}
+
+/* Hover en dark mode: un gris un poco más claro */
+#modal-agregar-cancha .panel-block.is-clickable {
+  color: #dbdbdb;                           /* Texto gris claro */
+  transition: background-color 0.2s;
+}
+
+#modal-agregar-cancha .panel-block.is-clickable:hover {
+  background-color: #363636 !important;     /* Hover gris oscuro claro */
+}
