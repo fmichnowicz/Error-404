@@ -13,20 +13,21 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarDatos();
   inicializarFiltros();
   inicializarModalEliminar();
-  inicializarModalExito(); // Éxito de eliminación
-  inicializarModalExitoEditar(); // Éxito de actualización
+  inicializarModalExito();
+  inicializarModalExitoEditar();
   inicializarModalEditar();
-  inicializarModalAgregar(); // Nuevo: modal de agregar establecimiento
+  inicializarModalAgregar();
 
   // Evento del botón Agregar establecimiento
   document.getElementById('btn-agregar-establecimiento')?.addEventListener('click', () => {
     const modal = document.getElementById('modal-agregar-establecimiento');
     if (modal) {
       modal.classList.add('is-active');
-      // Inicializar contadores en 0
+      // Inicializar contadores en 0 y deshabilitar botón
       document.getElementById('contador-nombre').textContent = '0';
       document.getElementById('contador-barrio').textContent = '0';
       document.getElementById('contador-torneo').textContent = '0';
+      document.getElementById('btn-crear-establecimiento').disabled = true;
     }
   });
 });
@@ -62,7 +63,7 @@ async function cargarDatos() {
 function inicializarModalEliminar() {
   const modal = document.getElementById('modal-eliminar');
   if (!modal) {
-    console.error('Modal no encontrado en el DOM');
+    console.error('Modal de eliminación no encontrado');
     return;
   }
 
@@ -72,32 +73,17 @@ function inicializarModalEliminar() {
   const cerrarModal = () => {
     modal.classList.remove('is-active');
     idEstablecimientoAEliminar = null;
-
-    // Limpieza segura
-    const nombreEl = document.getElementById('modal-nombre');
-    if (nombreEl) nombreEl.textContent = '';
-
-    const canchasEl = document.getElementById('modal-canchas');
-    if (canchasEl) canchasEl.textContent = '0';
-
-    const reservasEl = document.getElementById('reservas-activas');
-    if (reservasEl) reservasEl.textContent = '0';
-
-    const usuariosEl = document.getElementById('modal-usuarios');
-    if (usuariosEl) usuariosEl.textContent = '0';
-
-    const textoEl = document.getElementById('modal-texto');
-    if (textoEl) textoEl.innerHTML = '';
+    document.getElementById('modal-nombre').textContent = '';
+    document.getElementById('modal-canchas').textContent = '0';
+    document.getElementById('reservas-activas').textContent = '0';
+    document.getElementById('modal-usuarios').textContent = '0';
+    document.getElementById('modal-texto').innerHTML = '';
   };
 
-  // Cerrar con Cancelar
   btnCancelar.addEventListener('click', cerrarModal);
 
   btnEliminarDef.addEventListener('click', async () => {
-    if (!idEstablecimientoAEliminar) {
-      console.warn('No hay ID para eliminar');
-      return;
-    }
+    if (!idEstablecimientoAEliminar) return;
 
     try {
       const response = await fetch(`http://localhost:3000/establecimientos/${idEstablecimientoAEliminar}`, {
@@ -124,7 +110,6 @@ function inicializarModalExito() {
   const modalExito = document.getElementById('modal-exito');
   if (!modalExito) return;
 
-  // Deshabilitar cierre manual (sin cruz ni clic en fondo)
   modalExito.querySelector('.modal-background').style.pointerEvents = 'none';
 }
 
@@ -140,10 +125,7 @@ function mostrarModalExito() {
 
 function inicializarModalExitoEditar() {
   const modal = document.getElementById('modal-exito-editar');
-  if (!modal) {
-    console.error('Modal de éxito edición no encontrado');
-    return;
-  }
+  if (!modal) return;
 
   modal.querySelector('.modal-background').style.pointerEvents = 'none';
 }
@@ -164,7 +146,6 @@ async function mostrarModalEliminar(id) {
 
   const est = allEstablecimientos.find(e => e.id === id);
   if (!est) {
-    console.error('Establecimiento no encontrado con ID:', id);
     alert('No se encontró el establecimiento');
     return;
   }
@@ -172,17 +153,17 @@ async function mostrarModalEliminar(id) {
   const canchas = allCanchas.filter(c => c.establecimiento_id === id);
   const numCanchas = canchas.length;
 
-  let reservas = [];
   let numReservas = 0;
   let numUsuarios = 0;
 
   try {
     const res = await fetch(`http://localhost:3000/reservas/by-establecimiento?establecimiento=${id}`);
-    if (!res.ok) throw new Error('Error en fetch reservas');
-    reservas = await res.json();
-    numReservas = reservas.length;
-    const usuariosUnicos = new Set(reservas.map(res => res.usuario_id));
-    numUsuarios = usuariosUnicos.size;
+    if (res.ok) {
+      const reservas = await res.json();
+      numReservas = reservas.length;
+      const usuariosUnicos = new Set(reservas.map(r => r.usuario_id));
+      numUsuarios = usuariosUnicos.size;
+    }
   } catch (error) {
     console.error('Error al obtener reservas:', error);
   }
@@ -190,45 +171,21 @@ async function mostrarModalEliminar(id) {
   const modal = document.getElementById('modal-eliminar');
   if (modal) {
     modal.classList.add('is-active');
-  } else {
-    console.error('Modal no encontrado');
-    return;
+    document.getElementById('modal-nombre').textContent = est.nombre;
+    document.getElementById('modal-canchas').textContent = numCanchas;
+    document.getElementById('reservas-activas').textContent = numReservas;
+    document.getElementById('modal-usuarios').textContent = numUsuarios;
+    document.getElementById('modal-texto').innerHTML = `¿Estás seguro de eliminar el establecimiento <strong>${est.nombre}</strong>?`;
   }
-
-  setTimeout(() => {
-    const activeModal = document.querySelector('.modal.is-active');
-    if (!activeModal) return;
-
-    const nombreEl = activeModal.querySelector('#modal-nombre');
-    if (nombreEl) nombreEl.textContent = est.nombre;
-
-    const canchasEl = activeModal.querySelector('#modal-canchas');
-    if (canchasEl) canchasEl.textContent = numCanchas;
-
-    const reservasEl = activeModal.querySelector('#reservas-activas');
-    if (reservasEl) reservasEl.textContent = numReservas;
-
-    const usuariosEl = activeModal.querySelector('#modal-usuarios');
-    if (usuariosEl) usuariosEl.textContent = numUsuarios;
-
-    const textoEl = activeModal.querySelector('#modal-texto');
-    if (textoEl) textoEl.innerHTML = `¿Estás seguro de eliminar el establecimiento <strong>${est.nombre}</strong>?`;
-
-    activeModal.offsetHeight;
-  }, 100);
 }
 
 function inicializarModalEditar() {
   const modal = document.getElementById('modal-editar');
-  if (!modal) {
-    console.error('Modal de edición no encontrado');
-    return;
-  }
+  if (!modal) return;
 
   const btnCancelar = document.getElementById('btn-cancelar-edit');
   const btnGuardar = document.getElementById('btn-guardar-edit');
 
-  // Seteamos variables para contar caracteres
   const inputNombre = document.getElementById('edit-nombre');
   const inputBarrio = document.getElementById('edit-barrio');
   const inputTorneo = document.getElementById('edit-torneo');
@@ -237,12 +194,14 @@ function inicializarModalEditar() {
   const contadorBarrio = document.getElementById('contador-edit-barrio');
   const contadorTorneo = document.getElementById('contador-edit-torneo');
 
-  // Contadores de caracteres en tiempo real
+  // Contadores en tiempo real + validación
   inputNombre.addEventListener('input', () => {
     contadorNombre.textContent = inputNombre.value.length;
+    validarFormularioEditar();
   });
   inputBarrio.addEventListener('input', () => {
     contadorBarrio.textContent = inputBarrio.value.length;
+    validarFormularioEditar();
   });
   inputTorneo.addEventListener('input', () => {
     contadorTorneo.textContent = inputTorneo.value.length;
@@ -250,36 +209,22 @@ function inicializarModalEditar() {
 
   btnCancelar.addEventListener('click', () => {
     modal.classList.remove('is-active');
-    document.getElementById('edit-nombre').value = '';
-    document.getElementById('edit-barrio').value = '';
-    document.getElementById('edit-torneo').value = '';
-
-    // Reseteamos contadores al cerrar
+    inputNombre.value = '';
+    inputBarrio.value = '';
+    inputTorneo.value = '';
     contadorNombre.textContent = '0';
     contadorBarrio.textContent = '0';
     contadorTorneo.textContent = '0';
+    btnGuardar.disabled = true;
   });
 
   btnGuardar.addEventListener('click', async () => {
     const id = modal.dataset.id;
     if (!id) return;
 
-    const nombre = document.getElementById('edit-nombre').value.trim();
-    const barrio = document.getElementById('edit-barrio').value.trim();
-    const torneo = document.getElementById('edit-torneo').value.trim() || null;
-
-    if (!nombre || nombre.length > 50) {
-      alert('El nombre es obligatorio y no debe superar 50 caracteres');
-      return;
-    }
-    if (!barrio || barrio.length > 25) {
-      alert('El barrio es obligatorio y no debe superar 25 caracteres');
-      return;
-    }
-    if (torneo && torneo.length > 50) {
-      alert('El torneo no debe superar 50 caracteres');
-      return;
-    }
+    const nombre = inputNombre.value.trim();
+    const barrio = inputBarrio.value.trim();
+    const torneo = inputTorneo.value.trim() || null;
 
     try {
       const response = await fetch(`http://localhost:3000/establecimientos/${id}`, {
@@ -305,10 +250,18 @@ function inicializarModalEditar() {
   modal.querySelector('.modal-background').style.pointerEvents = 'none';
 }
 
+// Validación para habilitar/deshabilitar botón en modal editar
+function validarFormularioEditar() {
+  const nombre = document.getElementById('edit-nombre').value.trim();
+  const barrio = document.getElementById('edit-barrio').value.trim();
+  const btn = document.getElementById('btn-guardar-edit');
+
+  btn.disabled = !(nombre && barrio);
+}
+
 async function mostrarModalEditar(id) {
   const est = allEstablecimientos.find(e => e.id === id);
   if (!est) {
-    console.error('Establecimiento no encontrado:', id);
     alert('No se encontró el establecimiento');
     return;
   }
@@ -318,21 +271,160 @@ async function mostrarModalEditar(id) {
 
   modal.classList.add('is-active');
 
-  // Llenamos campos
-  const inputNombre = document.getElementById('edit-nombre');
-  const inputBarrio = document.getElementById('edit-barrio');
-  const inputTorneo = document.getElementById('edit-torneo');
+  document.getElementById('edit-nombre').value = est.nombre || '';
+  document.getElementById('edit-barrio').value = est.barrio || '';
+  document.getElementById('edit-torneo').value = est.torneo || '';
 
-  inputNombre.value = est.nombre || '';
-  inputBarrio.value = est.barrio || '';
-  inputTorneo.value = est.torneo || '';
+  document.getElementById('contador-edit-nombre').textContent = est.nombre.length;
+  document.getElementById('contador-edit-barrio').textContent = est.barrio.length;
+  document.getElementById('contador-edit-torneo').textContent = (est.torneo || '').length;
 
-  // Actualizar contadores inmediatamente con los valores cargados
-  document.getElementById('contador-edit-nombre').textContent = inputNombre.value.length;
-  document.getElementById('contador-edit-barrio').textContent = inputBarrio.value.length;
-  document.getElementById('contador-edit-torneo').textContent = inputTorneo.value.length;
+  // Validar al cargar
+  validarFormularioEditar();
 
   modal.dataset.id = id;
+}
+
+// -----------------------
+// AGREGAR NUEVO ESTABLECIMIENTO
+// -----------------------
+
+function inicializarModalAgregar() {
+  const modal = document.getElementById('modal-agregar-establecimiento');
+  if (!modal) return;
+
+  const btnCancelar = document.getElementById('btn-cancelar-agregar');
+  const btnCrear = document.getElementById('btn-crear-establecimiento');
+
+  const inputNombre = document.getElementById('agregar-nombre');
+  const inputBarrio = document.getElementById('agregar-barrio');
+  const inputTorneo = document.getElementById('agregar-torneo');
+
+  const contadorNombre = document.getElementById('contador-nombre');
+  const contadorBarrio = document.getElementById('contador-barrio');
+  const contadorTorneo = document.getElementById('contador-torneo');
+
+  // Contadores en tiempo real + validación
+  inputNombre.addEventListener('input', () => {
+    contadorNombre.textContent = inputNombre.value.length;
+    validarFormularioAgregar();
+  });
+  inputBarrio.addEventListener('input', () => {
+    contadorBarrio.textContent = inputBarrio.value.length;
+    validarFormularioAgregar();
+  });
+  inputTorneo.addEventListener('input', () => {
+    contadorTorneo.textContent = inputTorneo.value.length;
+  });
+
+  btnCancelar.addEventListener('click', () => {
+    modal.classList.remove('is-active');
+    inputNombre.value = '';
+    inputBarrio.value = '';
+    inputTorneo.value = '';
+    contadorNombre.textContent = '0';
+    contadorBarrio.textContent = '0';
+    contadorTorneo.textContent = '0';
+    btnCrear.disabled = true;
+  });
+
+  modal.querySelector('.modal-background').style.pointerEvents = 'none';
+
+  btnCrear.addEventListener('click', async () => {
+    const nombre = inputNombre.value.trim();
+    const barrio = inputBarrio.value.trim();
+    const torneo = inputTorneo.value.trim() || null;
+
+    if (!nombre || nombre.length > 50) {
+      alert('El nombre es obligatorio y no debe superar 50 caracteres');
+      return;
+    }
+    if (!barrio || barrio.length > 25) {
+      alert('El barrio es obligatorio y no debe superar 25 caracteres');
+      return;
+    }
+    if (torneo && torneo.length > 50) {
+      alert('La descripción de torneos no debe superar 50 caracteres');
+      return;
+    }
+
+    const existe = allEstablecimientos.some(est => normalizeString(est.nombre) === normalizeString(nombre));
+    if (existe) {
+      alert('Ya existe un establecimiento con ese nombre');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/establecimientos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, barrio, torneo })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(errorData.error || 'Error al crear el establecimiento');
+        return;
+      }
+
+      modal.classList.remove('is-active');
+      mostrarModalAsignarCanchas();
+    } catch (error) {
+      console.error('Error al crear:', error);
+      alert('Error de conexión');
+    }
+  });
+}
+
+// Validación para habilitar/deshabilitar botón en modal agregar
+function validarFormularioAgregar() {
+  const nombre = document.getElementById('agregar-nombre').value.trim();
+  const barrio = document.getElementById('agregar-barrio').value.trim();
+  const btn = document.getElementById('btn-crear-establecimiento');
+
+  btn.disabled = !(nombre && barrio);
+}
+
+function mostrarModalAsignarCanchas() {
+  const modal = document.getElementById('modal-asignar-canchas');
+  if (!modal) return;
+
+  modal.classList.add('is-active');
+
+  modal.querySelector('.modal-background').style.pointerEvents = 'none';
+
+  document.getElementById('btn-si-asignar').onclick = () => {
+    modal.classList.remove('is-active');
+    mostrarModalExitoCrear(true); // true = redirigir a canchas
+  };
+
+  document.getElementById('btn-no-asignar').onclick = () => {
+    modal.classList.remove('is-active');
+    mostrarModalExitoCrear(false); // false = recargar página
+  };
+}
+
+function mostrarModalExitoCrear(redirigirACanchas) {
+  const modal = document.getElementById('modal-exito-crear');
+  if (!modal) return;
+
+  const mensaje = document.getElementById('mensaje-exito-crear');
+  mensaje.textContent = redirigirACanchas
+    ? 'Redirigiendo a administrar canchas...'
+    : 'Refrescando la página...';
+
+  modal.classList.add('is-active');
+
+  modal.querySelector('.modal-background').style.pointerEvents = 'none';
+
+  setTimeout(() => {
+    modal.classList.remove('is-active');
+    if (redirigirACanchas) {
+      window.location.href = 'administrar_canchas.html';
+    } else {
+      location.reload();
+    }
+  }, 2000);
 }
 
 function inicializarFiltros() {
@@ -588,158 +680,6 @@ function actualizarEstablecimiento(id) {
 
 function eliminarEstablecimiento(id) {
   mostrarModalEliminar(id);
-}
-
-// -----------------------
-// AGREGAR NUEVO ESTABLECIMIENTO
-// -----------------------
-
-function inicializarModalAgregar() {
-  const modal = document.getElementById('modal-agregar-establecimiento');
-  if (!modal) {
-    console.error('Modal de agregar establecimiento no encontrado');
-    return;
-  }
-
-  const btnCancelar = document.getElementById('btn-cancelar-agregar');
-  const btnCrear = document.getElementById('btn-crear-establecimiento');
-
-  const inputNombre = document.getElementById('agregar-nombre');
-  const inputBarrio = document.getElementById('agregar-barrio');
-  const inputTorneo = document.getElementById('agregar-torneo');
-
-  const contadorNombre = document.getElementById('contador-nombre');
-  const contadorBarrio = document.getElementById('contador-barrio');
-  const contadorTorneo = document.getElementById('contador-torneo');
-
-  // Contadores de caracteres
-  inputNombre.addEventListener('input', () => {
-    contadorNombre.textContent = inputNombre.value.length;
-  });
-  inputBarrio.addEventListener('input', () => {
-    contadorBarrio.textContent = inputBarrio.value.length;
-  });
-  inputTorneo.addEventListener('input', () => {
-    contadorTorneo.textContent = inputTorneo.value.length;
-  });
-
-  // Cerrar solo con Cancelar
-  btnCancelar.addEventListener('click', () => {
-    modal.classList.remove('is-active');
-    inputNombre.value = '';
-    inputBarrio.value = '';
-    inputTorneo.value = '';
-    contadorNombre.textContent = '0';
-    contadorBarrio.textContent = '0';
-    contadorTorneo.textContent = '0';
-  });
-
-  // Deshabilitar cierre con background
-  modal.querySelector('.modal-background').style.pointerEvents = 'none';
-
-  // Crear establecimiento
-  btnCrear.addEventListener('click', async () => {
-    const nombre = inputNombre.value.trim();
-    const barrio = inputBarrio.value.trim();
-    const torneo = inputTorneo.value.trim() || null;
-
-    // Validaciones frontend
-    if (!nombre) {
-      alert('El nombre es obligatorio');
-      return;
-    }
-    if (nombre.length > 50) {
-      alert('El nombre no debe superar los 50 caracteres');
-      return;
-    }
-    if (!barrio) {
-      alert('El barrio es obligatorio');
-      return;
-    }
-    if (barrio.length > 25) {
-      alert('El barrio no debe superar los 25 caracteres');
-      return;
-    }
-    if (torneo && torneo.length > 50) {
-      alert('La descripción de torneos no debe superar los 50 caracteres');
-      return;
-    }
-
-    // Validar unicidad del nombre (case-insensitive)
-    const existe = allEstablecimientos.some(est => normalizeString(est.nombre) === normalizeString(nombre));
-    if (existe) {
-      alert('Ya existe un establecimiento con ese nombre');
-      return;
-    }
-
-    try {
-      const response = await fetch('http://localhost:3000/establecimientos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, barrio, torneo })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        alert(errorData.error || 'Error al crear el establecimiento');
-        return;
-      }
-
-      // Éxito: cerrar modal de agregar
-      modal.classList.remove('is-active');
-
-      // Mostrar modal de "¿asignar canchas?"
-      mostrarModalAsignarCanchas();
-
-    } catch (error) {
-      console.error('Error al crear:', error);
-      alert('Error de conexión');
-    }
-  });
-}
-
-function mostrarModalAsignarCanchas() {
-  const modal = document.getElementById('modal-asignar-canchas');
-  if (!modal) return;
-
-  modal.classList.add('is-active');
-
-  // Deshabilitar cierre con background
-  modal.querySelector('.modal-background').style.pointerEvents = 'none';
-
-  document.getElementById('btn-si-asignar').onclick = () => {
-    modal.classList.remove('is-active');
-    mostrarModalExitoCrear(true); // true = redirigir a canchas
-  };
-
-  document.getElementById('btn-no-asignar').onclick = () => {
-    modal.classList.remove('is-active');
-    mostrarModalExitoCrear(false); // false = recargar página
-  };
-}
-
-function mostrarModalExitoCrear(redirigirACanchas) {
-  const modal = document.getElementById('modal-exito-crear');
-  if (!modal) return;
-
-  const mensaje = document.getElementById('mensaje-exito-crear');
-  mensaje.textContent = redirigirACanchas
-    ? 'Redirigiendo a administrar canchas...'
-    : 'Refrescando la página...';
-
-  modal.classList.add('is-active');
-
-  // Deshabilitar cierre manual
-  modal.querySelector('.modal-background').style.pointerEvents = 'none';
-
-  setTimeout(() => {
-    modal.classList.remove('is-active');
-    if (redirigirACanchas) {
-      window.location.href = 'administrar_canchas.html';
-    } else {
-      location.reload();
-    }
-  }, 2000);
 }
 
 function normalizeString(str) {

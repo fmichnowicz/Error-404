@@ -132,11 +132,10 @@
     <div class="modal-card">
       <header class="modal-card-head">
         <p class="modal-card-title">Editar Establecimiento</p>
-        <!-- NO agregamos botón .delete (cruz) -->
       </header>
       <section class="modal-card-body">
         <div class="field">
-          <label class="label">Nombre</label>
+          <label class="label">Nombre <span class="has-text-danger">*</span></label>
           <div class="control">
             <input class="input" type="text" id="edit-nombre" maxlength="50" required>
           </div>
@@ -144,7 +143,7 @@
         </div>
 
         <div class="field">
-          <label class="label">Barrio</label>
+          <label class="label">Barrio <span class="has-text-danger">*</span></label>
           <div class="control">
             <input class="input" type="text" id="edit-barrio" maxlength="25" required>
           </div>
@@ -161,7 +160,7 @@
       </section>
       <footer class="modal-card-foot">
         <button class="button" id="btn-cancelar-edit">Cancelar</button>
-        <button class="button is-primary" id="btn-guardar-edit" style="margin-left: 1rem;">Confirmar cambios</button>
+        <button class="button is-primary" id="btn-guardar-edit" style="margin-left: 1rem;" disabled>Confirmar cambios</button>
       </footer>
     </div>
   </div>
@@ -172,7 +171,6 @@
     <div class="modal-card">
       <header class="modal-card-head has-background-success has-text-white">
         <p class="modal-card-title">Cambios realizados con éxito</p>
-        <!-- NO agregamos botón .delete (cruz) -->
       </header>
       <section class="modal-card-body">
         <p class="has-text-centered">El establecimiento ha sido actualizado correctamente.</p>
@@ -215,7 +213,7 @@
       </section>
       <footer class="modal-card-foot">
         <button class="button" id="btn-cancelar-agregar">Cancelar</button>
-        <button class="button is-primary" id="btn-crear-establecimiento" style="margin-left: 1rem;">Crear establecimiento</button>
+        <button class="button is-primary" id="btn-crear-establecimiento" style="margin-left: 1rem;" disabled>Crear establecimiento</button>
       </footer>
     </div>
   </div>
