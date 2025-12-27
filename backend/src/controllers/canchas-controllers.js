@@ -426,4 +426,38 @@ const deleteCancha = async (req, res) => {
   }
 };
 
-export { getAllCanchas, getCanchaById, createCancha, updateCancha, deleteCancha };
+// Obtener el próximo número de cancha para un establecimiento y deporte
+const getNextCanchaNumber = async (req, res) => {
+  const { establecimiento_id, deporte } = req.query;
+
+  if (!establecimiento_id || !deporte) {
+    return res.status(400).json({ error: 'Faltan parámetros: establecimiento_id y deporte son requeridos' });
+  }
+
+  const estId = parseInt(establecimiento_id, 10);
+  if (isNaN(estId) || estId <= 0) {
+    return res.status(400).json({ error: 'establecimiento_id debe ser un número entero positivo' });
+  }
+
+  try {
+    const query = `
+      SELECT MAX(CAST(SUBSTRING(nombre FROM 'Cancha (\\d+)') AS INTEGER)) AS max_num
+      FROM canchas
+      WHERE establecimiento_id = $1
+      AND deporte = $2
+      AND nombre LIKE 'Cancha %';
+    `;
+
+    const { rows: [row] } = await pool.query(query, [estId, deporte.trim()]);
+    const ultimoNumero = row.max_num ? parseInt(row.max_num, 10) : 0;
+    const nextNumber = ultimoNumero + 1;
+
+    res.json({ nextNumber, nombreSugerido: `Cancha ${nextNumber}` });
+  } catch (error) {
+    console.error('Error al calcular próximo número de cancha:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+// Ejemplo de uso http://localhost:3000/canchas/next-number?establecimiento_id=1&deporte=Fútbol%205
+
+export { getAllCanchas, getCanchaById, createCancha, updateCancha, deleteCancha, getNextCanchaNumber };

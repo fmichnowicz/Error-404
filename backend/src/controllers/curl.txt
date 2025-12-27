@@ -54,6 +54,20 @@ curl http://localhost:3000/canchas/5
 curl -X POST http://localhost:3000/canchas \
   -H "Content-Type: application/json" \
   -d '{
+    "nombre": "Cancha 17",
+    "deporte": "Fútbol 5",
+    "establecimiento_id": 1,
+    "precio_hora": 25000.00,
+    "descripcion": "Cancha premium de última generación",
+    "superficie": "",
+    "iluminacion": true,
+    "cubierta": false
+  }' -i
+
+3) POST para testeo (copiar el POST de arriba y modificarle cualquier cosa para testear)
+curl -X POST http://localhost:3000/canchas \
+  -H "Content-Type: application/json" \
+  -d '{
     "nombre": "Cancha 16",
     "deporte": "Fútbol 5",
     "establecimiento_id": 1,
@@ -64,16 +78,6 @@ curl -X POST http://localhost:3000/canchas \
     "cubierta": false
   }' -i
 
-3) POST para testeo (copiar el POST de arriba y modificarle cualquier cosa para testear)
-curl -X POST http://localhost:3000/canchas \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Cancha 14",
-    "deporte": "Fútbol 5",
-    "establecimiento_id": 1,
-    "precio_hora": 25000.00,
-    "superficie": "Césped sintético"
-  }' -i
 
 4) UPDATE correcto (todos los campos)
 curl -X PUT http://localhost:3000/canchas/79 \
