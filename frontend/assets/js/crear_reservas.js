@@ -17,6 +17,36 @@ let seleccionActual = {
 
 let usuarioSeleccionado = null;
 
+// Función para ordenar: establecimiento → deporte → nombre_cancha
+function ordenarCanchas(canchas) {
+  return canchas.sort((a, b) => {
+    const estA = normalizeString(a.nombre_establecimiento);
+    const estB = normalizeString(b.nombre_establecimiento);
+    if (estA !== estB) return estA.localeCompare(estB);
+
+    const depA = normalizeString(a.deporte);
+    const depB = normalizeString(b.deporte);
+    if (depA !== depB) return depA.localeCompare(depB);
+
+    const nomA = normalizeString(a.nombre_cancha);
+    const nomB = normalizeString(b.nombre_cancha);
+    return nomA.localeCompare(nomB, undefined, { numeric: true });
+  });
+}
+
+function normalizeString(str) {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// Número inicial y paso de canchas a mostrar
+const CANTIDAD_INICIAL = 10;
+const INCREMENTO = 10;
+let canchasMostradas = CANTIDAD_INICIAL;
+
 document.addEventListener('DOMContentLoaded', () => {
   inicializarFiltros();
   inicializarBusquedaUsuario();
@@ -32,6 +62,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnVer.addEventListener('click', () => {
     window.location.href = 'ver_cancelar_reservas.html';
+  });
+
+  // Evento del botón "Mostrar más canchas"
+  document.getElementById('btn-mostrar-mas').addEventListener('click', () => {
+    canchasMostradas += INCREMENTO;
+    renderizarTablaFiltrada();
   });
 });
 
@@ -88,7 +124,6 @@ async function inicializarFiltros() {
 
     let aplicadoDesdeEstablecimientos = false;
 
-    // 1. Seleccionar establecimiento si viene en URL
     if (establecimientoId) {
       const option = selectEst.querySelector(`option[value="${establecimientoId}"]`);
       if (option) {
@@ -97,12 +132,10 @@ async function inicializarFiltros() {
       }
     }
 
-    // 2. Actualizar lista de deportes
     actualizarFiltroDeportes();
 
     const selectDep = document.getElementById('filtro-deporte');
 
-    // 3. Seleccionar deporte si viene en URL
     if (deporteParam) {
       const decodedDeporte = decodeURIComponent(deporteParam);
       const optionDep = Array.from(selectDep.options).find(opt => 
@@ -114,7 +147,6 @@ async function inicializarFiltros() {
       }
     }
 
-    // === APLICAR FILTROS Y MOSTRAR MENSAJE AMARILLO CENTRADO ===
     if (aplicadoDesdeEstablecimientos) {
       renderizarTablaFiltrada();
       mostrarMensajeAmarillo('Filtros aplicados automáticamente desde la página de establecimientos');
@@ -167,6 +199,7 @@ async function aplicarFiltros() {
 
   fechaSeleccionada = fecha;
   deseleccionarTodo();
+  canchasMostradas = CANTIDAD_INICIAL; // Resetear cantidad mostrada al aplicar filtros
   await cargarDatosYRenderizar();
 }
 
@@ -197,6 +230,9 @@ function renderizarTablaFiltrada() {
     canchasFiltradas = canchasFiltradas.filter(c => deportesSeleccionados.includes(c.deporte));
   }
 
+  // === ORDENAR LAS CANCHAS FILTRADAS ===
+  canchasFiltradas = ordenarCanchas(canchasFiltradas);
+
   const reservasOcupadas = {};
 
   allReservas.forEach(res => {
@@ -215,7 +251,18 @@ function renderizarTablaFiltrada() {
     }
   });
 
-  renderizarTabla(canchasFiltradas, reservasOcupadas);
+  // Mostrar solo las primeras N canchas
+  const canchasAMostrar = canchasFiltradas.slice(0, canchasMostradas);
+
+  renderizarTabla(canchasAMostrar, reservasOcupadas);
+
+  // Mostrar/Ocultar botón "Mostrar más"
+  const btnMostrarMas = document.getElementById('btn-mostrar-mas');
+  if (canchasMostradas < canchasFiltradas.length) {
+    btnMostrarMas.style.display = 'block';
+  } else {
+    btnMostrarMas.style.display = 'none';
+  }
 }
 
 function renderizarTabla(canchas, reservasOcupadas) {
