@@ -62,7 +62,7 @@ const createCancha = async (req, res) => {
 
     const errores = [];
 
-    // === VALIDACIONES BÁSICAS (sin nombre todavía) ===
+    // === VALIDACIONES BÁSICAS ===
 
     // deporte
     if (!deporte || typeof deporte !== 'string' || deporte.trim() === '') {
@@ -78,13 +78,14 @@ const createCancha = async (req, res) => {
       errores.push('El comentario para superficie no puede exceder los 50 caracteres');
     }
 
-    // precio_hora
-    const precio = parseFloat(precio_hora);
-    if (precio_hora === undefined || precio_hora === null || isNaN(precio) || precio <= 0) {
-      errores.push('El precio_hora es obligatorio y debe ser un número mayor que 0');
-    }
-    if (precio_hora !== undefined && !/^\d+(\.\d{1,2})?$/.test(precio_hora.toString())) {
-      errores.push('El precio_hora debe tener máximo 2 decimales');
+    // precio_hora → ahora entero positivo
+    if (precio_hora === undefined || precio_hora === null) {
+      errores.push('El precio_hora es obligatorio');
+    } else {
+      const precio = parseInt(precio_hora, 10);
+      if (isNaN(precio) || precio <= 0 || !Number.isInteger(precio)) {
+        errores.push('El precio_hora debe ser un número entero positivo');
+      }
     }
 
     // establecimiento_id → obligatorio y entero positivo
@@ -124,6 +125,7 @@ const createCancha = async (req, res) => {
 
     const deporteTrim = deporte.trim();
     const estId = parseInt(establecimiento_id, 10);
+    const precio = parseInt(precio_hora, 10); // ya validado como entero positivo
 
     // === VALIDACIÓN: DEPORTE PERMITIDO ===
     const deportesPermitidos = [
@@ -139,20 +141,18 @@ const createCancha = async (req, res) => {
       });
     }
 
-    // === NUEVA VALIDACIÓN Y CÁLCULO DEL NOMBRE ===
+    // === VALIDACIÓN Y CÁLCULO DEL NOMBRE ===
     if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
       errores.push('El nombre es obligatorio');
     } else {
       const nombreTrim = nombre.trim();
 
-      // Verificar formato exacto: "Cancha " + número entero positivo
       const match = nombreTrim.match(/^Cancha (\d+)$/);
       if (!match) {
         errores.push('El nombre debe ser exactamente "Cancha N" donde N es un número entero positivo (ej: Cancha 1, Cancha 15)');
       } else {
         const numeroEnviado = parseInt(match[1], 10);
 
-        // Calcular el siguiente número disponible para este establecimiento + deporte
         const queryUltimoNumero = `
           SELECT MAX(CAST(SUBSTRING(nombre FROM 'Cancha (\\d+)') AS INTEGER)) AS max_num
           FROM canchas
@@ -180,7 +180,7 @@ const createCancha = async (req, res) => {
       });
     }
 
-    const nombreFinal = nombre.trim(); // ya validado
+    const nombreFinal = nombre.trim();
 
     // === Verificamos que el establecimiento exista ===
     const { rowCount: estExiste } = await pool.query(
@@ -204,7 +204,7 @@ const createCancha = async (req, res) => {
       nombreFinal,
       deporteTrim,
       estId,
-      precio,
+      precio, // ahora es entero
       descripcion ? descripcion.trim() || null : null,
       superficie.trim(),
       iluminacion,
@@ -274,7 +274,6 @@ const updateCancha = async (req, res) => {
   const validarYAgregar = (campo, valor, reglas) => {
     if (valor === undefined) return;
 
-    // No requerimos campos obligatorios en update, solo validamos si se envían
     if (reglas.string && typeof valor !== 'string') {
       errores.push(`El campo ${campo} debe ser texto`);
       return;
@@ -289,6 +288,11 @@ const updateCancha = async (req, res) => {
 
     if (reglas.number && (isNaN(valor) || typeof valor !== 'number')) {
       errores.push(`El campo ${campo} debe ser un número`);
+      return;
+    }
+
+    if (reglas.integer && !Number.isInteger(valor)) {
+      errores.push(`El campo ${campo} debe ser un número entero`);
       return;
     }
 
@@ -307,7 +311,7 @@ const updateCancha = async (req, res) => {
   };
 
   // Validaciones para campos permitidos
-  validarYAgregar('precio_hora', precio_hora, { number: true, positive: true });
+  validarYAgregar('precio_hora', precio_hora, { number: true, integer: true, positive: true });
   validarYAgregar('descripcion', descripcion, { string: true, trim: true, maxLength: 100 });
   validarYAgregar('superficie', superficie, { string: true, trim: true, maxLength: 50 });
   validarYAgregar('iluminacion', iluminacion, { boolean: true });

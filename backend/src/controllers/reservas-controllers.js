@@ -50,489 +50,509 @@ const getReservaById = async (req, res) => {
 };
 
 const createReserva = async (req, res) => {
-    try {
-        const {
-        cancha_id,
-        usuario_id,
-        fecha_reserva,
-        reserva_hora_inicio,
-        reserva_hora_fin,
-        monto_pagado
-        } = req.body;
+  try {
+    const {
+      cancha_id,
+      usuario_id,
+      fecha_reserva,
+      reserva_hora_inicio,
+      reserva_hora_fin,
+      monto_pagado
+    } = req.body;
 
-        const errores = [];
+    const errores = [];
 
-        // === VALIDACIÓN BÁSICA DE CAMPOS ===
-        if (!cancha_id || !Number.isInteger(Number(cancha_id)) || Number(cancha_id) <= 0) {
-        errores.push('cancha_id debe ser un número entero positivo');
-        }
-        if (!usuario_id || !Number.isInteger(Number(usuario_id)) || Number(usuario_id) <= 0) {
-        errores.push('usuario_id debe ser un número entero positivo');
-        }
-        if (!fecha_reserva || isNaN(Date.parse(fecha_reserva))) {
-        errores.push('fecha_reserva debe ser una fecha válida (YYYY-MM-DD)');
-        }
-        if (!reserva_hora_inicio || !/^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(reserva_hora_inicio)) {
-        errores.push('reserva_hora_inicio debe ser una hora válida (HH:MM:SS)');
-        }
-        if (!reserva_hora_fin || !/^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(reserva_hora_fin)) {
-        errores.push('reserva_hora_fin debe ser una hora válida (HH:MM:SS)');
-        }
-        if (!monto_pagado || isNaN(monto_pagado) || Number(monto_pagado) <= 0) {
-        errores.push('monto_pagado debe ser un número positivo');
-        }
-
-        if (errores.length > 0) {
-        return res.status(400).json({ error: 'Errores de validación', detalles: errores });
-        }
-
-        const canchaId = parseInt(cancha_id);
-        const usuarioId = parseInt(usuario_id);
-        const fecha = fecha_reserva;
-        const horaInicio = reserva_hora_inicio;
-        const horaFin = reserva_hora_fin;
-        const montoCliente = parseFloat(monto_pagado);
-
-        // === VALIDACIÓN DE FECHA MÍNIMA: MAÑANA O POSTERIOR (con zona horaria Argentina) ===
-        const opcionesTZ = { timeZone: 'America/Argentina/Buenos_Aires' };
-
-        const hoyStr = new Date().toLocaleDateString('en-CA', opcionesTZ); // YYYY-MM-DD en Argentina
-        const mañanaDate = new Date();
-        mañanaDate.setDate(mañanaDate.getDate() + 1);
-        const mañanaStr = mañanaDate.toLocaleDateString('en-CA', opcionesTZ);
-
-        if (fecha < mañanaStr) {
-        errores.push('La reserva debe ser para mañana o fechas posteriores');
-        }
-
-        // Validar que la hora de inicio no haya pasado (forzando offset Argentina para comparación justa)
-        const ahora = new Date();
-        const inicioReservaStr = `${fecha}T${horaInicio}:00-03:00`; // offset Argentina
-        const inicioReservaDate = new Date(inicioReservaStr);
-
-        if (inicioReservaDate <= ahora) {
-        errores.push('No se puede crear una reserva cuya hora de inicio ya haya pasado o esté ocurriendo en este momento');
-        }
-
-        // === REGLAS DE HORARIOS Y DURACIÓN ===
-        const parseTime = (timeStr) => {
-        const [h, m, s] = timeStr.split(':').map(Number);
-        return h * 3600 + m * 60 + s;
-        };
-
-        const segInicio = parseTime(horaInicio);
-        const segFin = parseTime(horaFin);
-
-        if (segInicio < 7 * 3600 || segInicio > 21 * 3600) {
-        errores.push('reserva_hora_inicio debe estar entre 07:00 y 21:00');
-        }
-        if (segFin < 8 * 3600 || segFin > 22 * 3600) {
-        errores.push('reserva_hora_fin debe estar entre 08:00 y 22:00');
-        }
-        if (segFin <= segInicio) {
-        errores.push('reserva_hora_fin debe ser posterior a reserva_hora_inicio');
-        }
-
-        const duracionMin = (segFin - segInicio) / 60;
-        if (![60, 90, 120].includes(duracionMin)) {
-        errores.push('La duración debe ser exactamente 1 hora, 1 hora 30 minutos o 2 horas');
-        }
-
-        if (errores.length > 0) {
-        return res.status(400).json({ error: 'Errores de validación', detalles: errores });
-        }
-
-        // === OBTENER PRECIO DE LA CANCHA ===
-        const { rows: canchaRows } = await pool.query(
-        'SELECT precio_hora FROM canchas WHERE id = $1',
-        [canchaId]
-        );
-
-        if (canchaRows.length === 0) {
-        return res.status(404).json({
-            error: 'Cancha no encontrada',
-            detalles: `No existe una cancha con id ${canchaId}`
-        });
-        }
-
-        const precioPorHora = parseFloat(canchaRows[0].precio_hora);
-        const duracionHoras = duracionMin / 60;
-        const montoCalculado = duracionHoras * precioPorHora;
-
-        if (Math.abs(montoCalculado - montoCliente) > 0.01) {
-        return res.status(400).json({
-            error: 'Monto incorrecto',
-            detalles: `El monto_pagado debe ser exactamente ${montoCalculado.toFixed(2)} (${duracionHoras}h × ${precioPorHora.toFixed(2)}/hora)`
-        });
-        }
-
-        // === VERIFICAR USUARIO ===
-        const { rowCount: usuarioExiste } = await pool.query(
-        'SELECT 1 FROM usuarios WHERE id = $1',
-        [usuarioId]
-        );
-        if (usuarioExiste === 0) {
-        return res.status(404).json({
-            error: 'Usuario no encontrado',
-            detalles: `No existe un usuario con id ${usuarioId}`
-        });
-        }
-
-        // === VALIDAR SUPERPOSICIÓN USANDO OVERLAPS ===
-        const overlapQuery = `
-        SELECT 1 
-        FROM reservas 
-        WHERE cancha_id = $1 
-            AND fecha_reserva = $2
-            AND (reserva_hora_inicio, reserva_hora_fin) OVERLAPS ($3::time, $4::time)
-        `;
-
-        const { rowCount: overlap } = await pool.query(overlapQuery, [
-        canchaId,
-        fecha,
-        horaInicio,
-        horaFin
-        ]);
-
-        if (overlap > 0) {
-        return res.status(409).json({
-            error: 'Horario no disponible',
-            detalles: 'El horario solicitado se superpone (total o parcialmente) con otra reserva existente en la misma cancha'
-        });
-        }
-
-        // === INSERCIÓN ===
-        const insertQuery = `
-        INSERT INTO reservas (
-            cancha_id, usuario_id, fecha_reserva,
-            reserva_hora_inicio, reserva_hora_fin, monto_pagado
-        )
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING *;
-        `;
-
-        const { rows } = await pool.query(insertQuery, [
-        canchaId,
-        usuarioId,
-        fecha,
-        horaInicio,
-        horaFin,
-        montoCalculado
-        ]);
-
-        const reservaCreada = rows[0];
-
-        // Formateamos antes de enviar
-        const reservaFormateada = {
-        ...reservaCreada,
-        fecha_reserva: formateoFechaLocal(reservaCreada.fecha_reserva),
-        fecha_creacion_reserva: formateoFechaHorarioLocal(reservaCreada.fecha_creacion_reserva),
-        fecha_modificacion_reserva: formateoFechaHorarioLocal(reservaCreada.fecha_modificacion_reserva)
-        };
-
-        res.status(201).json({
-        message: 'Reserva creada exitosamente',
-        reserva: reservaFormateada
-        });
-
-    } catch (error) {
-        console.error('Error al crear reserva:', error);
-        res.status(500).json({ 
-        error: 'Error interno del servidor',
-        detalles: error.message
-        });
+    // === VALIDACIÓN BÁSICA DE CAMPOS ===
+    if (!cancha_id || !Number.isInteger(Number(cancha_id)) || Number(cancha_id) <= 0) {
+      errores.push('cancha_id debe ser un número entero positivo');
     }
+    if (!usuario_id || !Number.isInteger(Number(usuario_id)) || Number(usuario_id) <= 0) {
+      errores.push('usuario_id debe ser un número entero positivo');
+    }
+    if (!fecha_reserva || isNaN(Date.parse(fecha_reserva))) {
+      errores.push('fecha_reserva debe ser una fecha válida (YYYY-MM-DD)');
+    }
+    if (!reserva_hora_inicio || !/^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(reserva_hora_inicio)) {
+      errores.push('reserva_hora_inicio debe ser una hora válida (HH:MM:SS)');
+    }
+    if (!reserva_hora_fin || !/^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(reserva_hora_fin)) {
+      errores.push('reserva_hora_fin debe ser una hora válida (HH:MM:SS)');
+    }
+
+    // monto_pagado → ahora entero positivo (obligatorio)
+    if (monto_pagado === undefined || monto_pagado === null) {
+      errores.push('monto_pagado es obligatorio');
+    } else {
+      const monto = parseInt(monto_pagado, 10);
+      if (isNaN(monto) || monto <= 0 || !Number.isInteger(monto)) {
+        errores.push('monto_pagado debe ser un número entero positivo');
+      }
+    }
+
+    if (errores.length > 0) {
+      return res.status(400).json({ error: 'Errores de validación', detalles: errores });
+    }
+
+    const canchaId = parseInt(cancha_id);
+    const usuarioId = parseInt(usuario_id);
+    const fecha = fecha_reserva;
+    const horaInicio = reserva_hora_inicio;
+    const horaFin = reserva_hora_fin;
+    const montoCliente = parseInt(monto_pagado, 10); // ya validado como entero positivo
+
+    // === VALIDACIÓN DE FECHA MÍNIMA: MAÑANA O POSTERIOR ===
+    const opcionesTZ = { timeZone: 'America/Argentina/Buenos_Aires' };
+    const hoyStr = new Date().toLocaleDateString('en-CA', opcionesTZ);
+    const mañanaDate = new Date();
+    mañanaDate.setDate(mañanaDate.getDate() + 1);
+    const mañanaStr = mañanaDate.toLocaleDateString('en-CA', opcionesTZ);
+
+    if (fecha < mañanaStr) {
+      errores.push('La reserva debe ser para mañana o fechas posteriores');
+    }
+
+    // Validar que la hora de inicio no haya pasado
+    const ahora = new Date();
+    const inicioReservaStr = `${fecha}T${horaInicio}:00-03:00`;
+    const inicioReservaDate = new Date(inicioReservaStr);
+
+    if (inicioReservaDate <= ahora) {
+      errores.push('No se puede crear una reserva cuya hora de inicio ya haya pasado o esté ocurriendo en este momento');
+    }
+
+    // === REGLAS DE HORARIOS Y DURACIÓN ===
+    const parseTime = (timeStr) => {
+      const [h, m, s] = timeStr.split(':').map(Number);
+      return h * 3600 + m * 60 + s;
+    };
+
+    const segInicio = parseTime(horaInicio);
+    const segFin = parseTime(horaFin);
+
+    if (segInicio < 7 * 3600 || segInicio > 21 * 3600) {
+      errores.push('reserva_hora_inicio debe estar entre 07:00 y 21:00');
+    }
+    if (segFin < 8 * 3600 || segFin > 22 * 3600) {
+      errores.push('reserva_hora_fin debe estar entre 08:00 y 22:00');
+    }
+    if (segFin <= segInicio) {
+      errores.push('reserva_hora_fin debe ser posterior a reserva_hora_inicio');
+    }
+
+    const duracionMin = (segFin - segInicio) / 60;
+    if (![60, 90, 120].includes(duracionMin)) {
+      errores.push('La duración debe ser exactamente 1 hora, 1 hora 30 minutos o 2 horas');
+    }
+
+    if (errores.length > 0) {
+      return res.status(400).json({ error: 'Errores de validación', detalles: errores });
+    }
+
+    // === OBTENER PRECIO DE LA CANCHA ===
+    const { rows: canchaRows } = await pool.query(
+      'SELECT precio_hora FROM canchas WHERE id = $1',
+      [canchaId]
+    );
+
+    if (canchaRows.length === 0) {
+      return res.status(404).json({
+        error: 'Cancha no encontrada',
+        detalles: `No existe una cancha con id ${canchaId}`
+      });
+    }
+
+    const precioPorHora = parseInt(canchaRows[0].precio_hora, 10); // ahora es entero
+    const duracionHoras = duracionMin / 60;
+    const montoCalculado = duracionHoras * precioPorHora;
+
+    // Validar que el monto enviado coincida exactamente con el calculado
+    if (montoCliente !== montoCalculado) {
+      return res.status(400).json({
+        error: 'Monto incorrecto',
+        detalles: `El monto_pagado debe ser exactamente ${montoCalculado} (${duracionHoras}h × ${precioPorHora}/hora)`
+      });
+    }
+
+    // === VERIFICAR USUARIO ===
+    const { rowCount: usuarioExiste } = await pool.query(
+      'SELECT 1 FROM usuarios WHERE id = $1',
+      [usuarioId]
+    );
+    if (usuarioExiste === 0) {
+      return res.status(404).json({
+        error: 'Usuario no encontrado',
+        detalles: `No existe un usuario con id ${usuarioId}`
+      });
+    }
+
+    // === VALIDAR SUPERPOSICIÓN ===
+    const overlapQuery = `
+      SELECT 1 
+      FROM reservas 
+      WHERE cancha_id = $1 
+      AND fecha_reserva = $2
+      AND (reserva_hora_inicio, reserva_hora_fin) OVERLAPS ($3::time, $4::time)
+    `;
+
+    const { rowCount: overlap } = await pool.query(overlapQuery, [
+      canchaId,
+      fecha,
+      horaInicio,
+      horaFin
+    ]);
+
+    if (overlap > 0) {
+      return res.status(409).json({
+        error: 'Horario no disponible',
+        detalles: 'El horario solicitado se superpone (total o parcialmente) con otra reserva existente en la misma cancha'
+      });
+    }
+
+    // === INSERCIÓN ===
+    const insertQuery = `
+      INSERT INTO reservas (
+        cancha_id, usuario_id, fecha_reserva,
+        reserva_hora_inicio, reserva_hora_fin, monto_pagado
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *;
+    `;
+
+    const { rows } = await pool.query(insertQuery, [
+      canchaId,
+      usuarioId,
+      fecha,
+      horaInicio,
+      horaFin,
+      montoCalculado
+    ]);
+
+    const reservaCreada = rows[0];
+
+    // Formateamos antes de enviar
+    const reservaFormateada = {
+      ...reservaCreada,
+      fecha_reserva: formateoFechaLocal(reservaCreada.fecha_reserva),
+      fecha_creacion_reserva: formateoFechaHorarioLocal(reservaCreada.fecha_creacion_reserva),
+      fecha_modificacion_reserva: formateoFechaHorarioLocal(reservaCreada.fecha_modificacion_reserva)
+    };
+
+    res.status(201).json({
+      message: 'Reserva creada exitosamente',
+      reserva: reservaFormateada
+    });
+
+  } catch (error) {
+    console.error('Error al crear reserva:', error);
+    res.status(500).json({ 
+      error: 'Error interno del servidor',
+      detalles: error.message
+    });
+  }
 };
 
 const updateReserva = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const {
-        cancha_id,
-        usuario_id,
-        fecha_reserva,
-        reserva_hora_inicio,
-        reserva_hora_fin,
-        monto_pagado
-        } = req.body;
+  try {
+    const { id } = req.params;
+    const {
+      cancha_id,
+      usuario_id,
+      fecha_reserva,
+      reserva_hora_inicio,
+      reserva_hora_fin,
+      monto_pagado
+    } = req.body;
 
-        // === usuario_id ES OBLIGATORIO ===
-        if (usuario_id === undefined) {
-        return res.status(400).json({
-            error: 'Campo requerido faltante',
-            detalles: 'Debe proporcionar el campo "usuario_id" para modificar una reserva'
-        });
-        }
-
-        if (!Number.isInteger(Number(usuario_id)) || Number(usuario_id) <= 0) {
-        return res.status(400).json({
-            error: 'usuario_id inválido',
-            detalles: 'usuario_id debe ser un número entero positivo'
-        });
-        }
-
-        const reservaId = parseInt(id);
-        if (isNaN(reservaId) || reservaId <= 0) {
-        return res.status(400).json({
-            error: 'ID de reserva inválido',
-            detalles: 'El ID debe ser un número entero positivo'
-        });
-        }
-
-        if (Object.keys(req.body).length === 1 && 'usuario_id' in req.body) {
-        return res.status(400).json({
-            error: 'Nada que actualizar',
-            detalles: 'Debe proporcionar al menos un campo para modificar además de usuario_id'
-        });
-        }
-
-        const errores = [];
-        const camposActualizar = {};
-
-        // Validaciones de campos opcionales
-        if (cancha_id !== undefined) {
-        if (!Number.isInteger(Number(cancha_id)) || Number(cancha_id) <= 0) {
-            errores.push('cancha_id debe ser un número entero positivo');
-        } else {
-            camposActualizar.cancha_id = parseInt(cancha_id);
-        }
-        }
-        if (fecha_reserva !== undefined) {
-        if (isNaN(Date.parse(fecha_reserva))) {
-            errores.push('fecha_reserva debe ser una fecha válida (YYYY-MM-DD)');
-        } else {
-            camposActualizar.fecha_reserva = fecha_reserva;
-        }
-        }
-        if (reserva_hora_inicio !== undefined) {
-        if (!/^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(reserva_hora_inicio)) {
-            errores.push('reserva_hora_inicio debe ser una hora válida (HH:MM:SS)');
-        } else {
-            camposActualizar.reserva_hora_inicio = reserva_hora_inicio;
-        }
-        }
-        if (reserva_hora_fin !== undefined) {
-        if (!/^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(reserva_hora_fin)) {
-            errores.push('reserva_hora_fin debe ser una hora válida (HH:MM:SS)');
-        } else {
-            camposActualizar.reserva_hora_fin = reserva_hora_fin;
-        }
-        }
-        if (monto_pagado !== undefined) {
-        if (isNaN(monto_pagado) || Number(monto_pagado) <= 0) {
-            errores.push('monto_pagado debe ser un número positivo');
-        } else {
-            camposActualizar.monto_pagado_cliente = parseFloat(monto_pagado);
-        }
-        }
-
-        if (errores.length > 0) {
-        return res.status(400).json({ error: 'Errores de validación', detalles: errores });
-        }
-
-        // === OBTENER RESERVA ACTUAL ===
-        const { rows: [reservaActual] } = await pool.query(
-        'SELECT * FROM reservas WHERE id = $1',
-        [reservaId]
-        );
-
-        if (!reservaActual) {
-        return res.status(404).json({
-            error: 'Reserva no encontrada',
-            detalles: `No existe una reserva con id ${reservaId}`
-        });
-        }
-
-        // === VALIDAR QUE EL USUARIO SEA EL DUEÑO ===
-        if (parseInt(usuario_id) !== reservaActual.usuario_id) {
-        return res.status(403).json({
-            error: 'Acceso denegado',
-            detalles: 'No se puede modificar la reserva de otro usuario'
-        });
-        }
-
-        // === OBTENER DATOS DE LA CANCHA ORIGINAL ===
-        const { rows: [canchaOriginal] } = await pool.query(
-        'SELECT establecimiento_id, deporte FROM canchas WHERE id = $1',
-        [reservaActual.cancha_id]
-        );
-
-        if (!canchaOriginal) {
-        return res.status(500).json({ error: 'Error interno: cancha original no encontrada' });
-        }
-
-        const establecimientoOriginalId = canchaOriginal.establecimiento_id;
-        const deporteOriginal = canchaOriginal.deporte.trim(); // por si hay espacios
-
-        // === DETERMINAR LA CANCHA FINAL (nueva o la misma) ===
-        const finalCanchaId = camposActualizar.cancha_id ?? reservaActual.cancha_id;
-
-        // Si la cancha no cambia → todo OK, pasamos directo
-        if (finalCanchaId === reservaActual.cancha_id) {
-        // No hay cambio de cancha → seguimos con el resto
-        } else {
-        // === VALIDAR NUEVA CANCHA: MISMO ESTABLECIMIENTO Y MISMO DEPORTE ===
-        const { rows: [canchaNueva] } = await pool.query(
-            `SELECT establecimiento_id, deporte 
-            FROM canchas 
-            WHERE id = $1`,
-            [finalCanchaId]
-        );
-
-        if (!canchaNueva) {
-            return res.status(404).json({ error: 'Cancha no encontrada' });
-        }
-
-        const establecimientoNuevo = canchaNueva.establecimiento_id;
-        const deporteNuevo = canchaNueva.deporte.trim();
-
-        if (establecimientoNuevo !== establecimientoOriginalId) {
-            return res.status(403).json({
-            error: 'Cancha no permitida',
-            detalles: 'Solo se puede cambiar a una cancha del mismo establecimiento que la reserva original'
-            });
-        }
-
-        if (deporteNuevo !== deporteOriginal) {
-            return res.status(403).json({
-            error: 'Cancha no permitida',
-            detalles: `Solo se puede cambiar a una cancha del mismo deporte (${deporteOriginal})`
-            });
-        }
-        }
-
-        // === OBTENER PRECIO DE LA CANCHA FINAL (para cálculo de monto) ===
-        const { rows: [canchaFinal] } = await pool.query(
-        'SELECT precio_hora FROM canchas WHERE id = $1',
-        [finalCanchaId]
-        );
-
-        if (!canchaFinal) {
-        return res.status(404).json({ error: 'Cancha no encontrada' });
-        }
-
-        // Valores finales
-        const finalFecha = camposActualizar.fecha_reserva ?? reservaActual.fecha_reserva.toISOString().split('T')[0];
-        const finalHoraInicio = camposActualizar.reserva_hora_inicio ?? reservaActual.reserva_hora_inicio;
-        const finalHoraFin = camposActualizar.reserva_hora_fin ?? reservaActual.reserva_hora_fin;
-
-        // === VALIDACIONES DE FECHA, HORARIO Y DURACIÓN ===
-        const opcionesTZ = { timeZone: 'America/Argentina/Buenos_Aires' };
-        const mañanaDate = new Date();
-        mañanaDate.setDate(mañanaDate.getDate() + 1);
-        const mañanaStr = mañanaDate.toLocaleDateString('en-CA', opcionesTZ);
-
-        if (finalFecha < mañanaStr) {
-        errores.push('La fecha_reserva debe ser para mañana o fechas posteriores');
-        }
-
-        const parseTime = (timeStr) => {
-        const [h, m, s] = timeStr.split(':').map(Number);
-        return h * 3600 + m * 60 + s;
-        };
-
-        const segInicio = parseTime(finalHoraInicio);
-        const segFin = parseTime(finalHoraFin);
-
-        if (segInicio < 7 * 3600 || segInicio > 21 * 3600) {
-        errores.push('reserva_hora_inicio debe estar entre 07:00 y 21:00');
-        }
-        if (segFin < 8 * 3600 || segFin > 22 * 3600) {
-        errores.push('reserva_hora_fin debe estar entre 08:00 y 22:00');
-        }
-        if (segFin <= segInicio) {
-        errores.push('reserva_hora_fin debe ser posterior a reserva_hora_inicio');
-        }
-
-        const duracionMin = (segFin - segInicio) / 60;
-        if (![60, 90, 120].includes(duracionMin)) {
-        errores.push('La duración debe ser exactamente 1 hora, 1 hora 30 minutos o 2 horas');
-        }
-
-        if (errores.length > 0) {
-        return res.status(400).json({ error: 'Errores de validación', detalles: errores });
-        }
-
-        // === CÁLCULO DE MONTO ===
-        const precioPorHora = parseFloat(canchaFinal.precio_hora);
-        const duracionHoras = duracionMin / 60;
-        const montoCalculado = duracionHoras * precioPorHora;
-
-        const montoFinal = camposActualizar.monto_pagado_cliente ?? montoCalculado;
-        if (Math.abs(montoFinal - montoCalculado) > 0.01) {
-        return res.status(400).json({
-            error: 'Monto incorrecto',
-            detalles: `El monto debe ser ${montoCalculado.toFixed(2)} (${duracionHoras}h × ${precioPorHora.toFixed(2)}/h)`
-        });
-        }
-
-        // === VALIDAR SUPERPOSICIÓN ===
-        const overlapQuery = `
-        SELECT 1 
-        FROM reservas 
-        WHERE cancha_id = $1 
-        AND fecha_reserva = $2
-        AND id != $5
-        AND (reserva_hora_inicio, reserva_hora_fin) OVERLAPS ($3::time, $4::time)
-        `;
-
-        const { rowCount: overlap } = await pool.query(overlapQuery, [
-        finalCanchaId,
-        finalFecha,
-        finalHoraInicio,
-        finalHoraFin,
-        reservaId
-        ]);
-
-        if (overlap > 0) {
-        return res.status(409).json({
-            error: 'Horario no disponible',
-            detalles: 'El nuevo horario se superpone con otra reserva existente en la misma cancha'
-        });
-        }
-
-        // === UPDATE DINÁMICO ===
-        const campos = [];
-        const valores = [];
-        let index = 1;
-
-        if (camposActualizar.cancha_id !== undefined) { campos.push(`cancha_id = $${index++}`); valores.push(finalCanchaId); }
-        if (camposActualizar.fecha_reserva !== undefined) { campos.push(`fecha_reserva = $${index++}`); valores.push(finalFecha); }
-        if (camposActualizar.reserva_hora_inicio !== undefined) { campos.push(`reserva_hora_inicio = $${index++}`); valores.push(finalHoraInicio); }
-        if (camposActualizar.reserva_hora_fin !== undefined) { campos.push(`reserva_hora_fin = $${index++}`); valores.push(finalHoraFin); }
-
-        campos.push(`monto_pagado = $${index++}`);
-        valores.push(montoCalculado);
-        campos.push(`fecha_modificacion_reserva = CURRENT_TIMESTAMP`);
-        valores.push(reservaId);
-
-        const updateQuery = `
-        UPDATE reservas
-        SET ${campos.join(', ')}
-        WHERE id = $${index}
-        RETURNING *;
-        `;
-
-        const { rows } = await pool.query(updateQuery, valores);
-
-        const reservaActualizada = rows[0];
-
-        const reservaFormateada = {
-        ...reservaActualizada,
-        fecha_reserva: formateoFechaLocal(reservaActualizada.fecha_reserva),
-        fecha_creacion_reserva: formateoFechaHorarioLocal(reservaActualizada.fecha_creacion_reserva),
-        fecha_modificacion_reserva: formateoFechaHorarioLocal(reservaActualizada.fecha_modificacion_reserva)
-        };
-
-        res.status(200).json({
-        message: 'Reserva actualizada exitosamente',
-        reserva: reservaFormateada
-        });
-
-    } catch (error) {
-        console.error('Error al actualizar reserva:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
+    // === usuario_id ES OBLIGATORIO ===
+    if (usuario_id === undefined) {
+      return res.status(400).json({
+        error: 'Campo requerido faltante',
+        detalles: 'Debe proporcionar el campo "usuario_id" para modificar una reserva'
+      });
     }
+
+    if (!Number.isInteger(Number(usuario_id)) || Number(usuario_id) <= 0) {
+      return res.status(400).json({
+        error: 'usuario_id inválido',
+        detalles: 'usuario_id debe ser un número entero positivo'
+      });
+    }
+
+    const reservaId = parseInt(id);
+    if (isNaN(reservaId) || reservaId <= 0) {
+      return res.status(400).json({
+        error: 'ID de reserva inválido',
+        detalles: 'El ID debe ser un número entero positivo'
+      });
+    }
+
+    if (Object.keys(req.body).length === 1 && 'usuario_id' in req.body) {
+      return res.status(400).json({
+        error: 'Nada que actualizar',
+        detalles: 'Debe proporcionar al menos un campo para modificar además de usuario_id'
+      });
+    }
+
+    const errores = [];
+    const camposActualizar = {};
+
+    // Validaciones de campos opcionales
+    if (cancha_id !== undefined) {
+      if (!Number.isInteger(Number(cancha_id)) || Number(cancha_id) <= 0) {
+        errores.push('cancha_id debe ser un número entero positivo');
+      } else {
+        camposActualizar.cancha_id = parseInt(cancha_id);
+      }
+    }
+    if (fecha_reserva !== undefined) {
+      if (isNaN(Date.parse(fecha_reserva))) {
+        errores.push('fecha_reserva debe ser una fecha válida (YYYY-MM-DD)');
+      } else {
+        camposActualizar.fecha_reserva = fecha_reserva;
+      }
+    }
+    if (reserva_hora_inicio !== undefined) {
+      if (!/^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(reserva_hora_inicio)) {
+        errores.push('reserva_hora_inicio debe ser una hora válida (HH:MM:SS)');
+      } else {
+        camposActualizar.reserva_hora_inicio = reserva_hora_inicio;
+      }
+    }
+    if (reserva_hora_fin !== undefined) {
+      if (!/^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/.test(reserva_hora_fin)) {
+        errores.push('reserva_hora_fin debe ser una hora válida (HH:MM:SS)');
+      } else {
+        camposActualizar.reserva_hora_fin = reserva_hora_fin;
+      }
+    }
+
+    // monto_pagado → opcional, pero si se envía debe ser entero positivo
+    if (monto_pagado !== undefined) {
+      const monto = parseInt(monto_pagado, 10);
+      if (isNaN(monto) || monto <= 0 || !Number.isInteger(monto)) {
+        errores.push('monto_pagado debe ser un número entero positivo');
+      } else {
+        camposActualizar.monto_pagado_cliente = monto;
+      }
+    }
+
+    if (errores.length > 0) {
+      return res.status(400).json({ error: 'Errores de validación', detalles: errores });
+    }
+
+    // === OBTENER RESERVA ACTUAL ===
+    const { rows: [reservaActual] } = await pool.query(
+      'SELECT * FROM reservas WHERE id = $1',
+      [reservaId]
+    );
+
+    if (!reservaActual) {
+      return res.status(404).json({
+        error: 'Reserva no encontrada',
+        detalles: `No existe una reserva con id ${reservaId}`
+      });
+    }
+
+    // === VALIDAR QUE EL USUARIO SEA EL DUEÑO ===
+    if (parseInt(usuario_id) !== reservaActual.usuario_id) {
+      return res.status(403).json({
+        error: 'Acceso denegado',
+        detalles: 'No se puede modificar la reserva de otro usuario'
+      });
+    }
+
+    // === OBTENER DATOS DE LA CANCHA ORIGINAL ===
+    const { rows: [canchaOriginal] } = await pool.query(
+      'SELECT establecimiento_id, deporte FROM canchas WHERE id = $1',
+      [reservaActual.cancha_id]
+    );
+
+    if (!canchaOriginal) {
+      return res.status(500).json({ error: 'Error interno: cancha original no encontrada' });
+    }
+
+    const establecimientoOriginalId = canchaOriginal.establecimiento_id;
+    const deporteOriginal = canchaOriginal.deporte.trim();
+
+    // === DETERMINAR LA CANCHA FINAL ===
+    const finalCanchaId = camposActualizar.cancha_id ?? reservaActual.cancha_id;
+
+    // Validar nueva cancha si cambia
+    if (finalCanchaId !== reservaActual.cancha_id) {
+      const { rows: [canchaNueva] } = await pool.query(
+        `SELECT establecimiento_id, deporte 
+         FROM canchas 
+         WHERE id = $1`,
+        [finalCanchaId]
+      );
+
+      if (!canchaNueva) {
+        return res.status(404).json({ error: 'Cancha no encontrada' });
+      }
+
+      const establecimientoNuevo = canchaNueva.establecimiento_id;
+      const deporteNuevo = canchaNueva.deporte.trim();
+
+      if (establecimientoNuevo !== establecimientoOriginalId) {
+        return res.status(403).json({
+          error: 'Cancha no permitida',
+          detalles: 'Solo se puede cambiar a una cancha del mismo establecimiento'
+        });
+      }
+
+      if (deporteNuevo !== deporteOriginal) {
+        return res.status(403).json({
+          error: 'Cancha no permitida',
+          detalles: `Solo se puede cambiar a una cancha del mismo deporte (${deporteOriginal})`
+        });
+      }
+    }
+
+    // === OBTENER PRECIO DE LA CANCHA FINAL ===
+    const { rows: [canchaFinal] } = await pool.query(
+      'SELECT precio_hora FROM canchas WHERE id = $1',
+      [finalCanchaId]
+    );
+
+    if (!canchaFinal) {
+      return res.status(404).json({ error: 'Cancha no encontrada' });
+    }
+
+    const precioPorHora = parseInt(canchaFinal.precio_hora, 10); // ahora entero
+
+    // Valores finales
+    const finalFecha = camposActualizar.fecha_reserva ?? reservaActual.fecha_reserva.toISOString().split('T')[0];
+    const finalHoraInicio = camposActualizar.reserva_hora_inicio ?? reservaActual.reserva_hora_inicio;
+    const finalHoraFin = camposActualizar.reserva_hora_fin ?? reservaActual.reserva_hora_fin;
+
+    // === VALIDACIONES DE FECHA, HORARIO Y DURACIÓN ===
+    const opcionesTZ = { timeZone: 'America/Argentina/Buenos_Aires' };
+    const mañanaDate = new Date();
+    mañanaDate.setDate(mañanaDate.getDate() + 1);
+    const mañanaStr = mañanaDate.toLocaleDateString('en-CA', opcionesTZ);
+
+    if (finalFecha < mañanaStr) {
+      errores.push('La fecha_reserva debe ser para mañana o fechas posteriores');
+    }
+
+    const parseTime = (timeStr) => {
+      const [h, m, s] = timeStr.split(':').map(Number);
+      return h * 3600 + m * 60 + s;
+    };
+
+    const segInicio = parseTime(finalHoraInicio);
+    const segFin = parseTime(finalHoraFin);
+
+    if (segInicio < 7 * 3600 || segInicio > 21 * 3600) {
+      errores.push('reserva_hora_inicio debe estar entre 07:00 y 21:00');
+    }
+    if (segFin < 8 * 3600 || segFin > 22 * 3600) {
+      errores.push('reserva_hora_fin debe estar entre 08:00 y 22:00');
+    }
+    if (segFin <= segInicio) {
+      errores.push('reserva_hora_fin debe ser posterior a reserva_hora_inicio');
+    }
+
+    const duracionMin = (segFin - segInicio) / 60;
+    if (![60, 90, 120].includes(duracionMin)) {
+      errores.push('La duración debe ser exactamente 1 hora, 1 hora 30 minutos o 2 horas');
+    }
+
+    if (errores.length > 0) {
+      return res.status(400).json({ error: 'Errores de validación', detalles: errores });
+    }
+
+    // === CÁLCULO DE MONTO ===
+    const duracionHoras = duracionMin / 60;
+    const montoCalculado = duracionHoras * precioPorHora;
+
+    const montoFinal = camposActualizar.monto_pagado_cliente ?? montoCalculado;
+    if (montoFinal !== montoCalculado) {
+      return res.status(400).json({
+        error: 'Monto incorrecto',
+        detalles: `El monto debe ser exactamente ${montoCalculado} (${duracionHoras}h × ${precioPorHora}/h)`
+      });
+    }
+
+    // === VALIDAR SUPERPOSICIÓN ===
+    const overlapQuery = `
+      SELECT 1 
+      FROM reservas 
+      WHERE cancha_id = $1 
+      AND fecha_reserva = $2
+      AND id != $5
+      AND (reserva_hora_inicio, reserva_hora_fin) OVERLAPS ($3::time, $4::time)
+    `;
+
+    const { rowCount: overlap } = await pool.query(overlapQuery, [
+      finalCanchaId,
+      finalFecha,
+      finalHoraInicio,
+      finalHoraFin,
+      reservaId
+    ]);
+
+    if (overlap > 0) {
+      return res.status(409).json({
+        error: 'Horario no disponible',
+        detalles: 'El nuevo horario se superpone con otra reserva existente en la misma cancha'
+      });
+    }
+
+    // === UPDATE DINÁMICO ===
+    const campos = [];
+    const valores = [];
+    let index = 1;
+
+    if (camposActualizar.cancha_id !== undefined) { 
+      campos.push(`cancha_id = $${index++}`); 
+      valores.push(finalCanchaId); 
+    }
+    if (camposActualizar.fecha_reserva !== undefined) { 
+      campos.push(`fecha_reserva = $${index++}`); 
+      valores.push(finalFecha); 
+    }
+    if (camposActualizar.reserva_hora_inicio !== undefined) { 
+      campos.push(`reserva_hora_inicio = $${index++}`); 
+      valores.push(finalHoraInicio); 
+    }
+    if (camposActualizar.reserva_hora_fin !== undefined) { 
+      campos.push(`reserva_hora_fin = $${index++}`); 
+      valores.push(finalHoraFin); 
+    }
+
+    campos.push(`monto_pagado = $${index++}`);
+    valores.push(montoCalculado);
+    campos.push(`fecha_modificacion_reserva = CURRENT_TIMESTAMP`);
+    valores.push(reservaId);
+
+    const updateQuery = `
+      UPDATE reservas
+      SET ${campos.join(', ')}
+      WHERE id = $${index}
+      RETURNING *;
+    `;
+
+    const { rows } = await pool.query(updateQuery, valores);
+
+    const reservaActualizada = rows[0];
+
+    const reservaFormateada = {
+      ...reservaActualizada,
+      fecha_reserva: formateoFechaLocal(reservaActualizada.fecha_reserva),
+      fecha_creacion_reserva: formateoFechaHorarioLocal(reservaActualizada.fecha_creacion_reserva),
+      fecha_modificacion_reserva: formateoFechaHorarioLocal(reservaActualizada.fecha_modificacion_reserva)
+    };
+
+    res.status(200).json({
+      message: 'Reserva actualizada exitosamente',
+      reserva: reservaFormateada
+    });
+
+  } catch (error) {
+    console.error('Error al actualizar reserva:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 };
 
 const deleteReserva = async (req, res) => {
