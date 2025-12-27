@@ -497,11 +497,23 @@
 /* Fuerza que los paneles de sugerencias tengan el mismo ancho exacto que su input */
 #sugerencias-establecimiento-modal,
 #sugerencias-deporte-modal {
-  width: 87% !important;
+  width: 90% !important;
   max-width: 100% !important;
   box-sizing: border-box;
-  left: 30px !important;               /* Alinea perfectamente a la izquierda del input */
+  left: 1rem !important;               /* Alinea perfectamente a la izquierda del input */
   right: auto !important;           /* Evita que se extienda más allá */
+}
+
+/* Para pantallas más grandes (desktop) */
+@media (min-width: 768px) {  /* o el breakpoint que uses en Bulma, que es 768px para tablet/desktop */
+  #sugerencias-establecimiento-modal,
+  #sugerencias-deporte-modal {
+    width: 87% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    left: 2rem !important;               /* Alinea perfectamente a la izquierda del input */
+    right: auto !important;           /* Evita que se extienda más allá */
+  }
 }
 
 /* Asegura que el contenedor del input sea el referente de posicionamiento */

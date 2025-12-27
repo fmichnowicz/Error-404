@@ -12,7 +12,7 @@ let filtroDeporte = '';
 let idCanchaAEliminar = null;
 
 // =============================================
-//           MODAL AGREGAR CANCHA
+// MODAL AGREGAR CANCHA
 // =============================================
 
 const deportesPermitidos = [
@@ -104,7 +104,7 @@ function inicializarModalAgregarCancha() {
         inputEst.value = est.nombre;
         hiddenId.value = est.id;
         sugEst.style.display = 'none';
-        calcularNombreCancha(); // Actualizar nombre cuando se selecciona establecimiento
+        calcularNombreCancha();
         validarFormulario();
       };
       sugEst.appendChild(item);
@@ -139,7 +139,7 @@ function inicializarModalAgregarCancha() {
       item.onclick = () => {
         inputDep.value = dep;
         sugDep.style.display = 'none';
-        calcularNombreCancha(); // Actualizar nombre cuando se selecciona deporte
+        calcularNombreCancha();
         validarFormulario();
       };
       sugDep.appendChild(item);
@@ -247,13 +247,25 @@ async function guardarNuevaCancha() {
     }
 
     // Éxito
-    const modal = document.getElementById('modal-agregar-cancha');
-    modal.classList.remove('is-active');
+    const modalAgregar = document.getElementById('modal-agregar-cancha');
+    modalAgregar.classList.remove('is-active');
 
-    alert('¡Cancha creada exitosamente!');
-    
-    // Recargar la lista
-    location.reload();
+    // Mostrar modal de éxito
+    const modalExito = document.getElementById('modal-exito-agregar-cancha');
+    if (modalExito) {
+      // Bloquear cierre
+      modalExito.querySelector('.modal-background').style.pointerEvents = 'none';
+      modalExito.addEventListener('keydown', e => {
+        if (e.key === 'Escape') e.preventDefault();
+      });
+
+      modalExito.classList.add('is-active');
+
+      // Recargar después de 2 segundos
+      setTimeout(() => {
+        location.reload();
+      }, 2000);
+    }
 
   } catch (err) {
     console.error('Error al guardar cancha:', err);
@@ -263,7 +275,7 @@ async function guardarNuevaCancha() {
 }
 
 // =============================================
-//           CÓDIGO ANTERIOR (SIN CAMBIOS)
+// CÓDIGO ANTERIOR (SIN CAMBIOS)
 // =============================================
 
 async function cargarCanchas() {
@@ -308,7 +320,7 @@ function ordenarCanchas(canchas) {
     const depB = normalizeString(b.deporte);
     if (depA !== depB) return depA.localeCompare(depB);
 
-    // 3. Nombre cancha (orden numérico: Cancha 1 < Cancha 10 < Cancha 2)
+    // 3. Nombre cancha (orden numérico)
     const nomA = normalizeString(a.nombre_cancha);
     const nomB = normalizeString(b.nombre_cancha);
     return nomA.localeCompare(nomB, undefined, { numeric: true });
@@ -473,9 +485,7 @@ function filtrarCanchas() {
     );
   }
 
-  // Mantener el orden después de filtrar
   canchasFiltradas = ordenarCanchas(filtered);
-
   currentPage = 1;
   renderizarPagina(1);
 }
@@ -676,9 +686,7 @@ async function eliminarCancha(id) {
   }
 }
 
-
-
-// Placeholder para modificar (puedes implementar después)
+// Placeholder para modificar
 function modificarCancha(id) {
   console.log(`Modificar cancha ID: ${id}`);
 }
