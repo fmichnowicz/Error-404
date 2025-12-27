@@ -8,12 +8,9 @@ let canchasFiltradas = [];
 let filtroEstablecimiento = '';
 let filtroDeporte = '';
 
-// Variables para el modal de eliminación
+// Variables para modales
 let idCanchaAEliminar = null;
-
-// =============================================
-//           MODAL AGREGAR CANCHA
-// =============================================
+let idCanchaAModificar = null;
 
 const deportesPermitidos = [
   'Básquet 3v3', 'Básquet 5v5', 'Fútbol 4', 'Fútbol 5', 'Fútbol 6',
@@ -21,20 +18,16 @@ const deportesPermitidos = [
   'Handball', 'Pádel', 'Tenis', 'Vóley'
 ];
 
-let establecimientos = []; // Para el autocomplete del modal
+let establecimientos = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   cargarCanchas();
   inicializarFiltros();
   inicializarModalesEliminar();
-
-  // Cargar lista de establecimientos al iniciar
   await cargarEstablecimientos();
-
-  // Botón para abrir modal de agregar
   document.getElementById('btn-agregar-establecimiento').addEventListener('click', abrirModalAgregarCancha);
-
   inicializarModalAgregarCancha();
+  inicializarModalModificarCancha();
 });
 
 async function cargarEstablecimientos() {
@@ -51,7 +44,6 @@ function abrirModalAgregarCancha() {
   const modal = document.getElementById('modal-agregar-cancha');
   if (!modal) return;
 
-  // Limpiar formulario
   document.getElementById('form-agregar-cancha').reset();
   document.getElementById('input-nombre').value = '';
   document.getElementById('establecimiento_id').value = '';
@@ -64,18 +56,15 @@ function inicializarModalAgregarCancha() {
   const modal = document.getElementById('modal-agregar-cancha');
   if (!modal) return;
 
-  // No permitir cerrar con background ni ESC
   modal.querySelector('.modal-background').style.pointerEvents = 'none';
   modal.addEventListener('keydown', e => {
     if (e.key === 'Escape') e.preventDefault();
   });
 
-  // Botón Cancelar
   document.getElementById('btn-cancelar-agregar').addEventListener('click', () => {
     modal.classList.remove('is-active');
   });
 
-  // Autocomplete Establecimiento
   const inputEst = document.getElementById('input-establecimiento');
   const sugEst = document.getElementById('sugerencias-establecimiento-modal');
   const hiddenId = document.getElementById('establecimiento_id');
@@ -104,7 +93,7 @@ function inicializarModalAgregarCancha() {
         inputEst.value = est.nombre;
         hiddenId.value = est.id;
         sugEst.style.display = 'none';
-        calcularNombreCancha(); // Actualizar nombre cuando se selecciona establecimiento
+        calcularNombreCancha();
         validarFormulario();
       };
       sugEst.appendChild(item);
@@ -113,7 +102,6 @@ function inicializarModalAgregarCancha() {
     sugEst.style.display = 'block';
   });
 
-  // Autocomplete Deporte
   const inputDep = document.getElementById('input-deporte');
   const sugDep = document.getElementById('sugerencias-deporte-modal');
 
@@ -139,7 +127,7 @@ function inicializarModalAgregarCancha() {
       item.onclick = () => {
         inputDep.value = dep;
         sugDep.style.display = 'none';
-        calcularNombreCancha(); // Actualizar nombre cuando se selecciona deporte
+        calcularNombreCancha();
         validarFormulario();
       };
       sugDep.appendChild(item);
@@ -148,7 +136,6 @@ function inicializarModalAgregarCancha() {
     sugDep.style.display = 'block';
   });
 
-  // Contadores de caracteres
   const desc = document.getElementById('input-descripcion');
   const sup = document.getElementById('input-superficie');
 
@@ -162,15 +149,12 @@ function inicializarModalAgregarCancha() {
     validarFormulario();
   });
 
-  // Validar en tiempo real
   ['input-establecimiento', 'input-deporte', 'input-precio', 'input-superficie'].forEach(id => {
     document.getElementById(id).addEventListener('input', validarFormulario);
   });
 
-  // Confirmar
   document.getElementById('btn-confirmar-agregar').addEventListener('click', guardarNuevaCancha);
 
-  // Cerrar sugerencias al hacer click fuera
   document.addEventListener('click', e => {
     if (!inputEst.contains(e.target) && !sugEst.contains(e.target)) sugEst.style.display = 'none';
     if (!inputDep.contains(e.target) && !sugDep.contains(e.target)) sugDep.style.display = 'none';
@@ -246,14 +230,21 @@ async function guardarNuevaCancha() {
       return;
     }
 
-    // Éxito
-    const modal = document.getElementById('modal-agregar-cancha');
-    modal.classList.remove('is-active');
+    const modalAgregar = document.getElementById('modal-agregar-cancha');
+    modalAgregar.classList.remove('is-active');
 
-    alert('¡Cancha creada exitosamente!');
-    
-    // Recargar la lista
-    location.reload();
+    const modalExito = document.getElementById('modal-exito-agregar-cancha');
+    if (modalExito) {
+      modalExito.querySelector('.modal-background').style.pointerEvents = 'none';
+      modalExito.addEventListener('keydown', e => {
+        if (e.key === 'Escape') e.preventDefault();
+      });
+      modalExito.classList.add('is-active');
+
+      setTimeout(() => {
+        location.reload();
+      }, 2000);
+    }
 
   } catch (err) {
     console.error('Error al guardar cancha:', err);
@@ -263,7 +254,133 @@ async function guardarNuevaCancha() {
 }
 
 // =============================================
-//           CÓDIGO ANTERIOR (SIN CAMBIOS)
+// MODIFICAR CANCHA
+// =============================================
+
+function modificarCancha(id) {
+  idCanchaAModificar = id;
+  const cancha = allCanchas.find(c => c.id === id);
+  if (!cancha) {
+    alert('Cancha no encontrada');
+    return;
+  }
+
+  document.getElementById('mod-id-cancha').value = cancha.id;
+  document.getElementById('mod-input-establecimiento').value = cancha.nombre_establecimiento;
+  document.getElementById('mod-input-deporte').value = cancha.deporte;
+  document.getElementById('mod-input-nombre').value = cancha.nombre_cancha;
+  document.getElementById('mod-input-precio').value = cancha.precio_hora;
+  document.getElementById('mod-input-descripcion').value = cancha.descripcion || '';
+  document.getElementById('mod-input-superficie').value = cancha.superficie;
+  document.getElementById('mod-select-iluminacion').value = cancha.iluminacion ? 'true' : 'false';
+  document.getElementById('mod-select-cubierta').value = cancha.cubierta ? 'true' : 'false';
+
+  document.getElementById('mod-contador-descripcion').textContent = (cancha.descripcion || '').length;
+  document.getElementById('mod-contador-superficie').textContent = cancha.superficie.length;
+
+  validarFormularioModificar();
+
+  const modal = document.getElementById('modal-modificar-cancha');
+  modal.classList.add('is-active');
+}
+
+function inicializarModalModificarCancha() {
+  const modal = document.getElementById('modal-modificar-cancha');
+  if (!modal) return;
+
+  modal.querySelector('.modal-background').style.pointerEvents = 'none';
+  modal.addEventListener('keydown', e => {
+    if (e.key === 'Escape') e.preventDefault();
+  });
+
+  document.getElementById('btn-cancelar-modificar').addEventListener('click', () => {
+    modal.classList.remove('is-active');
+    idCanchaAModificar = null;
+  });
+
+  const desc = document.getElementById('mod-input-descripcion');
+  const sup = document.getElementById('mod-input-superficie');
+
+  desc.addEventListener('input', () => {
+    document.getElementById('mod-contador-descripcion').textContent = desc.value.length;
+    validarFormularioModificar();
+  });
+
+  sup.addEventListener('input', () => {
+    document.getElementById('mod-contador-superficie').textContent = sup.value.length;
+    validarFormularioModificar();
+  });
+
+  ['mod-input-precio', 'mod-input-superficie'].forEach(id => {
+    document.getElementById(id).addEventListener('input', validarFormularioModificar);
+  });
+
+  document.getElementById('btn-guardar-modificar').addEventListener('click', guardarModificacion);
+}
+
+function validarFormularioModificar() {
+  const precio = document.getElementById('mod-input-precio').value;
+  const superficie = document.getElementById('mod-input-superficie').value.trim();
+
+  const btn = document.getElementById('btn-guardar-modificar');
+  btn.disabled = !(
+    precio && parseInt(precio) > 0 &&
+    superficie
+  );
+}
+
+async function guardarModificacion() {
+  const btn = document.getElementById('btn-guardar-modificar');
+  btn.disabled = true;
+
+  const data = {
+    precio_hora: parseInt(document.getElementById('mod-input-precio').value),
+    descripcion: document.getElementById('mod-input-descripcion').value.trim() || null,
+    superficie: document.getElementById('mod-input-superficie').value.trim(),
+    iluminacion: document.getElementById('mod-select-iluminacion').value === 'true',
+    cubierta: document.getElementById('mod-select-cubierta').value === 'true'
+  };
+
+  try {
+    const res = await fetch(`http://localhost:3000/canchas/${idCanchaAModificar}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error || 'Error al modificar la cancha');
+      console.error(err);
+      btn.disabled = false;
+      return;
+    }
+
+    const modalMod = document.getElementById('modal-modificar-cancha');
+    modalMod.classList.remove('is-active');
+
+    const modalExito = document.getElementById('modal-exito-modificar-cancha');
+    if (modalExito) {
+      modalExito.querySelector('.modal-background').style.pointerEvents = 'none';
+      modalExito.addEventListener('keydown', e => {
+        if (e.key === 'Escape') e.preventDefault();
+      });
+      modalExito.classList.add('is-active');
+
+      setTimeout(() => {
+        location.reload();
+      }, 2000);
+    }
+
+  } catch (err) {
+    console.error('Error al modificar cancha:', err);
+    alert('Error de conexión');
+    btn.disabled = false;
+  }
+}
+
+// =============================================
+// RESTO DEL CÓDIGO (SIN CAMBIOS)
 // =============================================
 
 async function cargarCanchas() {
@@ -276,7 +393,6 @@ async function cargarCanchas() {
 
     allCanchas = await response.json();
 
-    // Ordenar las canchas UNA SOLA VEZ al cargar
     allCanchas = ordenarCanchas(allCanchas);
 
     canchasFiltradas = [...allCanchas];
@@ -295,20 +411,16 @@ async function cargarCanchas() {
   }
 }
 
-// Función para ordenar: establecimiento → deporte → nombre_cancha
 function ordenarCanchas(canchas) {
   return canchas.sort((a, b) => {
-    // 1. Nombre establecimiento (insensible a acentos/mayúsculas)
     const estA = normalizeString(a.nombre_establecimiento);
     const estB = normalizeString(b.nombre_establecimiento);
     if (estA !== estB) return estA.localeCompare(estB);
 
-    // 2. Deporte
     const depA = normalizeString(a.deporte);
     const depB = normalizeString(b.deporte);
     if (depA !== depB) return depA.localeCompare(depB);
 
-    // 3. Nombre cancha (orden numérico: Cancha 1 < Cancha 10 < Cancha 2)
     const nomA = normalizeString(a.nombre_cancha);
     const nomB = normalizeString(b.nombre_cancha);
     return nomA.localeCompare(nomB, undefined, { numeric: true });
@@ -330,7 +442,6 @@ function inicializarFiltros() {
   const sugEst = document.getElementById('sugerencias-establecimiento');
   const sugDep = document.getElementById('sugerencias-deporte');
 
-  // Filtro Establecimiento
   inputEst.addEventListener('input', () => {
     const query = inputEst.value.trim();
     sugEst.innerHTML = '';
@@ -376,7 +487,6 @@ function inicializarFiltros() {
     sugEst.style.display = 'block';
   });
 
-  // Filtro Deporte
   inputDep.addEventListener('input', () => {
     const query = inputDep.value.trim();
     sugDep.innerHTML = '';
@@ -422,7 +532,6 @@ function inicializarFiltros() {
     sugDep.style.display = 'block';
   });
 
-  // Cerrar sugerencias al clic fuera
   document.addEventListener('click', (e) => {
     if (!inputEst.contains(e.target) && !sugEst.contains(e.target)) {
       sugEst.style.display = 'none';
@@ -432,7 +541,6 @@ function inicializarFiltros() {
     }
   });
 
-  // Permitir filtrar con Enter
   inputEst.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -473,9 +581,7 @@ function filtrarCanchas() {
     );
   }
 
-  // Mantener el orden después de filtrar
   canchasFiltradas = ordenarCanchas(filtered);
-
   currentPage = 1;
   renderizarPagina(1);
 }
@@ -576,7 +682,6 @@ function crearPaginacion(page) {
   paginacion.innerHTML = paginasHTML;
 }
 
-// Inicializar modales de eliminación
 function inicializarModalesEliminar() {
   const modalEliminar = document.getElementById('modal-eliminar-cancha');
   if (!modalEliminar) {
@@ -674,11 +779,4 @@ async function eliminarCancha(id) {
     document.getElementById('usuarios-impactados-cancha').textContent = numUsuarios;
     modal.classList.add('is-active');
   }
-}
-
-
-
-// Placeholder para modificar (puedes implementar después)
-function modificarCancha(id) {
-  console.log(`Modificar cancha ID: ${id}`);
 }
