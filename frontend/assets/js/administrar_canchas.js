@@ -26,6 +26,10 @@ async function cargarCanchas() {
     if (!response.ok) throw new Error('Error al cargar canchas');
 
     allCanchas = await response.json();
+
+    // Ordenar las canchas UNA SOLA VEZ al cargar
+    allCanchas = ordenarCanchas(allCanchas);
+
     canchasFiltradas = [...allCanchas];
 
     loading.style.display = 'none';
@@ -40,6 +44,26 @@ async function cargarCanchas() {
     console.error('Error:', error);
     loading.innerHTML = '<p class="subtitle has-text-danger">Error al cargar las canchas</p>';
   }
+}
+
+// Función para ordenar: establecimiento → deporte → nombre_cancha
+function ordenarCanchas(canchas) {
+  return canchas.sort((a, b) => {
+    // 1. Nombre establecimiento (insensible a acentos/mayúsculas)
+    const estA = normalizeString(a.nombre_establecimiento);
+    const estB = normalizeString(b.nombre_establecimiento);
+    if (estA !== estB) return estA.localeCompare(estB);
+
+    // 2. Deporte
+    const depA = normalizeString(a.deporte);
+    const depB = normalizeString(b.deporte);
+    if (depA !== depB) return depA.localeCompare(depB);
+
+    // 3. Nombre cancha (orden numérico: Cancha 1 < Cancha 10 < Cancha 2)
+    const nomA = normalizeString(a.nombre_cancha);
+    const nomB = normalizeString(b.nombre_cancha);
+    return nomA.localeCompare(nomB, undefined, { numeric: true });
+  });
 }
 
 function normalizeString(str) {
@@ -200,7 +224,9 @@ function filtrarCanchas() {
     );
   }
 
-  canchasFiltradas = filtered;
+  // Mantener el orden después de filtrar
+  canchasFiltradas = ordenarCanchas(filtered);
+
   currentPage = 1;
   renderizarPagina(1);
 }
@@ -312,7 +338,6 @@ function inicializarModalesEliminar() {
   const btnCancelar = document.getElementById('btn-cancelar-eliminar-cancha');
   const btnEliminarDef = document.getElementById('btn-eliminar-cancha-definitivo');
 
-  // Cerrar solo con Cancelar
   btnCancelar.addEventListener('click', () => {
     modalEliminar.classList.remove('is-active');
     idCanchaAEliminar = null;
@@ -321,7 +346,6 @@ function inicializarModalesEliminar() {
     document.getElementById('usuarios-impactados-cancha').textContent = '0';
   });
 
-  // Confirmar eliminación
   btnEliminarDef.addEventListener('click', async () => {
     if (!idCanchaAEliminar) return;
 
@@ -336,14 +360,10 @@ function inicializarModalesEliminar() {
         return;
       }
 
-      // Mostrar éxito
       mostrarModalExitoEliminar();
-
-      // Cerrar modal de confirmación
       modalEliminar.classList.remove('is-active');
       idCanchaAEliminar = null;
 
-      // Refrescar en 2 segundos
       setTimeout(() => {
         location.reload();
       }, 2000);
@@ -353,13 +373,11 @@ function inicializarModalesEliminar() {
     }
   });
 
-  // Bloquear cierre por background y ESC
   modalEliminar.querySelector('.modal-background').style.pointerEvents = 'none';
   modalEliminar.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') e.preventDefault();
   });
 
-  // Modal de éxito
   const modalExito = document.getElementById('modal-exito-eliminar-cancha');
   if (modalExito) {
     modalExito.querySelector('.modal-background').style.pointerEvents = 'none';
@@ -409,7 +427,7 @@ async function eliminarCancha(id) {
   }
 }
 
-// Funciones placeholder (puedes implementarlas después)
+// Placeholder para modificar (puedes implementar después)
 function modificarCancha(id) {
   console.log(`Modificar cancha ID: ${id}`);
 }

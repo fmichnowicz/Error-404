@@ -21,7 +21,7 @@ CREATE TABLE canchas (
     nombre VARCHAR(10) NOT NULL,
     deporte VARCHAR(15) NOT NULL,
     establecimiento_id INTEGER NOT NULL,
-    precio_hora DECIMAL(10, 2) NOT NULL,
+    precio_hora INTEGER NOT NULL,
     descripcion VARCHAR(100),
     superficie VARCHAR(50) NOT NULL,
     iluminacion BOOLEAN DEFAULT FALSE,
@@ -38,7 +38,7 @@ CREATE TABLE reservas (
     reserva_hora_fin TIME NOT NULL,
     fecha_creacion_reserva TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     fecha_modificacion_reserva TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    monto_pagado DECIMAL(10, 2) NOT NULL,
+    monto_pagado INTEGER NOT NULL,
     FOREIGN KEY (cancha_id) REFERENCES canchas(id) ON DELETE CASCADE,                   --Elimina las reservas de 1 cancha si se la borra            
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,                 --Elimina las reservas de 1 usuario si se lo borra
 
