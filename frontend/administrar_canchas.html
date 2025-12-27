@@ -100,7 +100,7 @@
         </div>
     </div>
 
-    <!-- Modal de éxito al eliminar cancha (sin cierre manual) -->
+    <!-- Modal de éxito al eliminar cancha -->
     <div id="modal-exito-eliminar-cancha" class="modal">
         <div class="modal-background"></div>
         <div class="modal-card">
@@ -123,8 +123,6 @@
         </header>
         <section class="modal-card-body">
             <form id="form-agregar-cancha">
-
-            <!-- Establecimiento (autocomplete) -->
             <div class="field">
                 <label class="label">Establecimiento <span class="has-text-danger">*</span></label>
                 <div class="control has-icons-left">
@@ -137,7 +135,6 @@
                 <input type="hidden" id="establecimiento_id" required>
             </div>
 
-            <!-- Deporte (select con búsqueda) -->
             <div class="field">
                 <label class="label">Deporte <span class="has-text-danger">*</span></label>
                 <div class="control has-icons-left">
@@ -152,7 +149,6 @@
                 </p>
             </div>
 
-            <!-- Nombre (auto-completado, no editable) -->
             <div class="field">
                 <label class="label">Nombre de la cancha</label>
                 <div class="control">
@@ -160,7 +156,6 @@
                 </div>
             </div>
 
-            <!-- Precio por hora -->
             <div class="field">
                 <label class="label">Precio por hora <span class="has-text-danger">*</span></label>
                 <div class="control has-icons-left">
@@ -172,7 +167,6 @@
                 <p class="help">El precio debe tener el siguiente formato: 25000 (sin comas ni puntos)</p>
             </div>
 
-            <!-- Descripción -->
             <div class="field">
                 <label class="label">Descripción (opcional)</label>
                 <div class="control">
@@ -181,7 +175,6 @@
                 <p class="help"><span id="contador-descripcion">0</span>/100</p>
             </div>
 
-            <!-- Superficie -->
             <div class="field">
                 <label class="label">Superficie <span class="has-text-danger">*</span></label>
                 <div class="control">
@@ -190,7 +183,6 @@
                 <p class="help"><span id="contador-superficie">0</span>/50</p>
             </div>
 
-            <!-- Iluminación -->
             <div class="field">
                 <label class="label">¿La cancha tiene iluminación?</label>
                 <div class="control">
@@ -203,7 +195,6 @@
                 </div>
             </div>
 
-            <!-- Cubierta -->
             <div class="field">
                 <label class="label">¿La cancha está cubierta?</label>
                 <div class="control">
@@ -215,7 +206,6 @@
                 </div>
                 </div>
             </div>
-
             </form>
         </section>
         <footer class="modal-card-foot">
@@ -225,7 +215,7 @@
         </div>
     </div>
 
-    <!-- Modal de éxito al AGREGAR cancha (sin cierre manual) -->
+    <!-- Modal de éxito al AGREGAR cancha -->
     <div id="modal-exito-agregar-cancha" class="modal">
         <div class="modal-background" style="pointer-events: none;"></div>
         <div class="modal-card">
@@ -234,6 +224,122 @@
         </header>
         <section class="modal-card-body has-text-centered">
             <p class="is-size-5 mb-4">La nueva cancha se ha creado correctamente.</p>
+            <p class="has-text-grey-dark">La página se recargará en unos segundos...</p>
+            <progress class="progress is-small is-success mt-5" max="100"></progress>
+        </section>
+        </div>
+    </div>
+
+    <!-- Modal para MODIFICAR cancha -->
+    <div id="modal-modificar-cancha" class="modal">
+        <div class="modal-background" style="pointer-events: none;"></div>
+        <div class="modal-card" style="max-width: 600px;">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Modificar Cancha</p>
+        </header>
+        <section class="modal-card-body">
+            <form id="form-modificar-cancha">
+
+            <!-- Establecimiento (bloqueado) -->
+            <div class="field">
+                <label class="label">Establecimiento</label>
+                <div class="control">
+                <input id="mod-input-establecimiento" class="input" type="text" readonly>
+                </div>
+            </div>
+
+            <!-- Deporte (bloqueado) -->
+            <div class="field">
+                <label class="label">Deporte</label>
+                <div class="control">
+                <input id="mod-input-deporte" class="input" type="text" readonly>
+                </div>
+            </div>
+
+            <!-- Nombre (bloqueado) -->
+            <div class="field">
+                <label class="label">Nombre de la cancha</label>
+                <div class="control">
+                <input id="mod-input-nombre" class="input" type="text" readonly>
+                </div>
+            </div>
+
+            <!-- Precio por hora -->
+            <div class="field">
+                <label class="label">Precio por hora <span class="has-text-danger">*</span></label>
+                <div class="control has-icons-left">
+                <input id="mod-input-precio" class="input" type="number" min="1" step="1" required>
+                <span class="icon is-small is-left">
+                    <i class="fas fa-dollar-sign"></i>
+                </span>
+                </div>
+                <p class="help">El precio debe tener el siguiente formato: 25000 (sin comas ni puntos)</p>
+            </div>
+
+            <!-- Descripción -->
+            <div class="field">
+                <label class="label">Descripción (opcional)</label>
+                <div class="control">
+                <textarea id="mod-input-descripcion" class="textarea" maxlength="100" rows="3"></textarea>
+                </div>
+                <p class="help"><span id="mod-contador-descripcion">0</span>/100</p>
+            </div>
+
+            <!-- Superficie -->
+            <div class="field">
+                <label class="label">Superficie <span class="has-text-danger">*</span></label>
+                <div class="control">
+                <input id="mod-input-superficie" class="input" type="text" maxlength="50" required>
+                </div>
+                <p class="help"><span id="mod-contador-superficie">0</span>/50</p>
+            </div>
+
+            <!-- Iluminación -->
+            <div class="field">
+                <label class="label">¿La cancha tiene iluminación?</label>
+                <div class="control">
+                <div class="select is-fullwidth">
+                    <select id="mod-select-iluminacion">
+                    <option value="false">No</option>
+                    <option value="true">Sí</option>
+                    </select>
+                </div>
+                </div>
+            </div>
+
+            <!-- Cubierta -->
+            <div class="field">
+                <label class="label">¿La cancha está cubierta?</label>
+                <div class="control">
+                <div class="select is-fullwidth">
+                    <select id="mod-select-cubierta">
+                    <option value="false">No</option>
+                    <option value="true">Sí</option>
+                    </select>
+                </div>
+                </div>
+            </div>
+
+            <!-- Campo oculto para ID -->
+            <input type="hidden" id="mod-id-cancha">
+            </form>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button" id="btn-cancelar-modificar">Cancelar</button>
+            <button class="button is-success ml-3" id="btn-guardar-modificar" disabled>Guardar cambios</button>
+        </footer>
+        </div>
+    </div>
+
+    <!-- Modal de éxito al MODIFICAR cancha (ID único) -->
+    <div id="modal-exito-modificar-cancha" class="modal">
+        <div class="modal-background" style="pointer-events: none;"></div>
+        <div class="modal-card">
+        <header class="modal-card-head has-background-success has-text-white">
+            <p class="modal-card-title">¡Cancha modificada exitosamente!</p>
+        </header>
+        <section class="modal-card-body has-text-centered">
+            <p class="is-size-5 mb-4">Los cambios se han guardado correctamente.</p>
             <p class="has-text-grey-dark">La página se recargará en unos segundos...</p>
             <progress class="progress is-small is-success mt-5" max="100"></progress>
         </section>
