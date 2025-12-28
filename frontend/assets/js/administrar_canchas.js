@@ -171,7 +171,7 @@ async function calcularNombreCancha() {
   }
 
   try {
-    const res = await fetch(`http://localhost:3000/canchas/next-number?establecimiento_id=${estId}&deporte=${encodeURIComponent(deporte)}`);
+    const res = await fetch(`http://localhost:3000/canchas/next-cancha?establecimiento_id=${estId}&deporte=${encodeURIComponent(deporte)}`);
     if (!res.ok) {
       const err = await res.json();
       console.error(err);

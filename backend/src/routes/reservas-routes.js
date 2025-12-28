@@ -12,12 +12,12 @@ import {
 
 const router = Router();
 
-// Rutas específicas
+// Rutas estáticas específicas
 router.get("/by-establecimiento", getReservasByEstablecimiento);
 router.get("/by-cancha", getReservasByCancha);
 router.get("/grilla", getReservasParaGrilla);
 
-// Rutas genéricas
+// Rutas dinámicas o generales
 router.get("/", getAllReservas);
 router.get("/:id", getReservaById);
 router.post("/", createReserva);

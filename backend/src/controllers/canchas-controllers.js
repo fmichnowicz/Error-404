@@ -458,6 +458,6 @@ const getNextCanchaNumber = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
-// Ejemplo de uso http://localhost:3000/canchas/next-number?establecimiento_id=1&deporte=Fútbol%205
+// Ejemplo de uso http://localhost:3000/canchas/next-cancha?establecimiento_id=1&deporte=Fútbol%205
 
 export { getAllCanchas, getCanchaById, createCancha, updateCancha, deleteCancha, getNextCanchaNumber };
