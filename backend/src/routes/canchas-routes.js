@@ -10,10 +10,10 @@ import {
 
 const router = Router();
 
-// Rutas específicas
-router.get('/next-number', getNextCanchaNumber);
+// Rutas estáticas específicas
+router.get('/next-cancha', getNextCanchaNumber);
 
-// Rutas genéricas
+// Rutas dinámicas o generales
 router.get("/", getAllCanchas);
 router.get("/:id", getCanchaById);
 router.post("/", createCancha);

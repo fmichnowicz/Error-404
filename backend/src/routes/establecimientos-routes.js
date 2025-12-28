@@ -9,7 +9,7 @@ import {
 
 const router = Router();
 
-// Rutas genéricas
+// Rutas dinámicas o genéricas
 router.get("/", getAllEstablecimientos);
 router.get("/:id", getEstablecimientoById);
 router.post("/", createEstablecimiento);
