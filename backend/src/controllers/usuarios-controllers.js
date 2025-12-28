@@ -40,8 +40,8 @@ const createUsuario = async (req, res) => {
     // === VALIDACIÓN DE NOMBRE ===
     if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
       errores.push('El nombre es obligatorio y no puede estar vacío');
-    } else if (nombre.trim().length > 250) {
-      errores.push('El nombre no puede exceder los 250 caracteres');
+    } else if (nombre.trim().length > 50) {
+      errores.push('El nombre no puede exceder los 50 caracteres');
     }
 
     // === VALIDACIÓN DE EMAIL (con formato correcto) ===
@@ -50,8 +50,8 @@ const createUsuario = async (req, res) => {
     } else {
       const emailTrim = email.trim().toLowerCase();
 
-      if (emailTrim.length > 255) {
-        errores.push('El email no puede exceder los 255 caracteres');
+      if (emailTrim.length > 75) {
+        errores.push('El email no puede exceder los 75 caracteres');
       } else if (!/^[\w.%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailTrim)) {
         errores.push('El formato del email es inválido. Ejemplo válido: usuario@dominio.com');
       }
@@ -74,8 +74,8 @@ const createUsuario = async (req, res) => {
     // === VALIDACIÓN DE DOMICILIO ===
     if (!domicilio || typeof domicilio !== 'string' || domicilio.trim() === '') {
       errores.push('El domicilio es obligatorio y no puede estar vacío');
-    } else if (domicilio.trim().length > 100) {
-      errores.push('El domicilio no puede exceder los 100 caracteres');
+    } else if (domicilio.trim().length > 75) {
+      errores.push('El domicilio no puede exceder los 75 caracteres');
     }
 
     // Si hay errores de formato, devolvemos antes de tocar la DB
@@ -167,8 +167,8 @@ const updateUsuario = async (req, res) => {
     if (nombre !== undefined) {
       if (typeof nombre !== 'string' || nombre.trim() === '') {
         errores.push('El nombre no puede estar vacío');
-      } else if (nombre.trim().length > 250) {
-        errores.push('El nombre no puede exceder los 250 caracteres');
+      } else if (nombre.trim().length > 50) {
+        errores.push('El nombre no puede exceder los 50 caracteres');
       } else {
         camposALimpiar.nombre = nombre.trim();
       }
@@ -179,8 +179,8 @@ const updateUsuario = async (req, res) => {
         errores.push('El email no puede estar vacío');
       } else {
         const emailTrim = email.trim().toLowerCase();
-        if (emailTrim.length > 255) {
-          errores.push('El email no puede exceder los 255 caracteres');
+        if (emailTrim.length > 75) {
+          errores.push('El email no puede exceder los 75 caracteres');
         } else if (!/^[\w.%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailTrim)) {
           errores.push('El formato del email es inválido. Ejemplo válido: usuario@dominio.com');
         } else {
@@ -212,8 +212,8 @@ const updateUsuario = async (req, res) => {
     if (domicilio !== undefined) {
       if (typeof domicilio !== 'string' || domicilio.trim() === '') {
         errores.push('El domicilio no puede estar vacío');
-      } else if (domicilio.trim().length > 100) {
-        errores.push('El domicilio no puede exceder los 100 caracteres');
+      } else if (domicilio.trim().length > 75) {
+        errores.push('El domicilio no puede exceder los 75 caracteres');
       } else {
         camposALimpiar.domicilio = domicilio.trim();
       }

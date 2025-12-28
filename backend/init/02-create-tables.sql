@@ -8,11 +8,11 @@ CREATE TABLE establecimientos (
 
 CREATE TABLE usuarios (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(250) NOT NULL UNIQUE,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(75) NOT NULL UNIQUE,
     telefono VARCHAR(30) NOT NULL UNIQUE,      -- VARCHAR permite formatos con "-" o espacios
     dni VARCHAR(20) NOT NULL UNIQUE,           -- Igual que teléfono, para DNI con letras/guiones si aplica
-    domicilio VARCHAR(100) NOT NULL
+    domicilio VARCHAR(75) NOT NULL
 );
 
 -- Tablas dependientes (hacen referencia a otras tablas)
