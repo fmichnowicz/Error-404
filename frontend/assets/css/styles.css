@@ -530,3 +530,18 @@
 #modal-agregar-cancha .panel-block.is-clickable:hover {
   background-color: #363636 !important;     /* Hover gris oscuro claro */
 }
+
+/* ===================================
+   ESTILOS NAVBAR - USUARIOS - REGISTRAR USUARIOS
+   =================================== */
+
+.contador-caracteres {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  color: #7a7a7a;
+}
+
+.contador-caracteres.maximo {
+  color: #ff3860; /* rojo de Bulma */
+  font-weight: bold;
+}

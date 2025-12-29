@@ -129,10 +129,11 @@ curl -X POST http://localhost:3000/usuarios \
 curl -X POST http://localhost:3000/usuarios \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Fernando Michnowicz",
+    "nombre": "Hola",
     "email": "chaco@hotmail.com",
     "telefono": "54 9 11 3333 3333",
-    "dni": "88345290"
+    "dni": "88345290",
+    "domicilio": "Don oriones"
   }'
 
 4) UPDATE correcto (todos los campos)
