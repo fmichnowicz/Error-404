@@ -53,6 +53,7 @@ function activarBurgerMenu() {
   }
 }
 
+// Modal para reservas
 function manejarModalReservas() {
   const trigger = document.getElementById('reservas-trigger');
   if (!trigger) return;
@@ -139,7 +140,7 @@ function manejarModalUsuarios() {
             <span class="icon"><i class="fas fa-user-edit"></i></span>
             <span>Modificar</span>
           </button>
-          <button class="button is-danger is-large m-2" disabled>
+          <button id="btn-eliminar-usuario" class="button is-danger is-large m-2">
             <span class="icon"><i class="fas fa-user-minus"></i></span>
             <span>Eliminar</span>
           </button>
@@ -178,6 +179,7 @@ function manejarModalUsuarios() {
   // Botón Registrar → cerrar gestión y abrir registro
   const btnAbrirRegistro = modal.querySelector('#btn-abrir-registro-usuario');
   btnAbrirRegistro.addEventListener('click', () => {
+
     // Cerrar modal de gestión automáticamente
     modal.classList.remove('is-active');
     modal.style.display = 'none';
@@ -192,6 +194,20 @@ function manejarModalUsuarios() {
       document.body.classList.add('is-clipped');
     }
   });
+
+  // Botón Eliminar
+  const btnEliminar = modal.querySelector('#btn-eliminar-usuario');
+  btnEliminar.addEventListener('click', () => {
+
+    // Cerrar modal de gestión
+    modal.classList.remove('is-active');
+    modal.style.display = 'none';
+    document.body.classList.remove('is-clipped');
+
+    // Abrir modal de eliminación
+    abrirModalEliminarUsuario();
+  });
+
 }
 
 // Modal de Registro de Usuario (estático)
@@ -291,6 +307,176 @@ function manejarModalRegistroUsuario() {
     } catch (error) {
       errorDiv.textContent = 'Error de conexión al servidor';
       errorDiv.style.display = 'block';
+    }
+  });
+}
+
+// Modal para eliminar usuario
+async function abrirModalEliminarUsuario() {
+  // Limpiar modal viejo si existe
+  let oldModal = document.getElementById('modal-eliminar-usuario');
+  if (oldModal) oldModal.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'modal-eliminar-usuario';
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Eliminar Usuario</p>
+        <!-- Ocultamos la cruz -->
+        <button class="delete is-large" aria-label="close" style="display: none;"></button>
+      </header>
+      <section class="modal-card-body">
+        <div class="field">
+          <label class="label">Buscar por nombre</label>
+          <div class="control">
+            <input class="input" type="text" id="filtro-nombre-eliminar" placeholder="Escribe el nombre...">
+          </div>
+        </div>
+        <div id="lista-usuarios-eliminar" class="menu mt-3" style="max-height: 200px; overflow-y: auto;"></div>
+        <div id="info-usuario-seleccionado" class="mt-5" style="display: none;">
+          <p><strong>Email:</strong> <span id="elim-email"></span></p>
+          <p><strong>Teléfono:</strong> <span id="elim-telefono"></span></p>
+          <p><strong>DNI:</strong> <span id="elim-dni"></span></p>
+          <p><strong>Domicilio:</strong> <span id="elim-domicilio"></span></p>
+          <p class="mt-3"><strong>Reservas a eliminar:</strong> <span id="elim-reservas-count" class="has-text-danger"></span></p>
+        </div>
+        <div class="field is-grouped is-grouped-centered mt-5">
+          <div class="control">
+            <button id="btn-cancelar-eliminar" class="button is-light">Cancelar</button>
+          </div>
+          <div class="control">
+            <button id="btn-confirmar-eliminar" class="button is-danger" disabled>Confirmar eliminación</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  modal.style.position = 'fixed';
+  modal.style.inset = '0';
+  modal.style.zIndex = '1989';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+
+  modal.classList.add('is-active');
+  document.body.classList.add('is-clipped');
+
+  // Cerrar solo con Cancelar
+  document.getElementById('btn-cancelar-eliminar').addEventListener('click', () => {
+    modal.remove();
+    document.body.classList.remove('is-clipped');
+  });
+
+  // Deshabilitar cierre con background
+  modal.querySelector('.modal-background').style.pointerEvents = 'none';
+
+  const filtroInput = document.getElementById('filtro-nombre-eliminar');
+  const listaUsuarios = document.getElementById('lista-usuarios-eliminar');
+  const infoUsuario = document.getElementById('info-usuario-seleccionado');
+  const btnConfirmar = document.getElementById('btn-confirmar-eliminar');
+  let usuarioSeleccionado = null;
+
+  // Fetch de usuarios
+  const usuarios = await (async () => {
+    try {
+      const res = await fetch('http://localhost:3000/usuarios');
+      if (!res.ok) throw new Error('Error al cargar usuarios');
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  })();
+
+  function filtrarYMostrarUsuarios() {
+    const query = filtroInput.value.trim().toLowerCase();
+    listaUsuarios.innerHTML = '';
+
+    if (query.length < 2) {
+      infoUsuario.style.display = 'none';
+      btnConfirmar.disabled = true;
+      return;
+    }
+
+    const coincidencias = usuarios.filter(u => u.nombre.toLowerCase().includes(query));
+
+    if (coincidencias.length === 0) {
+      listaUsuarios.innerHTML = '<p class="has-text-danger">No se encontraron usuarios</p>';
+      infoUsuario.style.display = 'none';
+      btnConfirmar.disabled = true;
+      return;
+    }
+
+    coincidencias.forEach(u => {
+      const item = document.createElement('a');
+      item.className = 'panel-block is-clickable';
+      item.textContent = u.nombre;
+      item.addEventListener('click', async () => {
+        // Actualizar el campo de búsqueda con el nombre seleccionado
+        filtroInput.value = u.nombre;
+
+        // Limpiar y ocultar la lista
+        listaUsuarios.innerHTML = '';
+        listaUsuarios.style.display = 'none';
+
+        // Mostrar info del usuario seleccionado
+        usuarioSeleccionado = u;
+        document.getElementById('elim-email').textContent = u.email;
+        document.getElementById('elim-telefono').textContent = u.telefono;
+        document.getElementById('elim-dni').textContent = u.dni;
+        document.getElementById('elim-domicilio').textContent = u.domicilio;
+
+        // Fetch de cantidad de reservas
+        try {
+          const res = await fetch(`http://localhost:3000/reservas/count/${u.id}`);
+          if (!res.ok) throw new Error('Error al contar reservas');
+          const data = await res.json();
+          const count = data.count || 0;
+          document.getElementById('elim-reservas-count').textContent = `${count} reserva${count === 1 ? '' : 's'}`;
+        } catch (err) {
+          console.error(err);
+          document.getElementById('elim-reservas-count').textContent = 'Error al contar reservas';
+        }
+
+        infoUsuario.style.display = 'block';
+        btnConfirmar.disabled = false;
+      });
+      listaUsuarios.appendChild(item);
+    });
+
+    listaUsuarios.style.display = 'block';
+  }
+
+  filtroInput.addEventListener('input', filtrarYMostrarUsuarios);
+
+  // Confirmar eliminación (sin modal adicional)
+  btnConfirmar.addEventListener('click', async () => {
+    if (!usuarioSeleccionado) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/usuarios/${usuarioSeleccionado.id}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) throw new Error('Error al eliminar');
+
+      // Mensaje de éxito
+      mostrarMensaje('Usuario eliminado exitosamente', 'success');
+
+      // Refrescar la página después de 2 segundos
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+
+      modal.remove();
+      document.body.classList.remove('is-clipped');
+    } catch (err) {
+      mostrarMensaje('Error al eliminar usuario', 'danger');
     }
   });
 }

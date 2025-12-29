@@ -776,4 +776,28 @@ const getReservasByCancha = async (req, res) => {
 };
 // Ejemplo de uso http://localhost:3000/reservas/by-cancha?cancha=2
 
-export { getAllReservas, getReservaById, createReserva, updateReserva, deleteReserva, getReservasParaGrilla, getReservasByEstablecimiento, getReservasByCancha };
+// Endpoint para contar la cantidad de reservas por usuario (usado en confirmar eliminación de usuario)
+const getReservasCountByUsuario = async (req, res) => {
+  const { usuario_id } = req.params;
+
+  if (!usuario_id || isNaN(parseInt(usuario_id))) {
+    return res.status(400).json({ error: 'usuario_id debe ser un número entero válido' });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT COUNT(*) AS count FROM reservas WHERE usuario_id = $1',
+      [usuario_id]
+    );
+
+    const count = parseInt(result.rows[0].count, 10);
+
+    res.json({ count });
+  } catch (error) {
+    console.error('Error al contar reservas por usuario:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+
+export { getAllReservas, getReservaById, createReserva, updateReserva, deleteReserva, getReservasParaGrilla, getReservasByEstablecimiento, getReservasByCancha, getReservasCountByUsuario };
