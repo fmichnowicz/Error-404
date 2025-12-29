@@ -798,6 +798,6 @@ const getReservasCountByUsuario = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
-
+// Ejemplo de uso http://localhost:3000/reservas/count/2
 
 export { getAllReservas, getReservaById, createReserva, updateReserva, deleteReserva, getReservasParaGrilla, getReservasByEstablecimiento, getReservasByCancha, getReservasCountByUsuario };

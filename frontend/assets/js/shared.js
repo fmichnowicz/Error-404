@@ -144,7 +144,7 @@ function manejarModalUsuarios() {
             <span class="icon"><i class="fas fa-user-minus"></i></span>
             <span>Eliminar</span>
           </button>
-          <button class="button is-dark is-large m-2" disabled>
+          <button id="btn-ver-usuarios" class="button is-dark is-large m-2">
             <span class="icon"><i class="fas fa-users"></i></span>
             <span>Ver</span>
           </button>
@@ -206,6 +206,12 @@ function manejarModalUsuarios() {
 
     // Abrir modal de eliminación
     abrirModalEliminarUsuario();
+  });
+
+  // Botón Ver → redirige a ver_usuarios.html
+  const btnVer = modal.querySelector('#btn-ver-usuarios');
+  btnVer.addEventListener('click', () => {
+    window.location.href = 'ver_usuarios.html';
   });
 
 }
