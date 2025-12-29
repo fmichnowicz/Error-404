@@ -40,6 +40,7 @@
                 <span class="icon is-left"><i class="fas fa-user"></i></span>
             </div>
             <p class="help">Ej: Fernando Martínez</p>
+            <p class="help contador-caracteres" id="contador-nombre">0 / 50</p>
             </div>
             <div class="field">
             <label class="label">Email <span class="has-text-danger">*</span></label>
@@ -48,6 +49,7 @@
                 <span class="icon is-left"><i class="fas fa-envelope"></i></span>
             </div>
             <p class="help">Ej: usuario@dominio.com</p>
+            <p class="help contador-caracteres" id="contador-email">0 / 75</p>
             </div>
             <div class="field">
             <label class="label">Teléfono <span class="has-text-danger">*</span></label>
@@ -55,18 +57,21 @@
                 <input class="input" type="text" id="registro-telefono" maxlength="30" placeholder="11-1234-5678" required>
                 <span class="icon is-left"><i class="fas fa-phone"></i></span>
             </div>
+            <p class="help contador-caracteres" id="contador-telefono">0 / 30</p>
             </div>
             <div class="field">
             <label class="label">DNI <span class="has-text-danger">*</span></label>
             <div class="control">
                 <input class="input" type="text" id="registro-dni" maxlength="20" required>
             </div>
+            <p class="help contador-caracteres" id="contador-dni">0 / 20</p>
             </div>
             <div class="field">
             <label class="label">Domicilio <span class="has-text-danger">*</span></label>
             <div class="control">
                 <input class="input" type="text" id="registro-domicilio" maxlength="75" required>
             </div>
+            <p class="help contador-caracteres" id="contador-domicilio">0 / 75</p>
             </div>
             <div id="error-registro" class="notification is-danger is-light mt-4" style="display: none;"></div>
             <div class="field is-grouped is-grouped-centered mt-5">

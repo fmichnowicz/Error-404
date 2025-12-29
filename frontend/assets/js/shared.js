@@ -144,7 +144,7 @@ function manejarModalUsuarios() {
             <span class="icon"><i class="fas fa-user-minus"></i></span>
             <span>Eliminar</span>
           </button>
-          <button class="button is-dark is-large m-2" disabled>
+          <button id="btn-ver-usuarios" class="button is-dark is-large m-2">
             <span class="icon"><i class="fas fa-users"></i></span>
             <span>Ver</span>
           </button>
@@ -208,6 +208,12 @@ function manejarModalUsuarios() {
     abrirModalEliminarUsuario();
   });
 
+  // Botón Ver → redirige a ver_usuarios.html
+  const btnVer = modal.querySelector('#btn-ver-usuarios');
+  btnVer.addEventListener('click', () => {
+    window.location.href = 'ver_usuarios.html';
+  });
+
 }
 
 // Modal de Registro de Usuario (estático)
@@ -250,6 +256,36 @@ function manejarModalRegistroUsuario() {
 
     btnRegistrar.disabled = !(todosLlenos && emailValido);
   }
+
+  // Contadores de caracteres
+  const contadores = {
+    nombre: { input: 'registro-nombre', contador: 'contador-nombre', max: 50 },
+    email: { input: 'registro-email', contador: 'contador-email', max: 75 },
+    telefono: { input: 'registro-telefono', contador: 'contador-telefono', max: 30 },
+    dni: { input: 'registro-dni', contador: 'contador-dni', max: 20 },
+    domicilio: { input: 'registro-domicilio', contador: 'contador-domicilio', max: 75 }
+  };
+
+  Object.values(contadores).forEach(({ input, contador, max }) => {
+    const inputEl = document.getElementById(input);
+    const contadorEl = document.getElementById(contador);
+    if (!inputEl || !contadorEl) return;
+
+    inputEl.addEventListener('input', () => {
+      const length = inputEl.value.length;
+      contadorEl.textContent = `${length} / ${max}`;
+      if (length >= max) {
+        contadorEl.classList.add('maximo');
+      } else {
+        contadorEl.classList.remove('maximo');
+      }
+    });
+
+    // Inicializar
+    const initialLength = inputEl.value.length;
+    contadorEl.textContent = `${initialLength} / ${max}`;
+    if (initialLength >= max) contadorEl.classList.add('maximo');
+  });
 
   form.querySelectorAll('input').forEach(input => {
     input.addEventListener('input', validarFormularioRegistro);
