@@ -7,7 +7,8 @@ import {
     deleteReserva,
     getReservasParaGrilla,
     getReservasByEstablecimiento,
-    getReservasByCancha
+    getReservasByCancha,
+    getReservasCountByUsuario
 } from "../controllers/reservas-controllers.js"
 
 const router = Router();
@@ -18,10 +19,12 @@ router.get("/by-cancha", getReservasByCancha);
 router.get("/grilla", getReservasParaGrilla);
 
 // Rutas dinámicas o generales
+router.get('/count/:usuario_id', getReservasCountByUsuario);
 router.get("/", getAllReservas);
 router.get("/:id", getReservaById);
 router.post("/", createReserva);
 router.put("/:id", updateReserva);
 router.delete("/:id", deleteReserva);
+
 
 export default router;
