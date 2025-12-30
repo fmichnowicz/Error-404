@@ -605,7 +605,7 @@ function renderizarPagina(page) {
     const cardHTML = `
       <div class="column is-full">
         <div class="card mb-5 shadow">
-          <div class="card-content p-0">
+          <div class="card-content p-0 is-rounded">
             <div class="columns is-gapless">
               <div class="column is-one-third has-background-primary has-text-white p-5 
                 is-flex is-flex-direction-column is-justify-content-center is-align-items-center 
