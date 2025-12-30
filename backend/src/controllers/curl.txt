@@ -129,7 +129,7 @@ curl -X POST http://localhost:3000/usuarios \
 curl -X POST http://localhost:3000/usuarios \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Juan Pérez H 2",
+    "nombre": "María",
     "email": "juan.perez@gmail.com",
     "telefono": "11-3456-7890",
     "dni": "30123456",
@@ -140,21 +140,21 @@ curl -X POST http://localhost:3000/usuarios \
 curl -X PUT http://localhost:3000/usuarios/34 \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Fernando Michnowicz 2",
-    "email": "chaco@hotmail.com",
+    "nombre": "Ferchu Loco",
+    "email": "chaco@hotmail.com.ar",
     "telefono": "54 9 11 3333 3333",
     "dni": "88345290",
     "domicilio": "Calle falsa 123"
   }' -i
 
 5) UPDATE para testeo (copiar el UPDATE de arriba y eliminarle/actualizarle campos)
-curl -X PUT http://localhost:3000/usuarios/34 \
+curl -X PUT http://localhost:3000/usuarios/2 \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Ferchu Loco",
-    "email": "chaco@hotmail.com.ar",
-    "telefono": "54 9 11 3333 3333",
-    "dni": "88345290",
+    "nombre": "María González",
+    "email": "maria.gonzalez@hotmail.com",
+    "telefono": "11-4567-8901",
+    "dni": "32123457",
     "domicilio": "Calle falsa 123"
   }' -i
 
