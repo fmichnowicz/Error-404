@@ -257,34 +257,33 @@ function manejarModalRegistroUsuario() {
     btnRegistrar.disabled = !(todosLlenos && emailValido);
   }
 
-  // Contadores de caracteres
-  const contadores = {
-    nombre: { input: 'registro-nombre', contador: 'contador-nombre', max: 50 },
-    email: { input: 'registro-email', contador: 'contador-email', max: 75 },
-    telefono: { input: 'registro-telefono', contador: 'contador-telefono', max: 30 },
-    dni: { input: 'registro-dni', contador: 'contador-dni', max: 20 },
-    domicilio: { input: 'registro-domicilio', contador: 'contador-domicilio', max: 75 }
-  };
+  // === CONTADORES DE CARACTERES EN TIEMPO REAL ===
+  const contadoresConfig = [
+    { input: 'registro-nombre', contador: 'contador-nombre', max: 50 },
+    { input: 'registro-email', contador: 'contador-email', max: 75 },
+    { input: 'registro-telefono', contador: 'contador-telefono', max: 30 },
+    { input: 'registro-dni', contador: 'contador-dni', max: 20 },
+    { input: 'registro-domicilio', contador: 'contador-domicilio', max: 75 }
+  ];
 
-  Object.values(contadores).forEach(({ input, contador, max }) => {
+  contadoresConfig.forEach(({ input, contador, max }) => {
     const inputEl = document.getElementById(input);
     const contadorEl = document.getElementById(contador);
+
     if (!inputEl || !contadorEl) return;
 
-    inputEl.addEventListener('input', () => {
-      const length = inputEl.value.length;
-      contadorEl.textContent = `${length} / ${max}`;
-      if (length >= max) {
+    const actualizar = () => {
+      const len = inputEl.value.length;
+      contadorEl.textContent = `${len} / ${max}`;
+      if (len >= max) {
         contadorEl.classList.add('maximo');
       } else {
         contadorEl.classList.remove('maximo');
       }
-    });
+    };
 
-    // Inicializar
-    const initialLength = inputEl.value.length;
-    contadorEl.textContent = `${initialLength} / ${max}`;
-    if (initialLength >= max) contadorEl.classList.add('maximo');
+    inputEl.addEventListener('input', actualizar);
+    actualizar(); // Inicial
   });
 
   form.querySelectorAll('input').forEach(input => {
@@ -316,18 +315,29 @@ function manejarModalRegistroUsuario() {
       const result = await response.json();
 
       if (!response.ok) {
-        errorDiv.textContent = result.error || 
-          (result.detalles ? result.detalles.join('. ') : 'Error al registrar');
+        let mensajeError = 'Error al registrar usuario';
+
+        // Si el backend nos da detalles claros (como en duplicados), los usamos directamente
+        if (result.detalles) {
+          if (Array.isArray(result.detalles)) {
+            mensajeError = result.detalles.join('. ');
+          } else {
+            mensajeError = result.detalles;
+          }
+        } else if (result.error) {
+          mensajeError = result.error;
+        }
+
+        errorDiv.textContent = mensajeError;
         errorDiv.style.display = 'block';
         return;
       }
 
-      // Cerrar modal antes de mostrar mensajes
+      // Éxito
       modal.classList.remove('is-active');
       modal.style.display = 'none';
       document.body.classList.remove('is-clipped');
 
-      // Éxito - mensajes con delays
       mostrarMensaje('¡Usuario registrado exitosamente!', 'success');
 
       setTimeout(() => {
@@ -340,6 +350,17 @@ function manejarModalRegistroUsuario() {
 
       form.reset();
       btnRegistrar.disabled = true;
+
+      // Resetear contadores
+      document.querySelectorAll('.contador-caracteres').forEach(el => {
+        const max = el.id.includes('nombre') ? 50 :
+                    el.id.includes('email') ? 75 :
+                    el.id.includes('telefono') ? 30 :
+                    el.id.includes('dni') ? 20 : 75;
+        el.textContent = `0 / ${max}`;
+        el.classList.remove('maximo');
+      });
+
     } catch (error) {
       errorDiv.textContent = 'Error de conexión al servidor';
       errorDiv.style.display = 'block';
