@@ -60,50 +60,69 @@ async function cargarDatos() {
   }
 }
 
+// Variables globales para referencias del modal (al inicio del archivo, con las otras)
+let modalEliminarRefs = {
+    modal: null,
+    nombre: null,
+    canchas: null,
+    reservas: null,
+    usuarios: null,
+    texto: null
+};
+
 function inicializarModalEliminar() {
-  const modal = document.getElementById('modal-eliminar');
-  if (!modal) {
-    console.error('Modal de eliminación no encontrado');
-    return;
-  }
-
-  const btnCancelar = document.getElementById('btn-cancelar');
-  const btnEliminarDef = document.getElementById('btn-eliminar-definitivo');
-
-  const cerrarModal = () => {
-    modal.classList.remove('is-active');
-    idEstablecimientoAEliminar = null;
-    document.getElementById('modal-nombre').textContent = '';
-    document.getElementById('modal-canchas').textContent = '0';
-    document.getElementById('reservas-activas').textContent = '0';
-    document.getElementById('modal-usuarios').textContent = '0';
-    document.getElementById('modal-texto').innerHTML = '';
-  };
-
-  btnCancelar.addEventListener('click', cerrarModal);
-
-  btnEliminarDef.addEventListener('click', async () => {
-    if (!idEstablecimientoAEliminar) return;
-
-    try {
-      const response = await fetch(`http://localhost:3000/establecimientos/${idEstablecimientoAEliminar}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        mostrarModalExito();
-        cerrarModal();
-        setTimeout(() => {
-          location.reload();
-        }, 2000);
-      } else {
-        alert('Error al eliminar el establecimiento');
-      }
-    } catch (error) {
-      console.error('Error al eliminar:', error);
-      alert('Error de conexión');
+    modalEliminarRefs.modal = document.getElementById('modal-eliminar');
+    if (!modalEliminarRefs.modal) {
+        console.error('Modal de eliminación no encontrado');
+        return;
     }
-  });
+
+    modalEliminarRefs.nombre = document.getElementById('modal-nombre');
+    modalEliminarRefs.canchas = document.getElementById('modal-canchas');
+    modalEliminarRefs.reservas = document.getElementById('reservas-activas');
+    modalEliminarRefs.usuarios = document.getElementById('modal-usuarios-impactados');
+    modalEliminarRefs.texto = document.getElementById('modal-texto');
+
+    const btnCancelar = document.getElementById('btn-cancelar');
+    const btnEliminarDef = document.getElementById('btn-eliminar-definitivo');
+
+    const cerrarModal = () => {
+        modalEliminarRefs.modal.classList.remove('is-active');
+        idEstablecimientoAEliminar = null;
+
+        // Limpiamos siempre con las referencias seguras
+        if (modalEliminarRefs.nombre) modalEliminarRefs.nombre.textContent = '';
+        if (modalEliminarRefs.canchas) modalEliminarRefs.canchas.textContent = '0';
+        if (modalEliminarRefs.reservas) modalEliminarRefs.reservas.textContent = '0';
+        if (modalEliminarRefs.usuarios) modalEliminarRefs.usuarios.textContent = '0';
+        if (modalEliminarRefs.texto) modalEliminarRefs.texto.innerHTML = '¿Estás seguro de eliminar el establecimiento?';
+    };
+
+    btnCancelar.addEventListener('click', cerrarModal);
+
+    // Cerrar también con click en fondo
+    modalEliminarRefs.modal.querySelector('.modal-background').addEventListener('click', cerrarModal);
+
+    btnEliminarDef.addEventListener('click', async () => {
+        if (!idEstablecimientoAEliminar) return;
+
+        try {
+            const response = await fetch(`http://localhost:3000/establecimientos/${idEstablecimientoAEliminar}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                mostrarModalExito();
+                cerrarModal();
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                alert('Error al eliminar el establecimiento');
+            }
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+            alert('Error de conexión');
+        }
+    });
 }
 
 function inicializarModalExito() {
@@ -142,41 +161,56 @@ function mostrarModalExitoEditar() {
 }
 
 async function mostrarModalEliminar(id) {
-  idEstablecimientoAEliminar = id;
+    idEstablecimientoAEliminar = id;
 
-  const est = allEstablecimientos.find(e => e.id === id);
-  if (!est) {
-    alert('No se encontró el establecimiento');
-    return;
-  }
-
-  const canchas = allCanchas.filter(c => c.establecimiento_id === id);
-  const numCanchas = canchas.length;
-
-  let numReservas = 0;
-  let numUsuarios = 0;
-
-  try {
-    const res = await fetch(`http://localhost:3000/reservas/by-establecimiento?establecimiento=${id}`);
-    if (res.ok) {
-      const reservas = await res.json();
-      numReservas = reservas.length;
-      const usuariosUnicos = new Set(reservas.map(r => r.usuario_id));
-      numUsuarios = usuariosUnicos.size;
+    const est = allEstablecimientos.find(e => e.id === id);
+    if (!est) {
+        alert('No se encontró el establecimiento');
+        return;
     }
-  } catch (error) {
-    console.error('Error al obtener reservas:', error);
-  }
 
-  const modal = document.getElementById('modal-eliminar');
-  if (modal) {
-    modal.classList.add('is-active');
-    document.getElementById('modal-nombre').textContent = est.nombre;
-    document.getElementById('modal-canchas').textContent = numCanchas;
-    document.getElementById('reservas-activas').textContent = numReservas;
-    document.getElementById('modal-usuarios').textContent = numUsuarios;
-    document.getElementById('modal-texto').innerHTML = `¿Estás seguro de eliminar el establecimiento <strong>${est.nombre}</strong>?`;
-  }
+    const canchas = allCanchas.filter(c => c.establecimiento_id === id);
+    const numCanchas = canchas.length;
+
+    let numReservas = 0;
+    let numUsuarios = 0;
+
+    try {
+        const res = await fetch(`http://localhost:3000/reservas/by-establecimiento?establecimiento=${id}`);
+        if (res.ok) {
+            const reservas = await res.json();
+            numReservas = reservas.length;
+            const usuariosUnicos = new Set(reservas.map(r => r.usuario_id));
+            numUsuarios = usuariosUnicos.size;
+        }
+    } catch (error) {
+        console.error('Error al obtener reservas:', error);
+    }
+
+    // Usamos las referencias guardadas
+    if (modalEliminarRefs.modal) {
+        modalEliminarRefs.modal.classList.add('is-active');
+    }
+
+    if (modalEliminarRefs.nombre) {
+        modalEliminarRefs.nombre.textContent = est.nombre;
+    }
+
+    if (modalEliminarRefs.canchas) {
+        modalEliminarRefs.canchas.textContent = numCanchas;
+    }
+
+    if (modalEliminarRefs.reservas) {
+        modalEliminarRefs.reservas.textContent = numReservas;
+    }
+
+    if (modalEliminarRefs.usuarios) {
+        modalEliminarRefs.usuarios.textContent = numUsuarios;
+    }
+
+    if (modalEliminarRefs.texto) {
+        modalEliminarRefs.texto.innerHTML = `¿Estás seguro de eliminar el establecimiento <strong>${est.nombre}</strong>?`;
+    }
 }
 
 function inicializarModalEditar() {
