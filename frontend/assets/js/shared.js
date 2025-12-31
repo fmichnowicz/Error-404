@@ -1,5 +1,14 @@
 // frontend/assets/js/shared.js
 
+function normalizeString(str) {
+    if (!str) return '';
+    return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
 function mostrarMensaje(texto, tipo = 'success') {
   const existente = document.querySelector('.mensaje-flotante');
   if (existente) existente.remove();
@@ -462,66 +471,61 @@ async function abrirModalEliminarUsuario() {
     }
   })();
 
-  function filtrarYMostrarUsuarios() {
-    const query = filtroInput.value.trim().toLowerCase();
+function filtrarYMostrarUsuarios() {
+    const query = normalizeString(filtroInput.value.trim());
+
     listaUsuarios.innerHTML = '';
 
     if (query.length < 2) {
-      infoUsuario.style.display = 'none';
-      btnConfirmar.disabled = true;
-      return;
+        infoUsuario.style.display = 'none';
+        btnConfirmar.disabled = true;
+        return;
     }
 
-    const coincidencias = usuarios.filter(u => u.nombre.toLowerCase().includes(query));
+    const coincidencias = usuarios.filter(u => normalizeString(u.nombre).includes(query));
 
     if (coincidencias.length === 0) {
-      listaUsuarios.innerHTML = '<p class="has-text-danger">No se encontraron usuarios</p>';
-      infoUsuario.style.display = 'none';
-      btnConfirmar.disabled = true;
-      return;
+        listaUsuarios.innerHTML = '<p class="has-text-danger">No se encontraron usuarios</p>';
+        infoUsuario.style.display = 'none';
+        btnConfirmar.disabled = true;
+        return;
     }
 
     coincidencias.forEach(u => {
-      const item = document.createElement('a');
-      item.className = 'panel-block is-clickable';
-      item.textContent = u.nombre;
-      item.addEventListener('click', async () => {
-        // Actualizar el campo de búsqueda con el nombre seleccionado
-        filtroInput.value = u.nombre;
+        const item = document.createElement('a');
+        item.className = 'panel-block is-clickable';
+        item.textContent = u.nombre;
+        item.addEventListener('click', async () => {
+            filtroInput.value = u.nombre;
+            listaUsuarios.innerHTML = '';
+            listaUsuarios.style.display = 'none';
 
-        // Limpiar y ocultar la lista
-        listaUsuarios.innerHTML = '';
-        listaUsuarios.style.display = 'none';
+            usuarioSeleccionado = u;
+            document.getElementById('elim-email').textContent = u.email;
+            document.getElementById('elim-telefono').textContent = u.telefono;
+            document.getElementById('elim-dni').textContent = u.dni;
+            document.getElementById('elim-domicilio').textContent = u.domicilio;
 
-        // Mostrar info del usuario seleccionado
-        usuarioSeleccionado = u;
-        document.getElementById('elim-email').textContent = u.email;
-        document.getElementById('elim-telefono').textContent = u.telefono;
-        document.getElementById('elim-dni').textContent = u.dni;
-        document.getElementById('elim-domicilio').textContent = u.domicilio;
+            try {
+                const res = await fetch(`http://localhost:3000/reservas/count/${u.id}`);
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                const count = data.count || 0;
+                document.getElementById('elim-reservas-count').textContent = `${count} reserva${count === 1 ? '' : 's'}`;
+            } catch (err) {
+                document.getElementById('elim-reservas-count').textContent = 'Error al contar reservas';
+            }
 
-        // Fetch de cantidad de reservas
-        try {
-          const res = await fetch(`http://localhost:3000/reservas/count/${u.id}`);
-          if (!res.ok) throw new Error('Error al contar reservas');
-          const data = await res.json();
-          const count = data.count || 0;
-          document.getElementById('elim-reservas-count').textContent = `${count} reserva${count === 1 ? '' : 's'}`;
-        } catch (err) {
-          console.error(err);
-          document.getElementById('elim-reservas-count').textContent = 'Error al contar reservas';
-        }
-
-        infoUsuario.style.display = 'block';
-        btnConfirmar.disabled = false;
-      });
-      listaUsuarios.appendChild(item);
+            infoUsuario.style.display = 'block';
+            btnConfirmar.disabled = false;
+        });
+        listaUsuarios.appendChild(item);
     });
 
     listaUsuarios.style.display = 'block';
-  }
+}
 
-  filtroInput.addEventListener('input', filtrarYMostrarUsuarios);
+filtroInput.addEventListener('input', filtrarYMostrarUsuarios);
 
   // Confirmar eliminación (sin modal adicional)
   btnConfirmar.addEventListener('click', async () => {
