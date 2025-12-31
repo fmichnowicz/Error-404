@@ -561,80 +561,43 @@ const deleteReserva = async (req, res) => {
 
         const reservaId = parseInt(id);
         if (isNaN(reservaId) || reservaId <= 0) {
-        return res.status(400).json({
-            error: 'ID de reserva inválido',
-            detalles: 'El ID debe ser un número entero positivo'
-        });
+            return res.status(400).json({
+                error: 'ID de reserva inválido',
+                detalles: 'El ID debe ser un número entero positivo'
+            });
         }
 
-        // Obtener la reserva para validar fecha/hora y devolver datos
-        const { rows: reservaRows } = await pool.query(
-        `SELECT 
-            id,
-            cancha_id,
-            usuario_id,
-            fecha_reserva,
-            reserva_hora_inicio,
-            reserva_hora_fin
-        FROM reservas 
-        WHERE id = $1`,
-        [reservaId]
-        );
-
-        if (reservaRows.length === 0) {
-        return res.status(404).json({
-            error: 'Reserva no encontrada',
-            detalles: `No existe una reserva con id ${reservaId}`
-        });
-        }
-
-        const reserva = reservaRows[0];
-
-        // === VALIDAR QUE LA RESERVA AÚN NO HAYA COMENZADO ===
-        const ahora = new Date(); // Fecha y hora actual del servidor
-
-        const inicioReservaDate = new Date(
-        `${reserva.fecha_reserva.toISOString().split('T')[0]}T${reserva.reserva_hora_inicio}`
-        );
-
-        if (inicioReservaDate <= ahora) {
-        return res.status(403).json({
-            error: 'No se puede eliminar una reserva que ya comenzó o pasó',
-            detalles: `La reserva estaba programada para el ${reserva.fecha_reserva} a las ${reserva.reserva_hora_inicio} y ya no se puede cancelar`
-        });
-        }
-
-        // === ELIMINAR LA RESERVA ===
+        // Eliminamos directamente y obtenemos los datos con RETURNING
         const deleteQuery = `
-        DELETE FROM reservas
-        WHERE id = $1
-        RETURNING *;
+            DELETE FROM reservas
+            WHERE id = $1
+            RETURNING id, cancha_id, usuario_id, fecha_reserva, 
+                      reserva_hora_inicio, reserva_hora_fin, monto_pagado;
         `;
 
         const { rows } = await pool.query(deleteQuery, [reservaId]);
 
-        // (En teoría no debería pasar porque ya validamos existencia, pero por seguridad)
         if (rows.length === 0) {
-        return res.status(404).json({
-            error: 'Reserva no encontrada',
-            detalles: `No existe una reserva con id ${reservaId}`
-        });
+            return res.status(404).json({
+                error: 'Reserva no encontrada',
+                detalles: `No existe una reserva con id ${reservaId}`
+            });
         }
 
         const reservaEliminada = rows[0];
 
         res.status(200).json({
-        message: 'Reserva eliminada exitosamente',
-        reserva: {
-            id: reservaEliminada.id,
-            cancha_id: reservaEliminada.cancha_id,
-            usuario_id: reservaEliminada.usuario_id,
-            fecha_reserva: reservaEliminada.fecha_reserva,
-            reserva_hora_inicio: reservaEliminada.reserva_hora_inicio,
-            reserva_hora_fin: reservaEliminada.reserva_hora_fin,
-            monto_pagado: reservaEliminada.monto_pagado
-        },
-        detalles: `Se canceló la reserva del ${reservaEliminada.fecha_reserva} de ${reservaEliminada.reserva_hora_inicio} a ${reservaEliminada.reserva_hora_fin}`
+            message: 'Reserva eliminada exitosamente',
+            reserva: {
+                id: reservaEliminada.id,
+                cancha_id: reservaEliminada.cancha_id,
+                usuario_id: reservaEliminada.usuario_id,
+                fecha_reserva: reservaEliminada.fecha_reserva,
+                reserva_hora_inicio: reservaEliminada.reserva_hora_inicio,
+                reserva_hora_fin: reservaEliminada.reserva_hora_fin,
+                monto_pagado: reservaEliminada.monto_pagado
+            },
+            detalles: `Se eliminó la reserva del ${reservaEliminada.fecha_reserva} de ${reservaEliminada.reserva_hora_inicio} a ${reservaEliminada.reserva_hora_fin}`
         });
 
     } catch (error) {

@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modal) {
       modal.classList.add('is-active');
       // Inicializar contadores en 0 y deshabilitar botón
-      document.getElementById('contador-nombre').textContent = '0';
+      document.getElementById('contador-nombre-establecimientos').textContent = '0';
       document.getElementById('contador-barrio').textContent = '0';
       document.getElementById('contador-torneo').textContent = '0';
       document.getElementById('btn-crear-establecimiento').disabled = true;
@@ -334,7 +334,7 @@ function inicializarModalAgregar() {
   const inputBarrio = document.getElementById('agregar-barrio');
   const inputTorneo = document.getElementById('agregar-torneo');
 
-  const contadorNombre = document.getElementById('contador-nombre');
+  const contadorNombre = document.getElementById('contador-nombre-establecimientos');
   const contadorBarrio = document.getElementById('contador-barrio');
   const contadorTorneo = document.getElementById('contador-torneo');
 

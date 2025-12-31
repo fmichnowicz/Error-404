@@ -325,90 +325,92 @@ function cambiarPagina(nuevaPagina) {
 }
 
 function mostrarReservas(reservas) {
-  const lista = document.getElementById('lista-reservas');
-  const sinReservas = document.getElementById('sin-reservas');
+    const lista = document.getElementById('lista-reservas');
+    const sinReservas = document.getElementById('sin-reservas');
 
-  lista.innerHTML = '';
+    lista.innerHTML = '';
 
-  if (reservas.length === 0) {
-    sinReservas.style.display = 'block';
-    return;
-  }
+    if (reservas.length === 0) {
+        sinReservas.style.display = 'block';
+        return;
+    }
 
-  sinReservas.style.display = 'none';
+    sinReservas.style.display = 'none';
 
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
 
-  reservas.forEach(reserva => {
-    const cancha = allCanchas.find(c => c.id == reserva.cancha_id);
-    const establecimiento = cancha ? allEstablecimientos.find(e => e.id == cancha.establecimiento_id) : null;
-    const usuario = allUsuarios.find(u => u.id == reserva.usuario_id);
+    reservas.forEach(reserva => {
+        const cancha = allCanchas.find(c => c.id == reserva.cancha_id);
+        const establecimiento = cancha ? allEstablecimientos.find(e => e.id == cancha.establecimiento_id) : null;
+        const usuario = allUsuarios.find(u => u.id == reserva.usuario_id);
 
-    const [day, month, year] = reserva.fecha_reserva.split('/');
-    const fechaReserva = new Date(year, month - 1, day);
-    fechaReserva.setHours(0, 0, 0, 0);
+        const [day, month, year] = reserva.fecha_reserva.split('/');
+        const fechaReserva = new Date(year, month - 1, day);
+        fechaReserva.setHours(0, 0, 0, 0);
 
-    const fechaFormateada = fechaReserva.toLocaleDateString('es-AR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+        const fechaFormateada = fechaReserva.toLocaleDateString('es-AR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
 
-    const horaInicio = reserva.reserva_hora_inicio.slice(0, 5);
-    const horaFin = reserva.reserva_hora_fin.slice(0, 5);
+        const horaInicio = reserva.reserva_hora_inicio.slice(0, 5);
+        const horaFin = reserva.reserva_hora_fin.slice(0, 5);
 
-    const reservaPasada = fechaReserva <= hoy;
+        const reservaPasada = fechaReserva <= hoy;
 
-    const card = document.createElement('div');
-    card.className = 'column is-full';
+        const card = document.createElement('div');
+        card.className = 'column is-full';
 
-    card.innerHTML = `
-      <div class="card mb-5">
+        card.innerHTML = `
+        <div class="card mb-5">
         <div class="card-content">
-          <div class="content">
-            <p class="title is-4">${cancha?.nombre_cancha || 'Cancha desconocida'}</p>
-            <p class="subtitle is-6">
-              ${establecimiento?.nombre || 'Establecimiento desconocido'} • ${cancha?.deporte || ''}
-            </p>
-            <p><strong>Usuario:</strong> ${usuario?.nombre || 'Desconocido'} (${usuario?.email || ''})</p>
-            <p><strong>Fecha:</strong> ${fechaFormateada}</p>
-            <p><strong>Horario:</strong> ${horaInicio} a ${horaFin} hs</p>
-            <p><strong>Total pagado:</strong> $${Number(reserva.monto_pagado).toLocaleString('es-AR')}</p>
-            ${reservaPasada ? '<p class="has-text-danger mt-4"><strong>No se puede modificar ni cancelar (reserva de hoy o pasada)</strong></p>' : ''}
-          </div>
-
-          <div class="has-text-centered mt-5">
-            <button class="button is-warning mb-3 btn-reagendar" data-id="${reserva.id}" ${reservaPasada ? 'disabled title="No se puede reagendar reservas de hoy o pasadas"' : ''}>
-              <span class="icon"><i class="fas fa-calendar-alt"></i></span>
-              <span>Reagendar</span>
-            </button>
-            <button class="button is-danger btn-cancelar ml-3" data-id="${reserva.id}" ${reservaPasada ? 'disabled title="No se puede cancelar reservas de hoy o pasadas"' : ''}>
-              <span class="icon"><i class="fas fa-trash"></i></span>
-              <span>Cancelar</span>
-            </button>
-          </div>
+        <div class="content">
+        <p class="title is-4">${cancha?.nombre_cancha || 'Cancha desconocida'}</p>
+        <p class="subtitle is-6">
+        ${establecimiento?.nombre || 'Establecimiento desconocido'} • ${cancha?.deporte || ''}
+        </p>
+        <p><strong>Usuario:</strong> ${usuario?.nombre || 'Desconocido'} (${usuario?.email || ''})</p>
+        <p><strong>Fecha:</strong> ${fechaFormateada}</p>
+        <p><strong>Horario:</strong> ${horaInicio} a ${horaFin} hs</p>
+        <p><strong>Total pagado:</strong> $${Number(reserva.monto_pagado).toLocaleString('es-AR')}</p>
+        ${reservaPasada ? '<p class="has-text-danger mt-4"><strong>No se puede reagendar (reserva de hoy o pasada)</strong></p>' : ''}
         </div>
-      </div>
-    `;
 
-    lista.appendChild(card);
-  });
+        <div class="has-text-centered mt-5">
+        <button class="button is-warning mb-3 btn-reagendar" data-id="${reserva.id}" ${reservaPasada ? 'disabled title="No se puede reagendar reservas de hoy o pasadas"' : ''}>
+        <span class="icon"><i class="fas fa-calendar-alt"></i></span>
+        <span>Reagendar</span>
+        </button>
+        <button class="button is-danger btn-cancelar ml-3" data-id="${reserva.id}">
+        <span class="icon"><i class="fas fa-trash"></i></span>
+        <span>Cancelar</span>
+        </button>
+        </div>
+        </div>
+        </div>
+        `;
 
-  document.querySelectorAll('.btn-cancelar:not([disabled])').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const id = e.currentTarget.dataset.id;
-      cancelarReserva(id);
+        lista.appendChild(card);
     });
-  });
 
-  document.querySelectorAll('.btn-reagendar:not([disabled])').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const id = e.currentTarget.dataset.id;
-      reagendarReserva(id);
+    // Botón Cancelar: siempre habilitado → seleccionamos TODOS
+    document.querySelectorAll('.btn-cancelar').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.dataset.id;
+            cancelarReserva(id);
+        });
     });
-  });
+
+    // Botón Reagendar: solo los que no están disabled
+    document.querySelectorAll('.btn-reagendar:not([disabled])').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.dataset.id;
+            reagendarReserva(id);
+        });
+    });
 }
 
 function cancelarReserva(id) {

@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
   const container = document.getElementById('usuarios-container');
-  const filtroInput = document.getElementById('filtro-nombre');
+  const filtroInput = document.getElementById('filtro-nombre-ver-usuarios');
   const paginacion = document.getElementById('paginacion');
 
   let usuarios = [];

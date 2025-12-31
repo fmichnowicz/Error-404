@@ -293,7 +293,7 @@ function inicializarModalModificarCancha() {
     if (e.key === 'Escape') e.preventDefault();
   });
 
-  document.getElementById('btn-cancelar-modificar').addEventListener('click', () => {
+  document.getElementById('btn-cancelar-modificar-administrar-canchas').addEventListener('click', () => {
     modal.classList.remove('is-active');
     idCanchaAModificar = null;
   });
