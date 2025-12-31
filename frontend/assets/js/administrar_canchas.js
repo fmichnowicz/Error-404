@@ -384,7 +384,7 @@ async function guardarModificacion() {
 // =============================================
 
 async function cargarCanchas() {
-  const loading = document.getElementById('loading-message');
+  const loading = document.getElementById('loading-message-canchas');
   const noCanchas = document.getElementById('no-canchas-message');
 
   try {
@@ -443,7 +443,7 @@ function inicializarFiltros() {
   const inputEst = document.getElementById('filtro-establecimiento');
   const inputDep = document.getElementById('filtro-deporte');
 
-  const sugEst = document.getElementById('sugerencias-establecimiento');
+  const sugEst = document.getElementById('sugerencias-establecimiento-canchas');
   const sugDep = document.getElementById('sugerencias-deporte');
 
   inputEst.addEventListener('input', () => {

@@ -1,4 +1,4 @@
-// ver_usuarios.js
+// frontend/assets/js/ver_usuarios.js
 
 document.addEventListener('DOMContentLoaded', async () => {
   const container = document.getElementById('usuarios-container');

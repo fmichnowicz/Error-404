@@ -1,3 +1,5 @@
+// frontend/assets/js/index.js
+
 //Menú desplegable en index-FAQ en sección preguntas frecuentes 
 document.addEventListener('DOMContentLoaded', function () {
     const toggles = document.querySelectorAll('.boton-desplegar');
