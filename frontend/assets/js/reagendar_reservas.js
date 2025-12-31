@@ -19,20 +19,26 @@ let reservaOriginal = null;
 
 const reservaId = localStorage.getItem('reservaAReagendar');
 
-// Función para ordenar: establecimiento → deporte → nombre_cancha
+// Función para ordenar: establecimiento → deporte → nombre_cancha (con orden numérico natural)
 function ordenarCanchas(canchas) {
   return canchas.sort((a, b) => {
+    // 1. Por establecimiento (alfabético, ignorando acentos y mayúsculas)
     const estA = normalizeString(a.nombre_establecimiento);
     const estB = normalizeString(b.nombre_establecimiento);
     if (estA !== estB) return estA.localeCompare(estB);
 
-    const depA = normalizeString(a.deporte);
-    const depB = normalizeString(b.deporte);
-    if (depA !== depB) return depA.localeCompare(depB);
+    // 2. Por deporte con ordenamiento NATURAL (Fútbol 4 < Fútbol 8 < Fútbol 11)
+    const depComparison = a.deporte.localeCompare(b.deporte, undefined, {
+      numeric: true,
+      sensitivity: 'base'  // ignora acentos y mayúsculas
+    });
+    if (depComparison !== 0) return depComparison;
 
-    const nomA = normalizeString(a.nombre_cancha);
-    const nomB = normalizeString(b.nombre_cancha);
-    return nomA.localeCompare(nomB, undefined, { numeric: true });
+    // 3. Por nombre de cancha con ordenamiento natural (Cancha 1, 2, ..., 10, 11)
+    return a.nombre_cancha.localeCompare(b.nombre_cancha, undefined, {
+      numeric: true,
+      sensitivity: 'base'
+    });
   });
 }
 

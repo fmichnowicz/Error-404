@@ -413,17 +413,21 @@ async function cargarCanchas() {
 
 function ordenarCanchas(canchas) {
   return canchas.sort((a, b) => {
+    // 1. Primero por establecimiento (alfabético normalizado)
     const estA = normalizeString(a.nombre_establecimiento);
     const estB = normalizeString(b.nombre_establecimiento);
     if (estA !== estB) return estA.localeCompare(estB);
 
-    const depA = normalizeString(a.deporte);
-    const depB = normalizeString(b.deporte);
-    if (depA !== depB) return depA.localeCompare(depB);
+    // 2. Luego por deporte con ordenamiento NATURAL (reconoce números)
+    const depA = a.deporte;  // Usamos el original, no normalizado (mantiene acentos y mayúsculas correctas para mostrar)
+    const depB = b.deporte;
+    const depComparison = depA.localeCompare(depB, undefined, { numeric: true, sensitivity: 'base' });
+    if (depComparison !== 0) return depComparison;
 
-    const nomA = normalizeString(a.nombre_cancha);
-    const nomB = normalizeString(b.nombre_cancha);
-    return nomA.localeCompare(nomB, undefined, { numeric: true });
+    // 3. Por último por nombre de cancha con ordenamiento natural
+    const nomA = a.nombre_cancha;
+    const nomB = b.nombre_cancha;
+    return nomA.localeCompare(nomB, undefined, { numeric: true, sensitivity: 'base' });
   });
 }
 
