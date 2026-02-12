@@ -162,11 +162,11 @@ function manejarModalRegistroUsuario() {
       mostrarMensaje('¡Usuario registrado exitosamente!', 'success');
 
       setTimeout(() => {
-        mostrarMensaje('Ahora ya puedes crear reservas', 'info');
+        mostrarMensaje('Redirigiendo a gestión de usuarios...', 'info');
       }, 1000);
 
       setTimeout(() => {
-        window.location.href = 'crear_reservas.html';
+        window.location.href = 'usuarios.html';
       }, 2000);
 
       // Limpiar

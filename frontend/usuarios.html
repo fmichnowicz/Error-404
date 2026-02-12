@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <div id="navbar-container"></div>
+
+    <section class="section">
+        <div class="container">
+            <div class="content">
+                <h1 class="title is-2">
+                    <span class="icon"><i class="fas fa-users"></i></span>
+                    <span>Gestión de Usuarios</span>
+                </h1>
+
+                <div class="tabs is-boxed is-toggle">
+                    <ul>
+                        <li class="is-active" data-tab="ver">
+                            <a>
+                                <span class="icon"><i class="fas fa-list"></i></span>
+                                <span>Ver Usuarios</span>
+                            </a>
+                        </li>
+                        <li data-tab="crear">
+                            <a>
+                                <span class="icon"><i class="fas fa-plus"></i></span>
+                                <span>Crear Usuario</span>
+                            </a>
+                        </li>
+                        <li data-tab="editar">
+                            <a>
+                                <span class="icon"><i class="fas fa-edit"></i></span>
+                                <span>Editar Usuario</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div id="tab-ver" class="tab-content is-active">
+                    <div class="box">
+                        <div class="level mb-4">
+                            <div class="level-left">
+                                <h2 class="title is-4">Lista de Usuarios</h2>
+                            </div>
+                            <div class="level-right">
+                                <div class="field">
+                                    <div class="control has-icons-left">
+                                        <input class="input" type="text" id="filtro-usuarios" placeholder="Buscar por nombre o email...">
+                                        <span class="icon is-left"><i class="fas fa-search"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table is-striped is-hoverable is-fullwidth">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Teléfono</th>
+                                        <th>DNI</th>
+                                        <th>Domicilio</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-usuarios">
+                                    <tr>
+                                        <td colspan="6" class="has-text-centered">
+                                            <span class="loader"></span> Cargando usuarios...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-crear" class="tab-content">
+                    <div class="box">
+                        <h2 class="title is-4 mb-5">Crear Nuevo Usuario</h2>
+
+                        <form id="form-crear-usuario">
+                            <div class="columns">
+                                <div class="column is-half">
+                                    <div class="field">
+                                        <label class="label">Nombre completo <span class="has-text-danger">*</span></label>
+                                        <div class="control has-icons-left">
+                                            <input class="input" type="text" id="crear-nombre" maxlength="250" placeholder="Ej: Fernando Martínez" required>
+                                            <span class="icon is-left"><i class="fas fa-user"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="column is-half">
+                                    <div class="field">
+                                        <label class="label">Email <span class="has-text-danger">*</span></label>
+                                        <div class="control has-icons-left">
+                                            <input class="input" type="email" id="crear-email" maxlength="255" placeholder="usuario@dominio.com" required>
+                                            <span class="icon is-left"><i class="fas fa-envelope"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="columns">
+                                <div class="column is-half">
+                                    <div class="field">
+                                        <label class="label">Teléfono <span class="has-text-danger">*</span></label>
+                                        <div class="control has-icons-left">
+                                            <input class="input" type="text" id="crear-telefono" maxlength="30" placeholder="11-1234-5678" required>
+                                            <span class="icon is-left"><i class="fas fa-phone"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="column is-half">
+                                    <div class="field">
+                                        <label class="label">DNI <span class="has-text-danger">*</span></label>
+                                        <div class="control has-icons-left">
+                                            <input class="input" type="text" id="crear-dni" maxlength="20" placeholder="Ej: 12345678" required>
+                                            <span class="icon is-left"><i class="fas fa-id-card"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Domicilio <span class="has-text-danger">*</span></label>
+                                <div class="control has-icons-left">
+                                    <input class="input" type="text" id="crear-domicilio" maxlength="100" placeholder="Calle, número, ciudad" required>
+                                    <span class="icon is-left"><i class="fas fa-home"></i></span>
+                                </div>
+                            </div>
+
+                            <div id="error-crear" class="notification is-danger is-light mt-4" style="display: none;"></div>
+                            <div id="exito-crear" class="notification is-success is-light mt-4" style="display: none;"></div>
+
+                            <div class="field is-grouped is-grouped-centered mt-6">
+                                <div class="control">
+                                    <button type="submit" class="button is-primary is-medium">
+                                        <span class="icon"><i class="fas fa-check"></i></span>
+                                        <span>Crear Usuario</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="tab-editar" class="tab-content">
+                    <div class="box">
+                        <h2 class="title is-4 mb-5">Editar Usuario</h2>
+
+                        <div class="field mb-5">
+                            <label class="label">Seleccionar usuario <span class="has-text-danger">*</span></label>
+                            <div class="control has-icons-left">
+                                <div class="select is-fullwidth">
+                                    <select id="seleccionar-usuario" required>
+                                        <option value="">-- Selecciona un usuario --</option>
+                                    </select>
+                                </div>
+                                <span class="icon is-left"><i class="fas fa-user"></i></span>
+                            </div>
+                        </div>
+
+                        <form id="form-editar-usuario" style="display: none;">
+                            <div class="columns">
+                                <div class="column is-half">
+                                    <div class="field">
+                                        <label class="label">Nombre completo <span class="has-text-danger">*</span></label>
+                                        <div class="control has-icons-left">
+                                            <input class="input" type="text" id="editar-nombre" maxlength="250" required>
+                                            <span class="icon is-left"><i class="fas fa-user"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="column is-half">
+                                    <div class="field">
+                                        <label class="label">Email <span class="has-text-danger">*</span></label>
+                                        <div class="control has-icons-left">
+                                            <input class="input" type="email" id="editar-email" maxlength="255" required>
+                                            <span class="icon is-left"><i class="fas fa-envelope"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="columns">
+                                <div class="column is-half">
+                                    <div class="field">
+                                        <label class="label">Teléfono <span class="has-text-danger">*</span></label>
+                                        <div class="control has-icons-left">
+                                            <input class="input" type="text" id="editar-telefono" maxlength="30" required>
+                                            <span class="icon is-left"><i class="fas fa-phone"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="column is-half">
+                                    <div class="field">
+                                        <label class="label">DNI <span class="has-text-danger">*</span></label>
+                                        <div class="control has-icons-left">
+                                            <input class="input" type="text" id="editar-dni" maxlength="20" required>
+                                            <span class="icon is-left"><i class="fas fa-id-card"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Domicilio <span class="has-text-danger">*</span></label>
+                                <div class="control has-icons-left">
+                                    <input class="input" type="text" id="editar-domicilio" maxlength="100" required>
+                                    <span class="icon is-left"><i class="fas fa-home"></i></span>
+                                </div>
+                            </div>
+
+                            <div id="error-editar" class="notification is-danger is-light mt-4" style="display: none;"></div>
+                            <div id="exito-editar" class="notification is-success is-light mt-4" style="display: none;"></div>
+
+                            <div class="field is-grouped is-grouped-centered mt-6">
+                                <div class="control">
+                                    <button type="submit" class="button is-warning is-medium">
+                                        <span class="icon"><i class="fas fa-save"></i></span>
+                                        <span>Guardar Cambios</span>
+                                    </button>
+                                </div>
+                                <div class="control">
+                                    <button type="button" class="button is-danger is-medium" id="btn-eliminar-usuario">
+                                        <span class="icon"><i class="fas fa-trash"></i></span>
+                                        <span>Eliminar Usuario</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <div id="modal-eliminar" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Confirmar eliminación</p>
+                <button class="delete"></button>
+            </header>
+            <section class="modal-card-body">
+                <div class="notification is-warning is-light">
+                    <p><strong>⚠️ Atención:</strong> Esta acción eliminará el usuario y todas sus reservas asociadas. No se puede deshacer.</p>
+                </div>
+                <p class="mt-4">¿Estás seguro de que deseas eliminar a <strong id="nombre-eliminar"></strong>?</p>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-light" id="btn-cancelar-eliminar">Cancelar</button>
+                <button class="button is-danger" id="btn-confirmar-eliminar">Sí, eliminar</button>
+            </footer>
+        </div>
+    </div>
+
+    <script src="assets/js/shared.js"></script>
+    <script src="assets/js/usuarios.js"></script>
+</body>
+</html>
