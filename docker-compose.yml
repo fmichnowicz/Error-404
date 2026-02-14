@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:17
+    container_name: canchaYa_container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dbCanchaYa
+    volumes:
+      - ./backend/.volumes/postgres/data:/var/lib/postgresql/data/
+      - ./backend/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: canchaYa_backend
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/dbCanchaYa
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: canchaYa_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
