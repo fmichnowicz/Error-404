@@ -1,6 +1,8 @@
 .PHONY: all deps start-db up-all run-db run-backend stop-db start-frontend down
 
-all: deps start-db start-frontend
+all: deps start-db
+	cd backend && npm run dev &
+	cd frontend && http-server --cors &
 
 deps:
 	cd backend && npm install
