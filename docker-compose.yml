@@ -23,6 +23,7 @@ services:
       POSTGRES_HOST: db
       POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_DB: ${POSTGRES_DB}
+      TZ: America/Argentina/Buenos_Aires
     ports:
       - "3000:3000"
 
