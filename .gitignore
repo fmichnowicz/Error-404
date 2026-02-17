@@ -1,0 +1,13 @@
+# Node artifact files
+node_modules/
+dist/
+
+# Log files
+*.log
+
+# Ignorar todo el volumen de datos de PostgreSQL (en cualquier ubicación)
+.volumes/
+backend/.volumes/
+
+# Ignorar variables de entorno
+*.env

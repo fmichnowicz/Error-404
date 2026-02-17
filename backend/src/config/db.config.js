@@ -4,7 +4,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+    host: process.env.POSTGRES_HOST,
+    port: Number(process.env.POSTGRES_PORT),
+    database: process.env.POSTGRES_DB,
     timezone: 'America/Argentina/Buenos_Aires'
 });
 
