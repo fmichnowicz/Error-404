@@ -379,10 +379,6 @@ async function guardarModificacion() {
   }
 }
 
-// =============================================
-// RESTO DEL CÓDIGO (SIN CAMBIOS)
-// =============================================
-
 async function cargarCanchas() {
   const loading = document.getElementById('loading-message-canchas');
   const noCanchas = document.getElementById('no-canchas-message');

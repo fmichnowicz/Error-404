@@ -79,7 +79,7 @@ const createReserva = async (req, res) => {
       errores.push('reserva_hora_fin debe ser una hora válida (HH:MM:SS)');
     }
 
-    // monto_pagado → ahora entero positivo (obligatorio)
+    // monto_pagado (obligatorio)
     if (monto_pagado === undefined || monto_pagado === null) {
       errores.push('monto_pagado es obligatorio');
     } else {
@@ -98,7 +98,7 @@ const createReserva = async (req, res) => {
     const fecha = fecha_reserva;
     const horaInicio = reserva_hora_inicio;
     const horaFin = reserva_hora_fin;
-    const montoCliente = parseInt(monto_pagado, 10); // ya validado como entero positivo
+    const montoCliente = parseInt(monto_pagado, 10);
 
     // === VALIDACIÓN DE FECHA MÍNIMA: MAÑANA O POSTERIOR ===
     const opcionesTZ = { timeZone: 'America/Argentina/Buenos_Aires' };
@@ -161,7 +161,7 @@ const createReserva = async (req, res) => {
       });
     }
 
-    const precioPorHora = parseInt(canchaRows[0].precio_hora, 10); // ahora es entero
+    const precioPorHora = parseInt(canchaRows[0].precio_hora, 10);
     const duracionHoras = duracionMin / 60;
     const montoCalculado = duracionHoras * precioPorHora;
 
@@ -418,7 +418,7 @@ const updateReserva = async (req, res) => {
       return res.status(404).json({ error: 'Cancha no encontrada' });
     }
 
-    const precioPorHora = parseInt(canchaFinal.precio_hora, 10); // ahora entero
+    const precioPorHora = parseInt(canchaFinal.precio_hora, 10);
 
     // Valores finales
     const finalFecha = camposActualizar.fecha_reserva ?? reservaActual.fecha_reserva.toISOString().split('T')[0];
@@ -628,7 +628,7 @@ const getReservasParaGrilla = async (req, res) => {
         ORDER BY r.reserva_hora_inicio
         `, [fecha]);
 
-        // Normalizar las horas para el frontend (quitar segundos)
+        // Normalizar las horas para el frontend (quitamos segundos)
         const reservasNormalizadas = result.rows.map(res => ({
         ...res,
         reserva_hora_inicio: res.reserva_hora_inicio ? res.reserva_hora_inicio.toString().slice(0, 5) : null,
@@ -640,7 +640,7 @@ const getReservasParaGrilla = async (req, res) => {
         console.error('Error al obtener reservas para grilla:', error);
         res.status(500).json({ 
         error: 'Error interno del servidor',
-        detalles: error.message // ← Esto te va a mostrar el error real
+        detalles: error.message
         });
     }
 };
@@ -723,7 +723,7 @@ const getReservasByCancha = async (req, res) => {
 
         console.log(`Filas devueltas: ${result.rowCount}`);
 
-        // Formatear fechas (igual que en otros endpoints)
+        // Formatear fechas
         const reservasFormateadas = result.rows.map(r => ({
         ...r,
         fecha_reserva: formateoFechaLocal(r.fecha_reserva),

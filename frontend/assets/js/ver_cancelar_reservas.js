@@ -337,7 +337,7 @@ function mostrarReservas(reservas) {
     // Mostramos directamente la fecha que llega del backend
     let fechaFormateada = reserva.fecha_reserva;
 
-    // Solo parseamos para comparar con hoy (no para mostrar)
+    // Parseamos para comparar con hoy
     let fechaReservaObj = null;
     const parts = reserva.fecha_reserva.split('/');
     if (parts.length === 3) {
@@ -347,12 +347,6 @@ function mostrarReservas(reservas) {
 
       if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
         fechaReservaObj = new Date(y, m - 1, d, 12, 0, 0);
-
-        // Depuración (puedes comentarlo después)
-        console.log(
-          `ID ${reserva.id} → Cruda: ${reserva.fecha_reserva} → ` +
-          `Partes: d=${d} m=${m} y=${y} → Objeto Date: ${fechaReservaObj.toISOString().split('T')[0]}`
-        );
       }
     }
 

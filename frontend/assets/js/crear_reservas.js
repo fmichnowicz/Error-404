@@ -8,7 +8,7 @@ for (let h = 7; h <= 22; h++) {
 
 let allCanchas = [];
 let allReservas = [];
-let allUsuarios = []; // ← NUEVA: guardamos todos los usuarios
+let allUsuarios = [];
 
 let fechaSeleccionada = null;
 
@@ -125,7 +125,7 @@ async function inicializarFiltros() {
         });
 
         allCanchas = canchasRes;
-        allUsuarios = usuariosRes; // ← Guardamos los usuarios
+        allUsuarios = usuariosRes;
 
         // === LEER PARÁMETROS DE URL ===
         const urlParams = new URLSearchParams(window.location.search);
@@ -327,7 +327,7 @@ function renderizarTabla(canchas, reservasOcupadas) {
     body.innerHTML = bodyHTML;
 }
 
-// NUEVA FUNCIÓN: filtro local de usuarios (igual que en ver_cancelar_reservas.js)
+// Filtro local de usuarios
 function inicializarBusquedaUsuario() {
     const input = document.getElementById('busqueda-usuario');
     const sugerencias = document.getElementById('sugerencias-usuario');

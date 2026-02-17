@@ -60,7 +60,7 @@ async function cargarDatos() {
   }
 }
 
-// Variables globales para referencias del modal (al inicio del archivo, con las otras)
+// Variables globales para referencias del modal
 let modalEliminarRefs = {
     modal: null,
     nombre: null,
