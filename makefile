@@ -1,34 +1,36 @@
-.PHONY: all deps start-db up-all run-db run-backend stop-db start-frontend down
+.PHONY: deps run-all start-db run-db run-backend run-frontend build down
 
-all: deps start-db start-frontend
-
+# Instalación de dependencias en el backend
 deps:
 	cd backend && npm install
 
+# Ejecución completa del sitio web (base de datos + backend + frontend)
+run-all: build
+	docker compose up -d
+
+# BASE DE DATOS
+# Levantar la base de datos
 start-db:
 	docker compose up -d db
 
-up-all:
-	docker compose up -d --build
-
+# Correr la base de datos en terminal
 run-db: start-db
 	docker exec -it canchaYa_container psql -U postgres -d dbCanchaYa
 
-run-backend: start-db
-	cd backend && npm run dev
+# BACKEND
+# Levantar y correr sólo el backend con base de datos
+run-backend:
+	docker compose up -d backend
 
-stop-db:
+# FRONTEND
+# Levantar y correr sólo el frontend
+run-frontend:
+	docker compose up -d frontend
+
+# Construye las imágenes de backend y frontend
+build:
+	docker compose build --no-cache=false
+
+# Damos de baja todos los contenedores
+down:
 	docker compose down
-
-start-frontend:
-	cd frontend && http-server --cors
-
-up:
-	$(MAKE) start-db
-	cd backend && npm run dev & 
-	cd frontend && http-server --cors &
-	@echo "¡Todo levantado! Backend y frontend corriendo en background."
-	@echo "Para ver logs del backend: cd backend && npm run dev (en otra terminal)"
-	@echo "Para detener: make down o Ctrl+C en las terminales correspondientes"
-
-down: stop-db
