@@ -237,12 +237,12 @@ function manejarModalUsuarios() {
 
 }
 
-// Modal de Registro de Usuario (estático)
+// Modal de Registro de Usuario
 function manejarModalRegistroUsuario() {
   const modal = document.getElementById('modal-registrar-usuario');
   if (!modal) return;
 
-  // Cerrar solo con X (listener directo y robusto)
+  // Cerrar solo con X
   const closeButtons = modal.querySelectorAll('.delete');
   closeButtons.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -527,7 +527,7 @@ function filtrarYMostrarUsuarios() {
 
 filtroInput.addEventListener('input', filtrarYMostrarUsuarios);
 
-  // Confirmar eliminación (sin modal adicional)
+  // Confirmar eliminación
   btnConfirmar.addEventListener('click', async () => {
     if (!usuarioSeleccionado) return;
 

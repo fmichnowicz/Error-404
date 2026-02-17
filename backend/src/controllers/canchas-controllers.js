@@ -125,7 +125,7 @@ const createCancha = async (req, res) => {
 
     const deporteTrim = deporte.trim();
     const estId = parseInt(establecimiento_id, 10);
-    const precio = parseInt(precio_hora, 10); // ya validado como entero positivo
+    const precio = parseInt(precio_hora, 10);
 
     // === VALIDACIÓN: DEPORTE PERMITIDO ===
     const deportesPermitidos = [
@@ -204,7 +204,7 @@ const createCancha = async (req, res) => {
       nombreFinal,
       deporteTrim,
       estId,
-      precio, // ahora es entero
+      precio,
       descripcion ? descripcion.trim() || null : null,
       superficie.trim(),
       iluminacion,

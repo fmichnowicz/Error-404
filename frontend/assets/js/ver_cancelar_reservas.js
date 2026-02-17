@@ -10,7 +10,7 @@ let filtroEstablecimientoId = null;
 let filtroFecha = null;
 
 let reservaACancelarId = null;
-let currentPage = 1; // Siempre inicia en 1 al cargar la página
+let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 
 // Normalizar strings: quita acentos y convierte a minúsculas
@@ -23,12 +23,10 @@ function normalizeString(str) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Siempre resetear a página 1 al entrar
   currentPage = 1;
   cargarDatosIniciales();
   inicializarFiltroFecha();
 
-  // === Eventos del modal de cancelación ===
   const modal = document.getElementById('modal-cancelar');
   const btnConfirmar = document.getElementById('confirmar-cancelar');
   const btnCerrar = document.getElementById('cerrar-modal');
@@ -84,14 +82,11 @@ async function cargarDatosIniciales() {
     inicializarAutocompleteUsuario();
     inicializarAutocompleteEstablecimiento();
 
-    // === SIEMPRE RESETEAR FILTROS AL CARGAR LA PÁGINA ===
-    // No usamos sessionStorage para que siempre empiece limpio
     filtroUsuarioId = null;
     filtroEstablecimientoId = null;
     filtroFecha = null;
     currentPage = 1;
 
-    // Limpiar inputs
     document.getElementById('busqueda-usuario-filtro').value = '';
     document.getElementById('busqueda-establecimiento-filtro').value = '';
     document.getElementById('filtro-fecha').value = '';
@@ -111,7 +106,7 @@ async function recargarReservasYMantenerFiltros() {
   try {
     const reservasRes = await fetch('http://localhost:3000/reservas').then(r => r.json());
     allReservas = reservasRes;
-    filtrarYMostrarReservas(); // Mantiene página y filtros actuales
+    filtrarYMostrarReservas();
   } catch (error) {
     console.error('Error recargando reservas:', error);
     mostrarMensaje('Error al actualizar la lista de reservas');
@@ -128,7 +123,7 @@ function inicializarFiltroFecha() {
 
   inputFecha.addEventListener('change', (e) => {
     filtroFecha = e.target.value || null;
-    currentPage = 1; // Resetear a página 1 al cambiar fecha
+    currentPage = 1;
     filtrarYMostrarReservas();
   });
 
@@ -268,29 +263,25 @@ function filtrarYMostrarReservas() {
     });
   }
 
-  // Ordenar por fecha descendente (más reciente primero)
+  // Orden descendente: más reciente primero
   reservasFiltradas.sort((a, b) => {
     const [da, ma, ya] = a.fecha_reserva.split('/');
     const [db, mb, yb] = b.fecha_reserva.split('/');
-    return new Date(yb, mb - 1, db) - new Date(ya, ma - 1, da);
+    const fechaA = ya * 10000 + ma * 100 + da;
+    const fechaB = yb * 10000 + mb * 100 + db;
+    return fechaB - fechaA;
   });
 
-  // === PAGINACIÓN ===
   const totalItems = reservasFiltradas.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
-  // Ajustar página actual si se eliminó una reserva y la página quedó vacía
-  if (currentPage > totalPages) {
-    currentPage = totalPages || 1;
-  }
+  if (currentPage > totalPages) currentPage = totalPages || 1;
 
   const start = (currentPage - 1) * ITEMS_PER_PAGE;
   const end = start + ITEMS_PER_PAGE;
   const reservasPagina = reservasFiltradas.slice(start, end);
 
   mostrarReservas(reservasPagina);
-
-  // Renderizar paginación
   renderizarPaginacion(currentPage, totalPages);
 }
 
@@ -306,11 +297,9 @@ function renderizarPaginacion(page, totalPages) {
     <nav class="pagination is-centered" role="navigation" aria-label="pagination">
       <a class="pagination-previous ${page === 1 ? 'is-disabled' : ''}" 
         ${page > 1 ? `onclick="cambiarPagina(${page - 1})"` : ''}>Anterior</a>
-      
       <ul class="pagination-list">
         <li><span class="pagination-ellipsis is-size-5">Página ${page} de ${totalPages}</span></li>
       </ul>
-      
       <a class="pagination-next ${page === totalPages ? 'is-disabled' : ''}" 
         ${page < totalPages ? `onclick="cambiarPagina(${page + 1})"` : ''}>Siguiente</a>
     </nav>
@@ -325,92 +314,95 @@ function cambiarPagina(nuevaPagina) {
 }
 
 function mostrarReservas(reservas) {
-    const lista = document.getElementById('lista-reservas');
-    const sinReservas = document.getElementById('sin-reservas');
+  const lista = document.getElementById('lista-reservas');
+  const sinReservas = document.getElementById('sin-reservas');
 
-    lista.innerHTML = '';
+  lista.innerHTML = '';
 
-    if (reservas.length === 0) {
-        sinReservas.style.display = 'block';
-        return;
+  if (reservas.length === 0) {
+    sinReservas.style.display = 'block';
+    return;
+  }
+
+  sinReservas.style.display = 'none';
+
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  reservas.forEach(reserva => {
+    const cancha = allCanchas.find(c => c.id == reserva.cancha_id);
+    const establecimiento = cancha ? allEstablecimientos.find(e => e.id == cancha.establecimiento_id) : null;
+    const usuario = allUsuarios.find(u => u.id == reserva.usuario_id);
+
+    // Mostramos directamente la fecha que llega del backend
+    let fechaFormateada = reserva.fecha_reserva;
+
+    // Parseamos para comparar con hoy
+    let fechaReservaObj = null;
+    const parts = reserva.fecha_reserva.split('/');
+    if (parts.length === 3) {
+      const d = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10);
+      const y = parseInt(parts[2], 10);
+
+      if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+        fechaReservaObj = new Date(y, m - 1, d, 12, 0, 0);
+      }
     }
 
-    sinReservas.style.display = 'none';
+    const horaInicio = reserva.reserva_hora_inicio.slice(0, 5);
+    const horaFin   = reserva.reserva_hora_fin.slice(0, 5);
 
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
+    const reservaPasada = fechaReservaObj && fechaReservaObj <= hoy;
 
-    reservas.forEach(reserva => {
-        const cancha = allCanchas.find(c => c.id == reserva.cancha_id);
-        const establecimiento = cancha ? allEstablecimientos.find(e => e.id == cancha.establecimiento_id) : null;
-        const usuario = allUsuarios.find(u => u.id == reserva.usuario_id);
+    const card = document.createElement('div');
+    card.className = 'column is-full';
 
-        const [day, month, year] = reserva.fecha_reserva.split('/');
-        const fechaReserva = new Date(year, month - 1, day);
-        fechaReserva.setHours(0, 0, 0, 0);
-
-        const fechaFormateada = fechaReserva.toLocaleDateString('es-AR', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-
-        const horaInicio = reserva.reserva_hora_inicio.slice(0, 5);
-        const horaFin = reserva.reserva_hora_fin.slice(0, 5);
-
-        const reservaPasada = fechaReserva <= hoy;
-
-        const card = document.createElement('div');
-        card.className = 'column is-full';
-
-        card.innerHTML = `
-        <div class="card mb-5">
+    card.innerHTML = `
+      <div class="card mb-5">
         <div class="card-content">
-        <div class="content">
-        <p class="title is-4">${cancha?.nombre_cancha || 'Cancha desconocida'}</p>
-        <p class="subtitle is-6">
-        ${establecimiento?.nombre || 'Establecimiento desconocido'} • ${cancha?.deporte || ''}
-        </p>
-        <p><strong>Usuario:</strong> ${usuario?.nombre || 'Desconocido'} (${usuario?.email || ''})</p>
-        <p><strong>Fecha:</strong> ${fechaFormateada}</p>
-        <p><strong>Horario:</strong> ${horaInicio} a ${horaFin} hs</p>
-        <p><strong>Total pagado:</strong> $${Number(reserva.monto_pagado).toLocaleString('es-AR')}</p>
-        ${reservaPasada ? '<p class="has-text-danger mt-4"><strong>No se puede reagendar (reserva de hoy o pasada)</strong></p>' : ''}
-        </div>
+          <div class="content">
+            <p class="title is-4">${cancha?.nombre_cancha || 'Cancha desconocida'}</p>
+            <p class="subtitle is-6">
+              ${establecimiento?.nombre || 'Establecimiento desconocido'} • ${cancha?.deporte || ''}
+            </p>
+            <p><strong>Usuario:</strong> ${usuario?.nombre || 'Desconocido'} (${usuario?.email || ''})</p>
+            <p><strong>Fecha:</strong> ${fechaFormateada}</p>
+            <p><strong>Horario:</strong> ${horaInicio} a ${horaFin} hs</p>
+            <p><strong>Total pagado:</strong> $${Number(reserva.monto_pagado).toLocaleString('es-AR')}</p>
+            ${reservaPasada ? '<p class="has-text-danger mt-4"><strong>No se puede reagendar (reserva de hoy o pasada)</strong></p>' : ''}
+          </div>
 
-        <div class="has-text-centered mt-5">
-        <button class="button is-warning mb-3 btn-reagendar" data-id="${reserva.id}" ${reservaPasada ? 'disabled title="No se puede reagendar reservas de hoy o pasadas"' : ''}>
-        <span class="icon"><i class="fas fa-calendar-alt"></i></span>
-        <span>Reagendar</span>
-        </button>
-        <button class="button is-danger btn-cancelar ml-3" data-id="${reserva.id}">
-        <span class="icon"><i class="fas fa-trash"></i></span>
-        <span>Cancelar</span>
-        </button>
+          <div class="has-text-centered mt-5">
+            <button class="button is-warning mb-3 btn-reagendar" data-id="${reserva.id}" ${reservaPasada ? 'disabled title="No se puede reagendar reservas de hoy o pasadas"' : ''}>
+              <span class="icon"><i class="fas fa-calendar-alt"></i></span>
+              <span>Reagendar</span>
+            </button>
+            <button class="button is-danger btn-cancelar ml-3" data-id="${reserva.id}">
+              <span class="icon"><i class="fas fa-trash"></i></span>
+              <span>Cancelar</span>
+            </button>
+          </div>
         </div>
-        </div>
-        </div>
-        `;
+      </div>
+    `;
 
-        lista.appendChild(card);
+    lista.appendChild(card);
+  });
+
+  document.querySelectorAll('.btn-cancelar').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      cancelarReserva(id);
     });
+  });
 
-    // Botón Cancelar: siempre habilitado → seleccionamos TODOS
-    document.querySelectorAll('.btn-cancelar').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const id = e.currentTarget.dataset.id;
-            cancelarReserva(id);
-        });
+  document.querySelectorAll('.btn-reagendar:not([disabled])').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      reagendarReserva(id);
     });
-
-    // Botón Reagendar: solo los que no están disabled
-    document.querySelectorAll('.btn-reagendar:not([disabled])').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const id = e.currentTarget.dataset.id;
-            reagendarReserva(id);
-        });
-    });
+  });
 }
 
 function cancelarReserva(id) {
