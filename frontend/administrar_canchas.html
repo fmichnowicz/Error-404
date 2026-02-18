@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <title>Cancha Ya - Administrar Canchas</title>
+</head>
+<body>
+    <!-- Navigation bar -->
+    <div id="navbar-container"></div>
+
+    <section class="section">
+        <div class="container">
+        <h2 class="title has-text-centered mb-3">Administrar Canchas</h2>
+
+        <!-- Sección para agregar cancha -->
+        <div class="notification is-info is-light has-text-centered mb-4">
+            <p class="subtitle is-5">Para agregar una nueva cancha, hacé click aca:</p>
+            <button class="button is-success is-medium mt-3" id="btn-agregar-establecimiento">
+            <span class="icon"><i class="fas fa-plus"></i></span>
+            <span>Agregar cancha</span>
+            </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="columns is-centered mb-4 is-multiline">
+            <!-- Filtro por Establecimiento -->
+            <div class="column is-half">
+            <div class="field">
+                <label class="label">Filtrar por Establecimiento</label>
+                <div class="control has-icons-left">
+                <input class="input" type="text" id="filtro-establecimiento" placeholder="Ej: Cancha Ya Palermo" autocomplete="off">
+                <span class="icon is-left">
+                    <i class="fas fa-building"></i>
+                </span>
+                </div>
+            </div>
+            <div id="sugerencias-establecimiento-canchas" class="panel mt-2" style="display: none; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Filtro por Deporte -->
+            <div class="column is-half">
+            <div class="field">
+                <label class="label">Filtrar por Deporte</label>
+                <div class="control has-icons-left">
+                <input class="input" type="text" id="filtro-deporte" placeholder="Ej: Fútbol 5" autocomplete="off">
+                <span class="icon is-left">
+                    <i class="fas fa-futbol"></i>
+                </span>
+                </div>
+            </div>
+            <div id="sugerencias-deporte" class="panel mt-2" style="display: none; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+        </div>
+
+        <!-- Mensaje de carga -->
+        <div id="loading-message-canchas" class="has-text-centered mb-5">
+            <progress class="progress is-medium is-primary" max="100">Cargando...</progress>
+        </div>
+
+        <!-- Mensaje sin canchas -->
+        <div id="no-canchas-message" class="has-text-centered has-text-grey" style="display: none;">
+            <p class="subtitle">No hay canchas registradas aún.</p>
+        </div>
+
+        <!-- Grilla de canchas -->
+        <div class="columns is-multiline is-centered" id="canchas-grid"></div>
+
+        <!-- Paginación -->
+        <div class="has-text-centered mt-6" id="paginacion"></div>
+        </div>
+    </section>
+
+    <!-- Modal de confirmación de eliminación de cancha -->
+    <div id="modal-eliminar-cancha" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Confirmar eliminación de cancha</p>
+        </header>
+        <section class="modal-card-body">
+            <p>¿Estás seguro de eliminar la cancha <strong id="modal-nombre-cancha"></strong>?</p>
+            <div class="content mt-4">
+            <ul>
+                <li><strong>Reservas a eliminar:</strong> <span id="reservas-activas-cancha">0</span></li>
+                <li><strong>Usuarios impactados:</strong> <span id="usuarios-impactados-cancha">0</span></li>
+            </ul>
+            </div>
+            <p class="has-text-danger">Esta acción no se puede deshacer.</p>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button" id="btn-cancelar-eliminar-cancha">Cancelar</button>
+            <button class="button is-danger" id="btn-eliminar-cancha-definitivo" style="margin-left: 1rem;">
+            Eliminar definitivamente
+            </button>
+        </footer>
+        </div>
+    </div>
+
+    <!-- Modal de éxito al eliminar cancha -->
+    <div id="modal-exito-eliminar-cancha" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+        <header class="modal-card-head has-background-success has-text-white">
+            <p class="modal-card-title">¡Eliminada exitosamente!</p>
+        </header>
+        <section class="modal-card-body">
+            <p class="has-text-centered">La cancha ha sido eliminada correctamente.</p>
+            <p class="has-text-centered mt-3">La página se recargará en unos segundos...</p>
+        </section>
+        </div>
+    </div>
+
+    <!-- Modal para AGREGAR nueva cancha -->
+    <div id="modal-agregar-cancha" class="modal">
+        <div class="modal-background" style="pointer-events: none;"></div>
+        <div class="modal-card" style="max-width: 600px;">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Agregar Nueva Cancha</p>
+        </header>
+        <section class="modal-card-body">
+            <form id="form-agregar-cancha">
+            <div class="field">
+                <label class="label">Establecimiento <span class="has-text-danger">*</span></label>
+                <div class="control has-icons-left">
+                <input id="input-establecimiento" class="input" type="text" placeholder="Buscar establecimiento..." autocomplete="off" required>
+                <span class="icon is-small is-left">
+                    <i class="fas fa-building"></i>
+                </span>
+                </div>
+                <div id="sugerencias-establecimiento-modal" class="panel mt-1" style="display: none; max-height: 200px; overflow-y: auto; position: absolute; z-index: 10; width: 100%;"></div>
+                <input type="hidden" id="establecimiento_id" required>
+            </div>
+
+            <div class="field">
+                <label class="label">Deporte <span class="has-text-danger">*</span></label>
+                <div class="control has-icons-left">
+                <input id="input-deporte" class="input" type="text" placeholder="Ej: Fútbol 5" autocomplete="off" required>
+                <span class="icon is-small is-left">
+                    <i class="fas fa-futbol"></i>
+                </span>
+                </div>
+                <div id="sugerencias-deporte-modal" class="panel mt-1" style="display: none; max-height: 200px; overflow-y: auto; position: absolute; z-index: 10; width: 100%;"></div>
+                <p class="help is-info mt-1">
+                Por el momento sólo se puede escoger: Básquet, Fútbol, Handball, Pádel, Tenis y Vóley
+                </p>
+            </div>
+
+            <div class="field">
+                <label class="label">Nombre de la cancha</label>
+                <div class="control">
+                <input id="input-nombre" class="input" type="text" readonly>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">Precio por hora <span class="has-text-danger">*</span></label>
+                <div class="control has-icons-left">
+                <input id="input-precio" class="input" type="number" min="1" step="1" placeholder="Ej: 25000" required>
+                <span class="icon is-small is-left">
+                    <i class="fas fa-dollar-sign"></i>
+                </span>
+                </div>
+                <p class="help">El precio debe tener el siguiente formato: 25000 (sin comas ni puntos)</p>
+            </div>
+
+            <div class="field">
+                <label class="label">Descripción (opcional)</label>
+                <div class="control">
+                <textarea id="input-descripcion" class="textarea" maxlength="100" rows="3" placeholder="Descripción breve de la cancha..."></textarea>
+                </div>
+                <p class="help"><span id="contador-descripcion">0</span>/100</p>
+            </div>
+
+            <div class="field">
+                <label class="label">Superficie <span class="has-text-danger">*</span></label>
+                <div class="control">
+                <input id="input-superficie" class="input" type="text" maxlength="50" required placeholder="Ej: Césped sintético, Parquet...">
+                </div>
+                <p class="help"><span id="contador-superficie">0</span>/50</p>
+            </div>
+
+            <div class="field">
+                <label class="label">¿La cancha tiene iluminación?</label>
+                <div class="control">
+                <div class="select is-fullwidth">
+                    <select id="select-iluminacion">
+                    <option value="false">No</option>
+                    <option value="true">Sí</option>
+                    </select>
+                </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">¿La cancha está cubierta?</label>
+                <div class="control">
+                <div class="select is-fullwidth">
+                    <select id="select-cubierta">
+                    <option value="false">No</option>
+                    <option value="true">Sí</option>
+                    </select>
+                </div>
+                </div>
+            </div>
+            </form>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button" id="btn-cancelar-agregar">Cancelar</button>
+            <button class="button is-success ml-3" id="btn-confirmar-agregar" disabled>Confirmar</button>
+        </footer>
+        </div>
+    </div>
+
+    <!-- Modal de éxito al AGREGAR cancha -->
+    <div id="modal-exito-agregar-cancha" class="modal">
+        <div class="modal-background" style="pointer-events: none;"></div>
+        <div class="modal-card">
+        <header class="modal-card-head has-background-success has-text-white">
+            <p class="modal-card-title">¡Cancha agregada exitosamente!</p>
+        </header>
+        <section class="modal-card-body has-text-centered">
+            <p class="is-size-5 mb-4">La nueva cancha se ha creado correctamente.</p>
+            <p class="has-text-grey-dark">La página se recargará en unos segundos...</p>
+            <progress class="progress is-small is-success mt-5" max="100"></progress>
+        </section>
+        </div>
+    </div>
+
+    <!-- Modal para MODIFICAR cancha -->
+    <div id="modal-modificar-cancha" class="modal">
+        <div class="modal-background" style="pointer-events: none;"></div>
+        <div class="modal-card" style="max-width: 600px;">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Modificar Cancha</p>
+        </header>
+        <section class="modal-card-body">
+            <form id="form-modificar-cancha">
+
+            <!-- Establecimiento (bloqueado) -->
+            <div class="field">
+                <label class="label">Establecimiento</label>
+                <div class="control">
+                <input id="mod-input-establecimiento" class="input" type="text" readonly>
+                </div>
+            </div>
+
+            <!-- Deporte (bloqueado) -->
+            <div class="field">
+                <label class="label">Deporte</label>
+                <div class="control">
+                <input id="mod-input-deporte" class="input" type="text" readonly>
+                </div>
+            </div>
+
+            <!-- Nombre (bloqueado) -->
+            <div class="field">
+                <label class="label">Nombre de la cancha</label>
+                <div class="control">
+                <input id="mod-input-nombre" class="input" type="text" readonly>
+                </div>
+            </div>
+
+            <!-- Precio por hora -->
+            <div class="field">
+                <label class="label">Precio por hora <span class="has-text-danger">*</span></label>
+                <div class="control has-icons-left">
+                <input id="mod-input-precio" class="input" type="number" min="1" step="1" required>
+                <span class="icon is-small is-left">
+                    <i class="fas fa-dollar-sign"></i>
+                </span>
+                </div>
+                <p class="help">El precio debe tener el siguiente formato: 25000 (sin comas ni puntos)</p>
+            </div>
+
+            <!-- Descripción -->
+            <div class="field">
+                <label class="label">Descripción (opcional)</label>
+                <div class="control">
+                <textarea id="mod-input-descripcion" class="textarea" maxlength="100" rows="3"></textarea>
+                </div>
+                <p class="help"><span id="mod-contador-descripcion">0</span>/100</p>
+            </div>
+
+            <!-- Superficie -->
+            <div class="field">
+                <label class="label">Superficie <span class="has-text-danger">*</span></label>
+                <div class="control">
+                <input id="mod-input-superficie" class="input" type="text" maxlength="50" required>
+                </div>
+                <p class="help"><span id="mod-contador-superficie">0</span>/50</p>
+            </div>
+
+            <!-- Iluminación -->
+            <div class="field">
+                <label class="label">¿La cancha tiene iluminación?</label>
+                <div class="control">
+                <div class="select is-fullwidth">
+                    <select id="mod-select-iluminacion">
+                    <option value="false">No</option>
+                    <option value="true">Sí</option>
+                    </select>
+                </div>
+                </div>
+            </div>
+
+            <!-- Cubierta -->
+            <div class="field">
+                <label class="label">¿La cancha está cubierta?</label>
+                <div class="control">
+                <div class="select is-fullwidth">
+                    <select id="mod-select-cubierta">
+                    <option value="false">No</option>
+                    <option value="true">Sí</option>
+                    </select>
+                </div>
+                </div>
+            </div>
+
+            <!-- Campo oculto para ID -->
+            <input type="hidden" id="mod-id-cancha">
+            </form>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button" id="btn-cancelar-modificar-administrar-canchas">Cancelar</button>
+            <button class="button is-success ml-3" id="btn-guardar-modificar" disabled>Guardar cambios</button>
+        </footer>
+        </div>
+    </div>
+
+    <!-- Modal de éxito al MODIFICAR cancha (ID único) -->
+    <div id="modal-exito-modificar-cancha" class="modal">
+        <div class="modal-background" style="pointer-events: none;"></div>
+        <div class="modal-card">
+        <header class="modal-card-head has-background-success has-text-white">
+            <p class="modal-card-title">¡Cancha modificada exitosamente!</p>
+        </header>
+        <section class="modal-card-body has-text-centered">
+            <p class="is-size-5 mb-4">Los cambios se han guardado correctamente.</p>
+            <p class="has-text-grey-dark">La página se recargará en unos segundos...</p>
+            <progress class="progress is-small is-success mt-5" max="100"></progress>
+        </section>
+        </div>
+    </div>
+
+    <script src="assets/js/shared.js"></script>
+    <script src="assets/js/administrar_canchas.js"></script>
+</body>
+</html>

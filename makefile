@@ -1,39 +1,36 @@
-.PHONY: all deps start-db run-db run-backend stop-db start-frontend
+.PHONY: deps run-all start-db run-db run-backend run-frontend build down
 
-# Objetivo por defecto (si se ejecuta solo "make")
-all: deps start-db start-frontend
-
-# Instalamos dependencias en el backend
+# Instalación de dependencias en el backend
 deps:
 	cd backend && npm install
 
-# Base de datos
-start-db:
-	cd backend && docker compose up -d
+# Ejecución completa del sitio web (base de datos + backend + frontend)
+run-all: build
+	docker compose up -d
 
-# Conectar a la base de datos
+# BASE DE DATOS
+# Levantar la base de datos
+start-db:
+	docker compose up -d db
+
+# Correr la base de datos en terminal
 run-db: start-db
 	docker exec -it canchaYa_container psql -U postgres -d dbCanchaYa
 
-# Levantar backend
-run-backend: start-db
-	cd backend && npm run dev
+# BACKEND
+# Levantar y correr sólo el backend con base de datos
+run-backend:
+	docker compose up -d backend
 
-# Detener la base de datos
-stop-db:
-	cd backend && docker compose down
+# FRONTEND
+# Levantar y correr sólo el frontend
+run-frontend:
+	docker compose up -d frontend
 
-# Levantar frontend
-start-frontend:
-	cd frontend && http-server --cors
+# Construye las imágenes de backend y frontend
+build:
+	docker compose build --no-cache=false
 
-# Levantamos todo
-up:
-	$(MAKE) start-db
-	cd backend && npm run dev & 
-	cd frontend && http-server --cors &
-	@echo "¡Todo levantado! Backend y frontend corriendo en background."
-	@echo "Para ver logs del backend: cd backend && npm run dev (en otra terminal)"
-	@echo "Para detener: make down o Ctrl+C en las terminales correspondientes"
-
-down: stop-db
+# Damos de baja todos los contenedores
+down:
+	docker compose down

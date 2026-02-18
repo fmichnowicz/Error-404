@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cancha Ya - Ver Usuarios</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    /* Estilo para cards hexagonales */
+    .hex-card-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2.5rem;
+      padding: 2rem;
+    }
+
+    .hex-card {
+      width: 340px;
+      height: 380px;
+      position: relative;
+      background: hsl(171, 100%, 41%);
+      border: 2px solid #00d1b2;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .hex-card:hover {
+      transform: scale(1.08);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .hex-card-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      width: 92%;
+      padding: 1.5rem;
+    }
+
+    .hex-card-title {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: hsl(217, 71%, 45%);
+      margin-bottom: 1.2rem;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+
+    .hex-card-info {
+      font-size: 1rem;
+      color: #333;
+      line-height: 1.7;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+
+    /* Paginación */
+    .pagination-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .pagination-button {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #00d1b2;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .pagination-button:hover {
+      background: #009e8f;
+    }
+
+    .pagination-number {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .pagination-number.active {
+      background: #00d1b2;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+    <!-- Navigation bar -->
+    <div id="navbar-container"></div>
+
+    <section class="section">
+        <div class="container">
+        <h2 class="title has-text-centered mb-3">Lista de Usuarios</h2>
+
+        <div class="notification is-info is-light has-text-centered mb-4">
+        <p class="subtitle is-5">Aquí puedes ver todos los usuarios registrados en CanchaYa</p>
+        </div>
+
+        <!-- Filtro por nombre -->
+        <div class="field has-addons has-addons-centered mb-6">
+            <div class="control">
+            <input class="input is-medium" type="text" id="filtro-nombre-ver-usuarios" placeholder="Buscar por nombre...">
+            </div>
+        </div>
+
+        <!-- Contenedor de cards hexagonales -->
+        <div id="usuarios-container" class="hex-card-container">
+            <!-- Las cards se agregarán con JS -->
+        </div>
+
+        <!-- Paginación -->
+        <div id="paginacion" class="pagination-container" style="display: none;"></div>
+
+        </div>
+    </section>
+
+    <script src="assets/js/shared.js"></script>
+    <script src="assets/js/ver_usuarios.js"></script>
+</body>
+</html>

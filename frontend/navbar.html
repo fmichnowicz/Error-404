@@ -2,123 +2,92 @@
 <nav class="navbar has-shadow is-primary">
     <div class="navbar-brand">
         <a class="navbar-item brand-title pl-2" href="index.html">
-            Cancha<span class="highlight">Ya!</span>
+        Cancha<span class="highlight">Ya!</span>
         </a>
-
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="nav-links">
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
         </a>
     </div>
 
     <div class="navbar-menu" id="nav-links">
         <div class="navbar-end">
-            <a class="navbar-item" href="establecimientos.html">Establecimientos</a>
-            
-            <!-- Botón que abre el modal -->
-            <a class="navbar-item is-clickable modal-trigger" data-target="modal-reservas">
-                Reservas
-            </a>
-            <a class="navbar-item is-clickable modal-trigger" data-target="modal-registrar-usuario">
-                Usuarios
-            </a>
+        <a class="navbar-item has-text-weight-medium" href="establecimientos.html">Establecimientos</a>
+        <a class="navbar-item has-text-weight-medium" href="administrar_canchas.html">Canchas</a>
+        <!-- Botón que abre el modal -->
+        <a class="navbar-item is-clickable has-text-weight-medium" id="reservas-trigger">Reservas</a>
+        <!-- Abre el nuevo modal de gestión de usuarios -->
+        <a class="navbar-item is-clickable has-text-weight-medium" id="usuarios-trigger">Usuarios</a>
         </div>
     </div>
-</nav>
 
-<!-- MODAL DE RESERVAS -->
-<div id="modal-reservas" class="modal">
+    <!-- MODAL REGISTRAR USUARIO -->
+    <div id="modal-registrar-usuario" class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title is-size-6-mobile">Gestión de Reservas</p>
-            <button class="delete is-large" aria-label="close"></button>
+        <p class="modal-card-title is-size-6-mobile">Registrar Usuario</p>
+        <button class="delete is-large" aria-label="close"></button>
         </header>
-        <section class="modal-card-body has-text-centered">
-            <p class="title is-5 mb-5 is-size-6-mobile">¿Qué deseas hacer?</p>
-            <div class="buttons is-centered">
-                <a href="crear_reservas.html" class="button is-primary is-large mr-4">
-                    <span class="icon">
-                        <i class="fas fa-plus"></i>
-                    </span>
-                    <span class="has-text-weight-semibold is-size-6-mobile">Crear Reserva</span>
-                </a>
-                <a href="ver_cancelar_reservas.html" class="button is-warning is-large">
-                    <span class="icon">
-                        <i class="fas fa-edit"></i>
-                    </span>
-                    <span class="has-text-weight-semibold is-size-6-mobile">Reagendar / Cancelar</span>
-                </a>
+        <section class="modal-card-body">
+        <form id="form-registro-usuario">
+            <div class="field">
+            <label class="label">Nombre completo <span class="has-text-danger">*</span></label>
+            <div class="control has-icons-left">
+                <input class="input" type="text" id="registro-nombre" maxlength="50" required>
+                <span class="icon is-left"><i class="fas fa-user"></i></span>
             </div>
+                <div class="is-flex is-justify-content-space-between is-align-items-center mt-2">
+                <p class="help has-text-grey">Ej: Fernando Martínez</p>
+                <p class="help contador-caracteres" id="contador-nombre">0 / 50</p>
+                </div>
+            </div>
+            <div class="field">
+            <label class="label">Email <span class="has-text-danger">*</span></label>
+            <div class="control has-icons-left">
+                <input class="input" type="email" id="registro-email" maxlength="75" required>
+                <span class="icon is-left"><i class="fas fa-envelope"></i></span>
+            </div>
+                <div class="is-flex is-justify-content-space-between is-align-items-center mt-2">
+                <p class="help has-text-grey">Ej: usuario@dominio.com</p>
+                <p class="help contador-caracteres" id="contador-email">0 / 75</p>
+                </div>
+            </div>
+            <div class="field">
+            <label class="label">Teléfono <span class="has-text-danger">*</span></label>
+            <div class="control has-icons-left">
+                <input class="input" type="text" id="registro-telefono" maxlength="30" placeholder="11-1234-5678" required>
+                <span class="icon is-left"><i class="fas fa-phone"></i></span>
+            </div>
+                <p class="help is-pulled-right contador-caracteres" id="contador-telefono">0 / 30</p>
+            </div>
+            <div class="field">
+            <label class="label">DNI <span class="has-text-danger">*</span></label>
+            <div class="control">
+                <input class="input" type="text" id="registro-dni" maxlength="20" required>
+            </div>
+                <p class="help is-pulled-right contador-caracteres" id="contador-dni">0 / 20</p>
+            </div>
+            <div class="field">
+            <label class="label">Domicilio <span class="has-text-danger">*</span></label>
+            <div class="control">
+                <input class="input" type="text" id="registro-domicilio" maxlength="75" required>
+            </div>
+                <p class="help is-pulled-right contador-caracteres" id="contador-domicilio">0 / 75</p>
+            </div>
+            <div id="error-registro" class="notification is-danger is-light mt-4" style="display: none;"></div>
+            <div class="field is-grouped is-grouped-centered mt-5">
+            <div class="control">
+                <button type="submit" class="button is-primary is-medium" id="btn-registrar-usuario" disabled>
+                Registrar usuario
+                </button>
+            </div>
+            </div>
+        </form>
         </section>
     </div>
-</div>
-
-<!-- MODAL REGISTRAR USUARIO -->
-        <div id="modal-registrar-usuario" class="modal">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-            <header class="modal-card-head">
-            <p class="modal-card-title is-size-6-mobile">Registrar Usuario</p>
-            <button class="delete is-large" aria-label="close"></button>
-            </header>
-            <section class="modal-card-body">
-            <form id="form-registro-usuario">
-                <div class="field">
-                <label class="label">Nombre completo <span class="has-text-danger">*</span></label>
-                <div class="control has-icons-left">
-                    <input class="input" type="text" id="registro-nombre" maxlength="250" required>
-                    <span class="icon is-left"><i class="fas fa-user"></i></span>
-                </div>
-                <p class="help">Ej: Fernando Martínez</p>
-                </div>
-
-                <div class="field">
-                <label class="label">Email <span class="has-text-danger">*</span></label>
-                <div class="control has-icons-left">
-                    <input class="input" type="email" id="registro-email" maxlength="255" required>
-                    <span class="icon is-left"><i class="fas fa-envelope"></i></span>
-                </div>
-                <p class="help">Ej: usuario@dominio.com</p>
-                </div>
-
-                <div class="field">
-                <label class="label">Teléfono <span class="has-text-danger">*</span></label>
-                <div class="control has-icons-left">
-                    <input class="input" type="text" id="registro-telefono" maxlength="30" placeholder="11-1234-5678" required>
-                    <span class="icon is-left"><i class="fas fa-phone"></i></span>
-                </div>
-                </div>
-
-                <div class="field">
-                <label class="label">DNI <span class="has-text-danger">*</span></label>
-                <div class="control">
-                    <input class="input" type="text" id="registro-dni" maxlength="20" required>
-                </div>
-                </div>
-
-                <div class="field">
-                <label class="label">Domicilio <span class="has-text-danger">*</span></label>
-                <div class="control">
-                    <input class="input" type="text" id="registro-domicilio" maxlength="100" required>
-                </div>
-                </div>
-
-                <!-- Mensaje de error -->
-                <div id="error-registro" class="notification is-danger is-light mt-4" style="display: none;"></div>
-
-                <div class="field is-grouped is-grouped-centered mt-5">
-                <div class="control">
-                    <button type="submit" class="button is-primary is-medium" id="btn-registrar-usuario" disabled>
-                    Registrar usuario
-                    </button>
-                </div>
-                </div>
-            </form>
-            </section>
-        </div>
-        </div>
     </div>
-</div>
+    
+</nav>

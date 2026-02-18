@@ -10,17 +10,17 @@ curl http://localhost:3000/establecimientos/6
 curl -X POST http://localhost:3000/establecimientos \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Metegol salchipapas",
+    "nombre": "Metegol Hasta Pronto",
     "barrio": "Núñez",
-    "torneo": "Se realizan torneos de fútbol 5"
+    "torneo": ""
   }'
 
 3) POST para testeo (copiar el POST de arriba y modificarle cualquier cosa para testear)
 curl -X POST http://localhost:3000/establecimientos \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "",
-    "barrio": "",
+    "nombre": "Nos vemos fútbol club",
+    "barrio": "Núñez",
     "torneo": "Se realizan torneos de fútbol 5"
   }'
 
@@ -54,12 +54,12 @@ curl http://localhost:3000/canchas/5
 curl -X POST http://localhost:3000/canchas \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Cancha 1",
-    "deporte": "Básquet 3v3",
-    "establecimiento_id": 2,
-    "precio_hora": 14000.00,
-    "descripcion": "Cancha super rápida",
-    "superficie": "Sintética",
+    "nombre": "Cancha 17",
+    "deporte": "Fútbol 5",
+    "establecimiento_id": 1,
+    "precio_hora": 25000.00,
+    "descripcion": "Cancha premium de última generación",
+    "superficie": "",
     "iluminacion": true,
     "cubierta": false
   }' -i
@@ -68,46 +68,44 @@ curl -X POST http://localhost:3000/canchas \
 curl -X POST http://localhost:3000/canchas \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Cancha 1",
-    "deporte": "Básquet 3v3",
+    "nombre": "Cancha 16",
+    "deporte": "Fútbol 5",
     "establecimiento_id": 1,
+    "precio_hora": 25000.00,
+    "descripcion": "Cancha premium de última generación",
+    "superficie": "Césped sintético",
+    "iluminacion": true,
+    "cubierta": false
+  }' -i
+
+
+4) UPDATE correcto (todos los campos)
+curl -X PUT http://localhost:3000/canchas/79 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Cancha 2",
+    "deporte": "Básquet 3v3",
+    "establecimiento_id": 2,
     "precio_hora": 25000,
     "descripcion": "Cancha super rápida",
     "superficie": "Sintética",
     "iluminacion": true,
     "cubierta": false
-  }'
-
-4) UPDATE correcto (todos los campos)
-curl -X PUT http://localhost:3000/canchas/68 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Cancha 2",
-    "deporte": "Fútbol 11",
-    "establecimiento_id": 1,
-    "precio_hora": 80000,
-    "descripcion": "Cancha renovada con nuevo césped",
-    "superficie": "Césped sintético premium",
-    "iluminacion": true,
-    "cubierta": true
   }' -i
 
 5) UPDATE para testeo (copiar el UPDATE de arriba y eliminarle/actualizarle campos)
-curl -X PUT http://localhost:3000/canchas/68 \
+curl -X PUT http://localhost:3000/canchas/79 \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Cancha 2",
-    "deporte": "Fútbol 11",
-    "establecimiento_id": 1,
-    "precio_hora": 80000,
-    "descripcion": "Cancha renovada con nuevo césped",
-    "superficie": "Césped sintético premium",
-    "iluminacion": true,
+    "precio_hora": 45000,
+    "descripcion": "Cancha super rápida y marcada",
+    "superficie": "Sintética",
+    "iluminacion": false,
     "cubierta": true
   }' -i
 
 6) DELETE
-curl -X DELETE http://localhost:3000/canchas/37 -i
+curl -X DELETE http://localhost:3000/canchas/77 -i
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 USUARIOS
@@ -120,7 +118,7 @@ curl http://localhost:3000/usuarios/6
 curl -X POST http://localhost:3000/usuarios \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Fernando Michnowicz",
+    "nombre": "Juancho",
     "email": "chaco@hotmail.com",
     "telefono": "54 9 11 3333 3333",
     "dni": "88345290",
@@ -131,24 +129,14 @@ curl -X POST http://localhost:3000/usuarios \
 curl -X POST http://localhost:3000/usuarios \
   -H "Content-Type: application/json" \
   -d '{
-    "nombre": "Fernando Michnowicz",
-    "email": "chaco@hotmail.com",
-    "telefono": "54 9 11 3333 3333",
-    "dni": "88345290"
+    "nombre": "María",
+    "email": "juan.perez@gmail.com",
+    "telefono": "11-3456-7890",
+    "dni": "30123456",
+    "domicilio": "Don orionesitos"
   }'
 
 4) UPDATE correcto (todos los campos)
-curl -X PUT http://localhost:3000/usuarios/34 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre": "Fernando Michnowicz 2",
-    "email": "chaco@hotmail.com",
-    "telefono": "54 9 11 3333 3333",
-    "dni": "88345290",
-    "domicilio": "Calle falsa 123"
-  }' -i
-
-5) UPDATE para testeo (copiar el UPDATE de arriba y eliminarle/actualizarle campos)
 curl -X PUT http://localhost:3000/usuarios/34 \
   -H "Content-Type: application/json" \
   -d '{
@@ -156,6 +144,17 @@ curl -X PUT http://localhost:3000/usuarios/34 \
     "email": "chaco@hotmail.com.ar",
     "telefono": "54 9 11 3333 3333",
     "dni": "88345290",
+    "domicilio": "Calle falsa 123"
+  }' -i
+
+5) UPDATE para testeo (copiar el UPDATE de arriba y eliminarle/actualizarle campos)
+curl -X PUT http://localhost:3000/usuarios/2 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "María González",
+    "email": "maria.gonzalez@hotmail.com",
+    "telefono": "11-4567-8901",
+    "dni": "32123457",
     "domicilio": "Calle falsa 123"
   }' -i
 
@@ -173,12 +172,12 @@ curl http://localhost:3000/reservas/6
 curl -X POST http://localhost:3000/reservas \
   -H "Content-Type: application/json" \
   -d '{
-    "cancha_id": 44,
-    "usuario_id": 4,
-    "fecha_reserva": "2025-12-20",
+    "cancha_id": 73,
+    "usuario_id": 8,
+    "fecha_reserva": "2025-12-31",
     "reserva_hora_inicio": "09:00:00",
-    "reserva_hora_fin": "10:30:00",
-    "monto_pagado": 33000
+    "reserva_hora_fin": "10:00:00",
+    "monto_pagado": 25000
   }' -i
 
 3) POST para testeo (copiar el POST de arriba y modificarle cualquier cosa para testear)

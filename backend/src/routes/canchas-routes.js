@@ -4,11 +4,16 @@ import {
     getCanchaById,
     createCancha,
     updateCancha,
-    deleteCancha
+    deleteCancha,
+    getNextCanchaNumber
 } from "../controllers/canchas-controllers.js"
 
 const router = Router();
 
+// Rutas estáticas específicas
+router.get('/next-cancha', getNextCanchaNumber);
+
+// Rutas dinámicas o generales
 router.get("/", getAllCanchas);
 router.get("/:id", getCanchaById);
 router.post("/", createCancha);

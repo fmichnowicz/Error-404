@@ -19,6 +19,42 @@ let reservaOriginal = null;
 
 const reservaId = localStorage.getItem('reservaAReagendar');
 
+// Función para ordenar: establecimiento → deporte → nombre_cancha (con orden numérico natural)
+function ordenarCanchas(canchas) {
+  return canchas.sort((a, b) => {
+    // 1. Por establecimiento (alfabético, ignorando acentos y mayúsculas)
+    const estA = normalizeString(a.nombre_establecimiento);
+    const estB = normalizeString(b.nombre_establecimiento);
+    if (estA !== estB) return estA.localeCompare(estB);
+
+    // 2. Por deporte con ordenamiento NATURAL (Fútbol 4 < Fútbol 8 < Fútbol 11)
+    const depComparison = a.deporte.localeCompare(b.deporte, undefined, {
+      numeric: true,
+      sensitivity: 'base'  // ignora acentos y mayúsculas
+    });
+    if (depComparison !== 0) return depComparison;
+
+    // 3. Por nombre de cancha con ordenamiento natural (Cancha 1, 2, ..., 10, 11)
+    return a.nombre_cancha.localeCompare(b.nombre_cancha, undefined, {
+      numeric: true,
+      sensitivity: 'base'
+    });
+  });
+}
+
+function normalizeString(str) {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// === CARGA PROGRESIVA ===
+const CANTIDAD_INICIAL = 10;
+const INCREMENTO = 10;
+let canchasMostradas = CANTIDAD_INICIAL;
+
 document.addEventListener('DOMContentLoaded', async () => {
   if (!reservaId) {
     mostrarMensaje('No se encontró la reserva a reagendar. Volviendo a la lista...');
@@ -30,6 +66,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   await cargarReservaOriginal();
   inicializarFecha();
   await cargarDatosYRenderizar();
+
+  // Evento del botón "Mostrar más canchas"
+  document.getElementById('btn-mostrar-mas').addEventListener('click', () => {
+    canchasMostradas += INCREMENTO;
+    renderizarTablaFiltrada();
+  });
 });
 
 async function cargarDatosIniciales() {
@@ -69,12 +111,10 @@ async function cargarReservaOriginal() {
       }
     }
 
-    // Formatear horario actual
     const horaInicio = reservaOriginal.reserva_hora_inicio.slice(0, 5);
     const horaFin = reservaOriginal.reserva_hora_fin.slice(0, 5);
     const horarioActual = `${horaInicio} a ${horaFin} hs`;
 
-    // Llenar información fija
     document.getElementById('info-establecimiento').textContent = cancha.nombre_establecimiento || 'Desconocido';
     document.getElementById('info-deporte').textContent = cancha.deporte || 'Desconocido';
     document.getElementById('info-usuario').textContent = nombreUsuario;
@@ -120,6 +160,7 @@ function inicializarFecha() {
     }
     fechaSeleccionada = nuevaFecha;
     deseleccionarTodo();
+    canchasMostradas = CANTIDAD_INICIAL; // Resetear cantidad mostrada al cambiar fecha
     cargarDatosYRenderizar();
   });
 }
@@ -145,28 +186,45 @@ function renderizarTablaFiltrada() {
   const establecimientoId = canchaOriginal.establecimiento_id;
   const deporte = canchaOriginal.deporte;
 
-  const canchasFiltradas = allCanchas.filter(c =>
+  let canchasFiltradas = allCanchas.filter(c =>
     c.establecimiento_id === establecimientoId && c.deporte === deporte
   );
 
+  // === ORDENAR LAS CANCHAS FILTRADAS ===
+  canchasFiltradas = ordenarCanchas(canchasFiltradas);
+
   const reservasOcupadas = {};
-  allReservas.forEach(res => {
-    if (!reservasOcupadas[res.cancha_id]) reservasOcupadas[res.cancha_id] = [];
 
-    const inicioMin = horaToMinutos(res.reserva_hora_inicio);
-    const finMin = horaToMinutos(res.reserva_hora_fin);
+  allReservas
+    .filter(res => res.id != reservaId)
+    .forEach(res => {
+      if (!reservasOcupadas[res.cancha_id]) reservasOcupadas[res.cancha_id] = [];
 
-    let currentMin = inicioMin;
-    while (currentMin < finMin) {
-      const horaStr = minutosToHora(currentMin);
-      if (!reservasOcupadas[res.cancha_id].includes(horaStr)) {
-        reservasOcupadas[res.cancha_id].push(horaStr);
+      const inicioMin = horaToMinutos(res.reserva_hora_inicio);
+      const finMin = horaToMinutos(res.reserva_hora_fin);
+
+      let currentMin = inicioMin;
+      while (currentMin < finMin) {
+        const horaStr = minutosToHora(currentMin);
+        if (!reservasOcupadas[res.cancha_id].includes(horaStr)) {
+          reservasOcupadas[res.cancha_id].push(horaStr);
+        }
+        currentMin += 30;
       }
-      currentMin += 30;
-    }
-  });
+    });
 
-  renderizarTabla(canchasFiltradas, reservasOcupadas);
+  // Mostrar solo las primeras N canchas
+  const canchasAMostrar = canchasFiltradas.slice(0, canchasMostradas);
+
+  renderizarTabla(canchasAMostrar, reservasOcupadas);
+
+  // Mostrar/Ocultar botón "Mostrar más"
+  const btnMostrarMas = document.getElementById('btn-mostrar-mas');
+  if (canchasMostradas < canchasFiltradas.length) {
+    btnMostrarMas.style.display = 'block';
+  } else {
+    btnMostrarMas.style.display = 'none';
+  }
 }
 
 function renderizarTabla(canchas, reservasOcupadas) {
@@ -209,12 +267,16 @@ function renderizarTabla(canchas, reservasOcupadas) {
         const ocupado = reservasOcupadas[cancha.id]?.includes(hora);
         const seleccionado = seleccionActual.canchaId === cancha.id && seleccionActual.horarios.includes(hora);
 
+        let clase = '';
         if (ocupado) {
-          bodyHTML += `<td><button class="boton-horario ocupado" disabled></button></td>`;
-        } else {
-          bodyHTML += `<td><button class="boton-horario ${seleccionado ? 'seleccionado' : ''}"
-            data-cancha="${cancha.id}" data-hora="${hora}" onclick="toggleHorario(this)"></button></td>`;
+          clase = 'ocupado';
+        } else if (seleccionado) {
+          clase = 'seleccionado';
         }
+
+        bodyHTML += `<td><button class="boton-horario-reagendar ${clase}"
+          data-cancha="${cancha.id}" data-hora="${hora}" 
+          ${ocupado ? 'disabled title="Horario ocupado por otro usuario"' : ''}></button></td>`;
       });
 
       bodyHTML += '</tr>';
@@ -222,6 +284,11 @@ function renderizarTabla(canchas, reservasOcupadas) {
   }
 
   body.innerHTML = bodyHTML;
+
+  // Agregar listeners a botones libres
+  document.querySelectorAll('.boton-horario-reagendar:not(.ocupado)').forEach(btn => {
+    btn.addEventListener('click', () => toggleHorario(btn));
+  });
 }
 
 function toggleHorario(btn) {
@@ -296,7 +363,6 @@ function mostrarResumenReserva() {
   const [year, month, day] = fechaSeleccionada.split('-');
   const fechaFormateada = `${day}/${month}/${year}`;
 
-  // Llenar datos básicos
   document.getElementById('resumen-cancha').textContent = cancha.nombre_cancha;
   document.getElementById('resumen-establecimiento').textContent = cancha.nombre_establecimiento;
   document.getElementById('resumen-deporte').textContent = cancha.deporte;
@@ -304,22 +370,18 @@ function mostrarResumenReserva() {
   document.getElementById('resumen-hora-inicio').textContent = horaInicio;
   document.getElementById('resumen-hora-fin').textContent = horaFin;
 
-  // === CÁLCULO Y MOSTRAR SALDO DIFERENCIAL ===
   const saldoDiv = document.getElementById('resumen-saldo');
   const saldoTexto = document.getElementById('resumen-saldo-texto');
 
   const diferencia = montoNuevo - montoOriginal;
 
   if (Math.abs(diferencia) < 0.01) {
-    // Montos iguales → no mostrar nada
     saldoDiv.style.display = 'none';
   } else if (diferencia > 0) {
-    // Debe pagar más
     saldoTexto.textContent = `Saldo adicional a pagar: $${diferencia.toLocaleString('es-AR')}`;
     saldoTexto.className = 'title is-4 has-text-centered has-text-danger';
     saldoDiv.style.display = 'block';
   } else {
-    // Le queda a favor
     const aFavor = Math.abs(diferencia);
     saldoTexto.textContent = `Saldo a favor del usuario: $${aFavor.toLocaleString('es-AR')}`;
     saldoTexto.className = 'title is-4 has-text-centered has-text-success';
@@ -349,14 +411,14 @@ async function confirmarReagenda() {
 
   const cancha = allCanchas.find(c => c.id == seleccionActual.canchaId);
   const slots = horariosOrdenados.length;
-  const montoPagado = cancha.precio_hora * (slots / 2); // Este es el monto que enviamos al backend (nuevo total)
+  const montoPagado = cancha.precio_hora * (slots / 2);
 
   const datosNuevos = {
     cancha_id: seleccionActual.canchaId,
     fecha_reserva: fechaSeleccionada,
     reserva_hora_inicio: horaInicio,
     reserva_hora_fin: horaFin,
-    monto_pagado: montoPagado, // Enviamos el nuevo monto calculado
+    monto_pagado: montoPagado,
     usuario_id: reservaOriginal.usuario_id
   };
 
@@ -386,7 +448,7 @@ async function confirmarReagenda() {
 }
 
 function deseleccionarTodo() {
-  document.querySelectorAll('.boton-horario.seleccionado').forEach(btn => btn.classList.remove('seleccionado'));
+  document.querySelectorAll('.boton-horario-reagendar.seleccionado').forEach(btn => btn.classList.remove('seleccionado'));
   seleccionActual = { canchaId: null, horarios: [] };
   document.getElementById('seccion-resumen').style.display = 'none';
   document.getElementById('btn-confirmar-reagendar').disabled = true;

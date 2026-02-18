@@ -14,17 +14,17 @@
 
     <section class="section">
         <div class="container">
-        <h1 class="title has-text-centered mb-2 mt-8">Manejo de Reservas</h1>
+        <h2 class="title has-text-centered mb-3 mt-8">Manejo de Reservas</h2>
 
         <!-- Texto explicativo -->
-        <div class="notification is-info is-light has-text-centered mb-2">
+        <div class="notification is-info is-light has-text-centered mb-4">
             <p class="subtitle is-5">
-            Sólo puedes reagendar o cancelar reservas con 24 horas de anticipación.
+            Sólo podés reagendar reservas con 24 horas de anticipación.
             </p>
         </div>
 
         <!-- Filtros -->
-        <div class="columns is-centered mb-6">
+        <div class="columns is-centered mb-4">
             <!-- Filtro por Usuario -->
             <div class="column is-one-third">
             <div class="field">
@@ -80,6 +80,9 @@
         <!-- Lista de reservas -->
         <div id="lista-reservas" class="columns is-multiline"></div>
 
+        <!-- Paginación -->
+        <div id="paginacion" class="has-text-centered mt-6"></div>
+
         <!-- Loading -->
         <div id="loading" class="has-text-centered mt-6">
             <progress class="progress is-large is-primary" max="100">Cargando reservas...</progress>
@@ -87,7 +90,7 @@
         </div>
     </section>
 
-    <!-- Modal de confirmación de cancelación (rojo fuerte) -->
+    <!-- Modal de confirmación de cancelación -->
     <div class="modal" id="modal-cancelar">
         <div class="modal-background"></div>
         <div class="modal-content">

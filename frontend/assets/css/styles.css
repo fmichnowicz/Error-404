@@ -438,3 +438,110 @@
 .card-footer-overlay {
   margin-top: auto;
 }
+
+/* ===================================
+   ESTILOS PÁGINA REAGENDAR RESERVAS (reagendar_reservas.html)
+   =================================== */
+
+/* Estilos exclusivos para reagendar_reservas.html */
+.boton-horario-reagendar {
+    width: 100%;
+    height: 100%;
+    min-height: 60px;
+    border-radius: 8px;
+    border: 2px solid #dbdbdb;
+    background-color: #f9f9f9 !important; /* Gris claro por defecto (libre) */
+    color: #7a7a7a;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hover SOLO para botones libres (sin seleccionado ni ocupado) */
+.boton-horario-reagendar:hover:not(.seleccionado):not(.ocupado) {
+    background-color: #e8f4fd !important;
+    border-color: #00d1b2 !important;
+}
+
+/* Verde para seleccionado (prioridad máxima) */
+.boton-horario-reagendar.seleccionado {
+    background-color: #00d1b2 !important;
+    color: white !important;
+    border-color: #00b89c !important;
+}
+
+/* Rojo para ocupado (prioridad máxima) */
+.boton-horario-reagendar.ocupado {
+    background-color: #f14668 !important;
+    color: white !important;
+    cursor: not-allowed;
+    border: #f14668 !important;
+}
+
+/* ===================================
+   ESTILOS PÁGINA ADMINISTRAR CANCHAS (administrar_canchas.html)
+   =================================== */
+
+/* Para modo dark: fondo oscuro sólido y hover sutil */
+#modal-agregar-cancha .panel {
+  background-color: #242424 !important;     /* Fondo negro/gris oscuro típico de dark mode */
+  border: 1px solid #4a4a4a;                /* Borde gris oscuro */
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Sombra más pronunciada en dark */
+  z-index: 20;
+}
+
+/* Fuerza que los paneles de sugerencias tengan el mismo ancho exacto que su input */
+#sugerencias-establecimiento-modal,
+#sugerencias-deporte-modal {
+  width: 90% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  left: 1rem !important;               /* Alinea perfectamente a la izquierda del input */
+  right: auto !important;           /* Evita que se extienda más allá */
+}
+
+/* Para pantallas más grandes (desktop) */
+@media (min-width: 768px) {  /* o el breakpoint que uses en Bulma, que es 768px para tablet/desktop */
+  #sugerencias-establecimiento-modal,
+  #sugerencias-deporte-modal {
+    width: 87% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    left: 2rem !important;               /* Alinea perfectamente a la izquierda del input */
+    right: auto !important;           /* Evita que se extienda más allá */
+  }
+}
+
+/* Asegura que el contenedor del input sea el referente de posicionamiento */
+#modal-agregar-cancha .field .control {
+  position: relative !important;
+}
+
+/* Hover en dark mode: un gris un poco más claro */
+#modal-agregar-cancha .panel-block.is-clickable {
+  color: #dbdbdb;                           /* Texto gris claro */
+  transition: background-color 0.2s;
+}
+
+#modal-agregar-cancha .panel-block.is-clickable:hover {
+  background-color: #363636 !important;     /* Hover gris oscuro claro */
+}
+
+/* ===================================
+   ESTILOS NAVBAR - USUARIOS - REGISTRAR USUARIOS
+   =================================== */
+
+.contador-caracteres {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  color: #7a7a7a;
+}
+
+.contador-caracteres.maximo {
+  color: #ff3860; /* rojo de Bulma */
+  font-weight: bold;
+}

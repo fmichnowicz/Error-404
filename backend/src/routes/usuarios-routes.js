@@ -10,7 +10,10 @@ import {
 
 const router = Router();
 
+// Rutas estáticas específicas
 router.get("/buscar", buscarUsuariosPorNombre);
+
+// Rutas dinámicas o generalres
 router.get("/", getAllUsuarios);
 router.get("/:id", getUsuarioById);
 router.post("/", createUsuario);

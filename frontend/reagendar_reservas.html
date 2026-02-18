@@ -8,7 +8,7 @@
         integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="assets/css/styles.css">
-    <title>Cancha Ya - Reagendar Reserva</title>
+    <title>Cancha Ya - Reagendar Reservas</title>
     </head>
 <body>
     <!-- Navigation bar -->
@@ -16,17 +16,17 @@
 
     <section class="section">
         <div class="container">
-        <h2 class="title has-text-centered mb-2">Reagendar Reserva</h2>
+        <h2 class="title has-text-centered mb-3">Reagendar Reserva</h2>
 
         <!-- Texto explicativo -->
-        <div class="notification is-info is-light has-text-centered mb-5">
+        <div class="notification is-info is-light has-text-centered mb-4">
             <p class="subtitle is-5">
             Selecciona un nuevo horario para tu reserva. Solo puedes elegir canchas del mismo establecimiento y deporte.
             </p>
         </div>
 
         <!-- Información fija de la reserva original -->
-        <div class="columns is-centered mb-6">
+        <div class="columns is-centered mb-4">
             <div class="column is-two-thirds">
             <div class="box has-background-info has-text-white">
                 <div class="columns">
@@ -57,7 +57,7 @@
             </div>
         </div>
 
-        <!-- Botón más intuitivo -->
+        <!-- Botón Actualizar -->
         <div class="has-text-centered mb-6">
             <button class="button is-primary is-large is-rounded" id="btn-aplicar-filtros">
             <span class="icon is-medium">
@@ -81,6 +81,15 @@
             </tbody>
             </table>
         </div>
+
+        <!-- Botón "Mostrar más canchas" (se muestra/oculta con JS) -->
+        <div class="is-flex is-justify-content-center mt-5">
+            <button id="btn-mostrar-mas" class="button is-primary is-medium is-rounded" style="display: none;">
+                <span class="icon"><i class="fas fa-plus"></i></span>
+                <span>Mostrar más canchas</span>
+            </button>
+        </div>
+
         </div>
     </section>
 
