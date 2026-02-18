@@ -1,19 +1,78 @@
 <img width="975" height="297" alt="Image" src="https://github.com/user-attachments/assets/a98c2497-3f96-4645-ac16-148adf3746c7" />
 
-**CanchaYa** Es un sitio web donde podes manejar de forma centralizada reservas de canchas de diferentes deportes: ` Pádel `, ` Fútbol 4 `, ` Fútbol 5 `,  ` Fútbol 6 `,  ` Fútbol 7 `,  ` Fútbol 8 `,  ` Fútbol 9 `,  ` Fútbol 10 `,  ` Fútbol 11 `, 
- ` Tenis `, ` Básquet 3v3 `,  ` Básquet 5v5 `, ` Vóley `,  ` Handball `.
+**CanchaYa** Es un sitio web donde podes manejar de forma centralizada establecimientos, canchas y reservas de diferentes deportes: ` Básquet 3v3 `, ` Básquet 5v5 `, ` Fútbol 4 `, ` Fútbol 5 `, ` Fútbol 6 `, ` Fútbol 7 `, ` Fútbol 8 `, ` Fútbol 9 `, ` Fútbol 10 `, ` Fútbol 11 `, ` Handball `, ` Pádel `, ` Tenis `, ` Vóley `.
 
 # Funciones principales
-- Registro y validacion de usuarios
 - Reserva de canchas de distintos deportes
-- Filtro para la busqueda de canchas
-- Posibilidad de reagendar o eliminar la reserva
+- Posibilidad de reagendar o eliminar reservas
+- Registro, validacion y baja de usuarios
+- Administración de establecimientos y canchas
+
+ ---
+ 
+# Levantar el proyecto
+
+## Requisitos
+- [Docker compose](https://docs.docker.com/compose/install/)
+- [Node.js](https://nodejs.org/)
+- [Git](https://git-scm.com/)
+- PostgreSQL
+
+## Pasos a seguir
+### 1.Clonar el repositorio en un nuevo directorio
+```  
+git clone [git@github.com:fmichnowicz/Error-404.git](https://github.com/fmichnowicz/Error-404.git)
+```
+
+### 2.Configurar variables de entorno (`.env`).
+Crear un archivo `.env` en la raíz del proyecto (ver estructura) y agregar lo siguiente:
+```
+
+# Base de datos
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=dbCanchaYa
+
+# Local host port
+PORT=3000
+```
+
+### 3.Instalamos gestor de paquetes para dependencias. ATENCIÓN: Lo debemos hacer desde el directorio raiz del proyecto y sólo debe ejecutarse 1 vez y ántes de ejecutar los comandos del paso 4.
+```  
+make deps
+```
+
+### 4.Correr los siguientes comandos dependiendo de lo que se quiera hacer. ATENCIÓN: Todos estos comandos se deben correr desde el directorio raiz del proyecto.
+
+#### Levantar todo el proyecto
+```  
+make run-all
+```
+#### Levantar y ejecutar sólo la base de datos
+```  
+make run-db
+```
+#### Levantar el backend (y la base de datos)
+```  
+make run-backend
+```
+#### Levantar el frontend
+```  
+make run-frontend
+```
+#### Dar de baja todos los contenedores Docker (o los que estén corriendo)
+```  
+make down
+```
 
  ---
 
- # Estructura
+ # Estructura general
 
 ```
+Directorio raiz del proyecto
 ├── backend/
 │ ├── init/
 │ ├── src/
@@ -22,22 +81,24 @@
 │ │ ├── routes/
 │ │ ├── utils/
 │ │ ├── server.js
-│ ├── .env
-│ ├── docker-compose.yml
+│ ├── Dockerfile
 ├── frontend/
 │ ├── assets/
 │ │ ├── css/
 │ │ ├── images/
 │ │ ├── js/
 │ ├── index.html
+│ ├── Dockerfile
+├── .env
+├── dockercompose.yml
 ├── makefile
-├── readme.md
+├── README.md
 ```
 
  ---
 
 # Frontend
-El frontend fue desarrollado como una aplicacion multi-page, utiliza una API REST para gestionar las reservas de las canchas
+El frontend fue desarrollado como una aplicacion multi-page, utiliza una API REST para gestionar establecimientos, canchas, reservas y usuarios.
 
 ### Tecnologias
 - HTML
@@ -45,33 +106,26 @@ El frontend fue desarrollado como una aplicacion multi-page, utiliza una API RES
 - JS
 
 ### Comunicacion con backend
-- Utilizacion de API REST mediante fetch
-- Manejo de errores y cargas
+- Utilizacion de API REST mediante los métodos fetch/post/put/delete
+- Manejo de errores y cargas (primer filtro para validar datos)
 
 ### Arquitectura
-- Separacion por componentes
+- Separacion por componentes (assets y páginas html)
 - Capa de servicios para comunicacion con el backend
 
  ---
 
 # Backend
-El backend fue desarrollado como una API REST encargada de la logica de la administracion de datos, tanto recibirlos, como mandarlos,borrarlos o modificarlos
+El backend fue desarrollado como una API REST encargada de la logica de la administracion de datos, tanto recibirlos, como mandarlos, borrarlos o modificarlos.
 
 ### Tecnologias
 - Node.js
-- Express.js
 - PostgreSQL
+- JS
 
 ### Arquitectura
 - Separacion entre rutas y controladores
-- Capa de servicios para comunicacion con el backend
-
-### Endpoints principales
-- GET /reservas
-- GET /reservas/:id
-- POST /reservas
-- PUT /reservas/:id
-- DELETE /reservas/:id
+- Revalidación de datos a ingresar a la base de datos (el primer filtro es el frontend)
 
  ---
 
@@ -79,7 +133,6 @@ El backend fue desarrollado como una API REST encargada de la logica de la admin
 
 ### Tecnologias
 - PostgreSQL
-- Docker Compose para la inicializacion del entorno
 
 ### Modelo de datos
 
@@ -143,7 +196,9 @@ Continuación de la tabla Reservas
 
 ## Pagina principal
 
-<img width="1014" height="1578" alt="Image" src="https://github.com/user-attachments/assets/c90ed2b5-fc82-4ee2-8c9c-1e7c2704de6c" />
+<img width="703" height="711" alt="image" src="https://github.com/user-attachments/assets/6ac97cde-f55c-4fe2-9570-8f9c02b1d27d" />
+<img width="703" height="711" alt="image" src="https://github.com/user-attachments/assets/6ac97cde-f55c-4fe2-9570-8f9c02b1d27d" />
+
 
 ## Establecimientos
 <img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/dd0b4c7a-b8f6-4995-b67c-e3f423826476" />
@@ -166,46 +221,6 @@ Continuación de la tabla Reservas
 
 <img width="1029" height="832" alt="Image" src="https://github.com/user-attachments/assets/b484bc69-3e14-4867-8182-592367c2be3e" />
 
-# Levantar el proyecto
-
-## Requisitos
-- Docker compose
-- Node.js
-- Express.js
-
-## Pasos a seguir
-### 1.Clonar el repositorio
-```  
-git clone [git@github.com:fmichnowicz/Error-404.git](https://github.com/fmichnowicz/Error-404.git)
-```
-
-### 2.Instalamos gestor de paquetes para dependencias. ATENCIÓN: Lo debemos hacer desde el mismo directorio donde se encuentra el archivo makefile y sólo debe ejecutarse 1 vez y debe ser ántes de ejecutar los comandos del paso 3.
-```  
-make deps
-```
-
-### 3.Correr los siguientes comandos dependiendo de lo que se quiera hacer. ATENCIÓN: Todos estos comandos se deben correr desde el mismo directorio donde se encuentra el archivo makefile.
-
-#### Levantar todo el proyecto
-```  
-make up
-```
-#### Levantar y ejecutar sólo la base de datos
-```  
-make run db
-```
-#### Levantar el backend (y la base de datos)
-```  
-make run-backend
-```
-#### Levantar el frontend
-```  
-make start-frontend
-```
-#### Cerrar conexión a base de datos
-```  
-make down
-```
 # Limitaciones:
 - Base de datos inicial no es robusta (pocos datos)
 - UX --> se trató de que sea lo más amigable posible pero hay algunas páginas como crear_reservas.html que en modo mobile puede resultar dificultaso su uso. Habría que rediseñar como se ve en modo mobile
