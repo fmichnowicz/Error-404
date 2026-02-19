@@ -844,4 +844,4 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarNavbar();
 });
 
-export const API_URL = "https://error-404-despligue-backend.onrender.com";
+export const API_URL = "https://error-404-pxqb.onrender.com";
