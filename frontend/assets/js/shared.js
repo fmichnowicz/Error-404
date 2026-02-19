@@ -1,4 +1,5 @@
 // frontend/assets/js/shared.js
+export const API_URL = "https://error-404-pxqb.onrender.com";
 
 function normalizeString(str) {
     if (!str) return '';
@@ -327,7 +328,7 @@ function manejarModalRegistroUsuario() {
     };
 
     try {
-      const response = await fetch('http://localhost:3000/usuarios', {
+      const response = await fetch(`${API_URL}/usuarios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)
@@ -462,7 +463,7 @@ async function abrirModalEliminarUsuario() {
   // Fetch de usuarios
   const usuarios = await (async () => {
     try {
-      const res = await fetch('http://localhost:3000/usuarios');
+      const res = await fetch(`${API_URL}/usuarios`);
       if (!res.ok) throw new Error('Error al cargar usuarios');
       return await res.json();
     } catch (err) {
@@ -507,7 +508,7 @@ function filtrarYMostrarUsuarios() {
             document.getElementById('elim-domicilio').textContent = u.domicilio;
 
             try {
-                const res = await fetch(`http://localhost:3000/reservas/count/${u.id}`);
+                const res = await fetch(`${API_URL}/reservas/count/${u.id}`);
                 if (!res.ok) throw new Error();
                 const data = await res.json();
                 const count = data.count || 0;
@@ -532,7 +533,7 @@ filtroInput.addEventListener('input', filtrarYMostrarUsuarios);
     if (!usuarioSeleccionado) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/usuarios/${usuarioSeleccionado.id}`, {
+      const res = await fetch(`${API_URL}/usuarios/${usuarioSeleccionado.id}`, {
         method: 'DELETE'
       });
 
@@ -688,7 +689,7 @@ async function abrirModalModificarUsuario() {
 
   // Cargar usuarios
   try {
-    const res = await fetch('http://localhost:3000/usuarios');
+    const res = await fetch(`${API_URL}/usuarios`);
     if (!res.ok) throw new Error();
     usuarios = await res.json();
   } catch (err) {
@@ -808,7 +809,7 @@ async function abrirModalModificarUsuario() {
     const id = document.getElementById('modificar-id').value;
 
     try {
-      const response = await fetch(`http://localhost:3000/usuarios/${id}`, {
+      const response = await fetch(`${API_URL}/usuarios/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)
@@ -844,4 +845,3 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarNavbar();
 });
 
-export const API_URL = "https://error-404-pxqb.onrender.com";
