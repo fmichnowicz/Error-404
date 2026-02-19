@@ -712,10 +712,12 @@ function crearPaginacion(page) {
 function actualizarEstablecimiento(id) {
   mostrarModalEditar(id);
 }
+window.actualizarEstablecimiento = actualizarEstablecimiento;
 
 function eliminarEstablecimiento(id) {
   mostrarModalEliminar(id);
 }
+window.eliminarEstablecimiento = eliminarEstablecimiento;
 
 function normalizeString(str) {
   return str
