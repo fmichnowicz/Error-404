@@ -9,7 +9,11 @@ const pool = new Pool({
     host: process.env.POSTGRES_HOST,
     port: Number(process.env.POSTGRES_PORT),
     database: process.env.POSTGRES_DB,
-    timeZone: 'America/Argentina/Buenos_Aires'
+    timeZone: 'America/Argentina/Buenos_Aires',
+    ssl:{
+        rejectUnauthorized: false,
+    }
 });
 
 export default pool;
+
