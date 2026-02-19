@@ -1,5 +1,5 @@
 // frontend/assets/js/crear_reservas.js
-import { API_URL } from "./shared";
+import { API_URL } from "./shared.js";
 
 const HORARIOS = [];
 for (let h = 7; h <= 22; h++) {

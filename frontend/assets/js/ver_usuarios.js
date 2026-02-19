@@ -1,5 +1,5 @@
 // frontend/assets/js/ver_usuarios.js
-import { API_URL } from "./shared";
+import { API_URL } from "./shared.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
   const container = document.getElementById('usuarios-container');

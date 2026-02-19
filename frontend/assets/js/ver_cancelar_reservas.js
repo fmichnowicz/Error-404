@@ -1,5 +1,5 @@
 // frontend/assets/js/ver_cancelar_reservas.js
-import { API_URL } from "./shared";
+import { API_URL } from "./shared.js";
 
 let allReservas = [];
 let allUsuarios = [];

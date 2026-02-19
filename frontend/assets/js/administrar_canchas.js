@@ -1,5 +1,5 @@
 // frontend/assets/js/administrar_canchas.js
-import { API_URL } from "./shared";
+import { API_URL } from "./shared.js";
 
 const ITEMS_PER_PAGE = 10;
 let currentPage = 1;

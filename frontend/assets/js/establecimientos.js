@@ -1,5 +1,5 @@
 // frontend/assets/js/establecimientos.js
-import { API_URL } from "./shared";
+import { API_URL } from "./shared.js";
 
 const ITEMS_PER_PAGE = 9;
 let currentPage = 1;
