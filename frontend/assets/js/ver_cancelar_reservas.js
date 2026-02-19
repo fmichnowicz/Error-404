@@ -1,4 +1,5 @@
 // frontend/assets/js/ver_cancelar_reservas.js
+import { API_URL } from "./shared";
 
 let allReservas = [];
 let allUsuarios = [];
@@ -45,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnConfirmar.addEventListener('click', () => {
     if (!reservaACancelarId) return;
 
-    fetch(`http://localhost:3000/reservas/${reservaACancelarId}`, { method: 'DELETE' })
+    fetch(`${API_URL}/reservas/${reservaACancelarId}`, { method: 'DELETE' })
       .then(response => {
         if (!response.ok) throw new Error('Error al cancelar');
         return response.json();
@@ -68,10 +69,10 @@ async function cargarDatosIniciales() {
 
   try {
     const [reservasRes, usuariosRes, establecimientosRes, canchasRes] = await Promise.all([
-      fetch('http://localhost:3000/reservas').then(r => r.json()),
-      fetch('http://localhost:3000/usuarios').then(r => r.json()),
-      fetch('http://localhost:3000/establecimientos').then(r => r.json()),
-      fetch('http://localhost:3000/canchas').then(r => r.json())
+      fetch(`${API_URL}/reservas`).then(r => r.json()),
+      fetch(`${API_URL}/usuarios`).then(r => r.json()),
+      fetch(`${API_URL}/establecimientos`).then(r => r.json()),
+      fetch(`${API_URL}/canchas`).then(r => r.json())
     ]);
 
     allReservas = reservasRes;
@@ -104,7 +105,7 @@ async function cargarDatosIniciales() {
 
 async function recargarReservasYMantenerFiltros() {
   try {
-    const reservasRes = await fetch('http://localhost:3000/reservas').then(r => r.json());
+    const reservasRes = await fetch(`${API_URL}/reservas`).then(r => r.json());
     allReservas = reservasRes;
     filtrarYMostrarReservas();
   } catch (error) {

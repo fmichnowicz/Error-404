@@ -1,4 +1,5 @@
 // frontend/assets/js/crear_reservas.js
+import { API_URL } from "./shared";
 
 const HORARIOS = [];
 for (let h = 7; h <= 22; h++) {
@@ -109,9 +110,9 @@ async function inicializarFiltros() {
 
     try {
         const [establecimientosRes, canchasRes, usuariosRes] = await Promise.all([
-            fetch('http://localhost:3000/establecimientos').then(r => r.json()),
-            fetch('http://localhost:3000/canchas').then(r => r.json()),
-            fetch('http://localhost:3000/usuarios').then(r => r.json()) // ← Cargamos todos los usuarios
+            fetch(`${API_URL}/establecimientos`).then(r => r.json()),
+            fetch(`${API_URL}/canchas`).then(r => r.json()),
+            fetch(`${API_URL}/usuarios'`).then(r => r.json()) // ← Cargamos todos los usuarios
         ]);
 
         const selectEst = document.getElementById('filtro-establecimiento');
@@ -215,7 +216,7 @@ async function aplicarFiltros() {
 
 async function cargarDatosYRenderizar() {
     try {
-        const reservasRes = await fetch(`http://localhost:3000/reservas/grilla?fecha=${fechaSeleccionada}`).then(r => r.json());
+        const reservasRes = await fetch(`${API_URL}/reservas/grilla?fecha=${fechaSeleccionada}`).then(r => r.json());
         allReservas = reservasRes;
         renderizarTablaFiltrada();
     } catch (error) {
@@ -473,7 +474,7 @@ async function confirmarReserva() {
     };
 
     try {
-        const response = await fetch('http://localhost:3000/reservas', {
+        const response = await fetch(`${API_URL}/reservas`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datosReserva)

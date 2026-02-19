@@ -1,4 +1,5 @@
 // frontend/assets/js/administrar_canchas.js
+import { API_URL } from "./shared";
 
 const ITEMS_PER_PAGE = 10;
 let currentPage = 1;
@@ -32,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function cargarEstablecimientos() {
   try {
-    const res = await fetch('http://localhost:3000/establecimientos');
+    const res = await fetch(`${API_URL}/establecimientos`);
     if (!res.ok) throw new Error('Error al cargar establecimientos');
     establecimientos = await res.json();
   } catch (err) {
@@ -171,7 +172,7 @@ async function calcularNombreCancha() {
   }
 
   try {
-    const res = await fetch(`http://localhost:3000/canchas/next-cancha?establecimiento_id=${estId}&deporte=${encodeURIComponent(deporte)}`);
+    const res = await fetch(`${API_URL}/canchas/next-cancha?establecimiento_id=${estId}&deporte=${encodeURIComponent(deporte)}`);
     if (!res.ok) {
       const err = await res.json();
       console.error(err);
@@ -216,7 +217,7 @@ async function guardarNuevaCancha() {
   };
 
   try {
-    const res = await fetch('http://localhost:3000/canchas', {
+    const res = await fetch(`${API_URL}/canchas`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -342,7 +343,7 @@ async function guardarModificacion() {
   };
 
   try {
-    const res = await fetch(`http://localhost:3000/canchas/${idCanchaAModificar}`, {
+    const res = await fetch(`${API_URL}/canchas/${idCanchaAModificar}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -384,7 +385,7 @@ async function cargarCanchas() {
   const noCanchas = document.getElementById('no-canchas-message');
 
   try {
-    const response = await fetch('http://localhost:3000/canchas');
+    const response = await fetch(`${API_URL}/canchas`);
     if (!response.ok) throw new Error('Error al cargar canchas');
 
     allCanchas = await response.json();
@@ -704,7 +705,7 @@ function inicializarModalesEliminar() {
     if (!idCanchaAEliminar) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/canchas/${idCanchaAEliminar}`, {
+      const response = await fetch(`${API_URL}/canchas/${idCanchaAEliminar}`, {
         method: 'DELETE'
       });
 
@@ -761,7 +762,7 @@ async function eliminarCancha(id) {
   let numUsuarios = 0;
 
   try {
-    const res = await fetch(`http://localhost:3000/reservas/by-cancha?cancha=${id}`);
+    const res = await fetch(`${API_URL}/reservas/by-cancha?cancha=${id}`);
     if (res.ok) {
       const reservas = await res.json();
       numReservas = reservas.length;

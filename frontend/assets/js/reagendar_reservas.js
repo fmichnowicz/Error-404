@@ -1,4 +1,5 @@
 // frontend/assets/js/reagendar_reservas.js
+import { API_URL } from "./shared";
 
 const HORARIOS = [];
 for (let h = 7; h <= 22; h++) {
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function cargarDatosIniciales() {
   try {
     const [canchasRes] = await Promise.all([
-      fetch('http://localhost:3000/canchas').then(r => r.json())
+      fetch(`${API_URL}/canchas`).then(r => r.json())
     ]);
     allCanchas = canchasRes;
   } catch (error) {
@@ -88,7 +89,7 @@ async function cargarDatosIniciales() {
 
 async function cargarReservaOriginal() {
   try {
-    const resReserva = await fetch(`http://localhost:3000/reservas/${reservaId}`);
+    const resReserva = await fetch(`${API_URL}/reservas/${reservaId}`);
     if (!resReserva.ok) throw new Error('Reserva no encontrada');
     reservaOriginal = await resReserva.json();
 
@@ -101,7 +102,7 @@ async function cargarReservaOriginal() {
     let nombreUsuario = 'Desconocido';
     if (reservaOriginal.usuario_id) {
       try {
-        const resUsuario = await fetch(`http://localhost:3000/usuarios/${reservaOriginal.usuario_id}`);
+        const resUsuario = await fetch(`${API_URL}/usuarios/${reservaOriginal.usuario_id}`);
         if (resUsuario.ok) {
           const usuario = await resUsuario.json();
           nombreUsuario = usuario.nombre || 'Desconocido';
@@ -167,7 +168,7 @@ function inicializarFecha() {
 
 async function cargarDatosYRenderizar() {
   try {
-    const reservasRes = await fetch(`http://localhost:3000/reservas/grilla?fecha=${fechaSeleccionada}`).then(r => r.json());
+    const reservasRes = await fetch(`${API_URL}/reservas/grilla?fecha=${fechaSeleccionada}`).then(r => r.json());
     allReservas = reservasRes;
     renderizarTablaFiltrada();
   } catch (error) {
@@ -423,7 +424,7 @@ async function confirmarReagenda() {
   };
 
   try {
-    const response = await fetch(`http://localhost:3000/reservas/${reservaId}`, {
+    const response = await fetch(`${API_URL}/reservas/${reservaId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(datosNuevos)

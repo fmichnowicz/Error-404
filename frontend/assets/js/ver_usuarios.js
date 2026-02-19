@@ -1,4 +1,5 @@
 // frontend/assets/js/ver_usuarios.js
+import { API_URL } from "./shared";
 
 document.addEventListener('DOMContentLoaded', async () => {
   const container = document.getElementById('usuarios-container');
@@ -11,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Cargar usuarios
   try {
-    const response = await fetch('http://localhost:3000/usuarios');
+    const response = await fetch(`${API_URL}/usuarios`);
     if (!response.ok) throw new Error('Error al cargar usuarios');
     usuarios = await response.json();
 

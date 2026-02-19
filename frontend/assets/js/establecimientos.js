@@ -1,4 +1,5 @@
 // frontend/assets/js/establecimientos.js
+import { API_URL } from "./shared";
 
 const ITEMS_PER_PAGE = 9;
 let currentPage = 1;
@@ -37,8 +38,8 @@ async function cargarDatos() {
 
   try {
     const [establecimientosRes, canchasRes] = await Promise.all([
-      fetch('http://localhost:3000/establecimientos').then(r => r.json()),
-      fetch('http://localhost:3000/canchas').then(r => r.json())
+      fetch(`${API_URL}/establecimientos`).then(r => r.json()),
+      fetch(`${API_URL}/canchas`).then(r => r.json())
     ]);
 
     allEstablecimientos = establecimientosRes;
@@ -107,7 +108,7 @@ function inicializarModalEliminar() {
         if (!idEstablecimientoAEliminar) return;
 
         try {
-            const response = await fetch(`http://localhost:3000/establecimientos/${idEstablecimientoAEliminar}`, {
+            const response = await fetch(`${API_URL}/establecimientos/${idEstablecimientoAEliminar}`, {
                 method: 'DELETE'
             });
 
@@ -176,7 +177,7 @@ async function mostrarModalEliminar(id) {
     let numUsuarios = 0;
 
     try {
-        const res = await fetch(`http://localhost:3000/reservas/by-establecimiento?establecimiento=${id}`);
+        const res = await fetch(`${API_URL}/reservas/by-establecimiento?establecimiento=${id}`);
         if (res.ok) {
             const reservas = await res.json();
             numReservas = reservas.length;
@@ -261,7 +262,7 @@ function inicializarModalEditar() {
     const torneo = inputTorneo.value.trim() || null;
 
     try {
-      const response = await fetch(`http://localhost:3000/establecimientos/${id}`, {
+      const response = await fetch(`${API_URL}/establecimientos/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, barrio, torneo })
@@ -389,7 +390,7 @@ function inicializarModalAgregar() {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/establecimientos', {
+      const response = await fetch(`${API_URL}/establecimientos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, barrio, torneo })
