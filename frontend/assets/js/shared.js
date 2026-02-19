@@ -844,4 +844,4 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarNavbar();
 });
 
-export const API_URL = "postgresql://postgres.xlksloighorolqdqimtv:[TrabajoFinalDesarrollo2025]@aws-1-sa-east-1.pooler.supabase.com:5432/postgres";
+export const API_URL = "https://error-404-despligue-backend.onrender.com";
