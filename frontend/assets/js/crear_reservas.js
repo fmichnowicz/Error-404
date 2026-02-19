@@ -112,7 +112,7 @@ async function inicializarFiltros() {
         const [establecimientosRes, canchasRes, usuariosRes] = await Promise.all([
             fetch(`${API_URL}/establecimientos`).then(r => r.json()),
             fetch(`${API_URL}/canchas`).then(r => r.json()),
-            fetch(`${API_URL}/usuarios'`).then(r => r.json()) // ← Cargamos todos los usuarios
+            fetch(`${API_URL}/usuarios`).then(r => r.json()) // ← Cargamos todos los usuarios
         ]);
 
         const selectEst = document.getElementById('filtro-establecimiento');
