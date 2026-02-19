@@ -524,6 +524,7 @@ function toggleHorario(btn) {
     validarSeleccion();
     actualizarBotonConfirmar();
 }
+window.toggleHorario = toggleHorario;
 
 function validarSeleccion() {
     if (seleccionActual.horarios.length === 0) return;
