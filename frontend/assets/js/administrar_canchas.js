@@ -284,6 +284,7 @@ function modificarCancha(id) {
   const modal = document.getElementById('modal-modificar-cancha');
   modal.classList.add('is-active');
 }
+window.modificarCancha = modificarCancha;
 
 function inicializarModalModificarCancha() {
   const modal = document.getElementById('modal-modificar-cancha');
